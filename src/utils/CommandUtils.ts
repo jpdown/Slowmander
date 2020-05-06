@@ -11,4 +11,10 @@ export class CommandUtils {
             return(DEFAULT_COLOR);
         }
     }
+
+    static async splitCommandArgs(args: string, startPos?: number): Promise<string[]> {
+        if(startPos === undefined)
+            startPos = 0;
+        return(args.slice(startPos).split(/ +/));
+    }
 }

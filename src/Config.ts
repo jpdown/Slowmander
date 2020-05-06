@@ -55,11 +55,44 @@ export class Config {
         this.saveConfig();
     }
 
+    public async getAdminRole(): Promise<string> {
+        return(this.configObject.adminRole);
+    }
+
+    public async setAdminRole(newAdminRole: string) {
+        this.configObject.adminRole = newAdminRole;
+
+        this.saveConfig();
+    }
+
+    public async getModRole(): Promise<string> {
+        return(this.configObject.modRole);
+    }
+
+    public async setModRole(newModRole: string) {
+        this.configObject.modRole = newModRole;
+
+        this.saveConfig();
+    }
+
+    public async getVipRole(): Promise<string> {
+        return(this.configObject.vipRole);
+    }
+
+    public async setVipRole(newVipRole: string) {
+        this.configObject.vipRole = newVipRole;
+
+        this.saveConfig();
+    }
+
     private generateConfig() {
         this.configObject = {
             owner: "",
             token: "",
-            prefix: "!"
+            prefix: "!",
+            adminRole: "",
+            modRole: "",
+            vipRole: ""
         };
 
         this.saveConfig();
@@ -71,5 +104,8 @@ export class Config {
 interface ConfigObjectJSON {
     owner: string,
     token: string,
-    prefix: string
+    prefix: string,
+    adminRole: string,
+    modRole: string,
+    vipRole: string
 }
