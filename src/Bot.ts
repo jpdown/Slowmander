@@ -1,7 +1,7 @@
 import {Client, Message} from 'discord.js';
-import {Config} from './config';
+import {Config} from './Config';
 
-class PantherBot {
+export class PantherBot {
     client: Client;
     config: Config;
 
