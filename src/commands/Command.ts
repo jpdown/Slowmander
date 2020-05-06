@@ -27,7 +27,7 @@ export abstract class Command {
         this.group = group;
     }
 
-    async abstract run(bot: PantherBot, message: Message, args: string): Promise<void>;
+    async abstract run(bot: PantherBot, message: Message, args: string[]): Promise<void>;
 
     async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel) {
         let embed: MessageEmbed = new MessageEmbed()

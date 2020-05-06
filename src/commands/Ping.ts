@@ -8,9 +8,9 @@ export class Ping extends Command {
         super("ping", PermissionLevel.Everyone, "Gets current bot ping to API", "", true);
     }
 
-    async run(bot: PantherBot, message: Message, args: string): Promise<void> {
+    async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
         let currPing: number = message.client.ws.ping;
 
-        this.sendMessage(`Current ping: ${currPing}`, message.channel);
+        this.sendMessage(`Current heartbeat: ${currPing}ms`, message.channel);
     }
 }
