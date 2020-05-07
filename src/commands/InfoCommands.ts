@@ -3,7 +3,7 @@ import { PantherBot } from '../Bot';
 import { CommandUtils } from '..//utils/CommandUtils';
 import { PermissionsHelper } from '../utils/PermissionsHelper';
 
-import {Message, GuildMember, MessageEmbed, Snowflake, Collection, Role, PremiumTier, PermissionString, Permissions} from 'discord.js';
+import {Message, GuildMember, MessageEmbed, Role} from 'discord.js';
 
 export class Whois extends Command {
     constructor() {
@@ -48,7 +48,7 @@ export class Whois extends Command {
         let rolesList: Role[] = member.roles.cache.array();
         if(rolesList.length > 1) {
             rolesList.pop();
-            embed.addField("Roles", rolesList.join(", "), false);
+            embed.addField(`Roles (${rolesList.length})`, rolesList.join(", "), false);
         }
 
         //Bot permission

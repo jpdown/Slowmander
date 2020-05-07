@@ -70,10 +70,8 @@ export class CommandUtils {
     static async parseRole(potentialRole: string, guild: Guild): Promise<Role> {
         let parsedRole: Role = undefined;
 
-        try {
-            parsedRole = await guild.roles.fetch(await CommandUtils.parseRoleID(potentialRole, guild));
-        }
-        catch(err) {
+        parsedRole = await guild.roles.fetch(await CommandUtils.parseRoleID(potentialRole, guild));
+        if(parsedRole === null) {
             parsedRole = await CommandUtils.parseRoleByName(potentialRole, guild);
         }
 

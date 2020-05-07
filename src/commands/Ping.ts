@@ -1,7 +1,8 @@
 import {Command, PermissionLevel} from './Command';
 import { PantherBot } from '../Bot';
 
-import {Message} from 'discord.js';
+import {Message, MessageEmbed} from 'discord.js';
+import { CommandUtils } from '../utils/CommandUtils';
 
 export class Ping extends Command {
     constructor() {
@@ -9,8 +10,12 @@ export class Ping extends Command {
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
-        let currPing: number = message.client.ws.ping;
+        let m: Message = await message.channel.send("Testing ping...");
 
-        this.sendMessage(`Current heartbeat: ${currPing}ms`, message.channel);
+        let embed: MessageEmbed = new MessageEmbed()
+            .setColor(await CommandUtils.getSelfColor(message.channel))
+            .setDescription(`Last Heartbeat: ${message.client.ws.ping}ms\nAPI Latency: ${m.createdTimestamp - message.createdTimestamp}ms`)
+
+        await m.edit("", embed);
     }
 }

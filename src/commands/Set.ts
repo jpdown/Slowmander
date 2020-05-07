@@ -3,7 +3,7 @@ import { Command } from "./Command";
 import { PermissionLevel } from "./Command";
 import { PantherBot } from "../Bot";
 
-import { Message, User, GuildMember } from "discord.js";
+import { Message, User, GuildMember, Role } from "discord.js";
 import { CommandUtils } from "../utils/CommandUtils";
 
 export class Set extends CommandGroup {
@@ -18,6 +18,9 @@ export class Set extends CommandGroup {
         this.registerSubCommand(new SetAvatar(this));
         this.registerSubCommand(new SetNickname(this));
         this.registerSubCommand(new SetOwner(this));
+        this.registerSubCommand(new SetVipRole(this));
+        this.registerSubCommand(new SetModRole(this));
+        this.registerSubCommand(new SetAdminRole(this));
     }
 }
 
@@ -119,5 +122,74 @@ class SetOwner extends Command {
 
         await bot.config.setOwner(user.id);
         await this.sendMessage(`Owner set to ${user.toString()} successfully.`, message.channel);
+    }
+}
+
+class SetVipRole extends Command {
+    constructor(group: CommandGroup) {
+        super("viprole", PermissionLevel.Owner, "Sets bot's VIP role", "<role>", false, group);
+    }
+
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+        if(args.length < 1) {
+            await this.sendMessage("you gotta give me a role dumbo", message.channel);
+            return;
+        }
+
+        let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
+
+        if(role === undefined) {
+            await this.sendMessage("you gotta give me a role dumbo", message.channel);
+            return;
+        }
+
+        await bot.config.setVipRole(role.id);
+        await this.sendMessage(`VIP role set to ${role.toString()} successfully.`, message.channel);
+    }
+}
+
+class SetModRole extends Command {
+    constructor(group: CommandGroup) {
+        super("modrole", PermissionLevel.Owner, "Sets bot's mod role", "<role>", false, group);
+    }
+
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+        if(args.length < 1) {
+            await this.sendMessage("you gotta give me a role dumbo", message.channel);
+            return;
+        }
+
+        let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
+
+        if(role === undefined) {
+            await this.sendMessage("you gotta give me a role dumbo", message.channel);
+            return;
+        }
+
+        await bot.config.setModRole(role.id);
+        await this.sendMessage(`Mod role set to ${role.toString()} successfully.`, message.channel);
+    }
+}
+
+class SetAdminRole extends Command {
+    constructor(group: CommandGroup) {
+        super("adminrole", PermissionLevel.Owner, "Sets bot's admin role", "<role>", false, group);
+    }
+
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+        if(args.length < 1) {
+            await this.sendMessage("you gotta give me a role dumbo", message.channel);
+            return;
+        }
+
+        let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
+
+        if(role === undefined) {
+            await this.sendMessage("you gotta give me a role dumbo", message.channel);
+            return;
+        }
+
+        await bot.config.setAdminRole(role.id);
+        await this.sendMessage(`Admin role set to ${role.toString()} successfully.`, message.channel);
     }
 }
