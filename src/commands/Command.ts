@@ -1,5 +1,5 @@
 import {PantherBot} from '../Bot';
-import {Message, TextChannel, DMChannel, NewsChannel, MessageEmbed, Guild} from 'discord.js';
+import {Message, TextChannel, DMChannel, NewsChannel, MessageEmbed, Guild, MessageOptions} from 'discord.js';
 import {CommandUtils} from '../utils/CommandUtils';
 import { CommandGroup } from './CommandGroup';
 
@@ -30,12 +30,17 @@ export abstract class Command {
 
     async abstract run(bot: PantherBot, message: Message, args: string[]): Promise<void>;
 
-    async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel) {
+    async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel, messageOptions?: MessageOptions) {
         let embed: MessageEmbed = new MessageEmbed()
             .setColor(await CommandUtils.getSelfColor(channel))
             .setDescription(message);
 
-        await channel.send(embed);
+        if(messageOptions !== undefined) {
+            await channel.send(embed, messageOptions);
+        }
+        else {
+            await channel.send(embed);
+        }
     }
 
     public get name(): string {
