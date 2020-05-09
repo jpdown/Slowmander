@@ -1,25 +1,33 @@
 import * as fs from 'fs';
+import { PantherBot } from './Bot';
+import { LogLevel } from './Logger';
 
 export class Config {
     readonly CONFIG_PATH: string = "./data/config.json";
 
     private configObject: ConfigObjectJSON;
+    private bot: PantherBot;
 
-    constructor() {
-        this.configObject = null;
+    constructor(bot: PantherBot) {
+        this.configObject = undefined;
+        this.bot = bot;
         this.loadConfig();
     }
 
     public loadConfig() {
-        let jsonData: string = fs.readFileSync(this.CONFIG_PATH).toString();
-        try {
-            this.configObject = <ConfigObjectJSON>JSON.parse(jsonData);
-        }
-        catch(err) {
-            this.configObject = null;
+        let jsonData: string;
+
+        if(fs.existsSync(this.CONFIG_PATH)) {
+            jsonData = fs.readFileSync(this.CONFIG_PATH).toString();
+            try {
+                this.configObject = <ConfigObjectJSON>JSON.parse(jsonData);
+            }
+            catch(err) {
+                this.configObject = undefined;
+            }
         }
 
-        if(this.configObject == null) {
+        if(this.configObject === undefined) {
             this.generateConfig();
         }
     }
@@ -31,56 +39,76 @@ export class Config {
         fs.writeFileSync(this.CONFIG_PATH, jsonData);
     }
 
-    public getToken(): string {
+    public get token(): string {
         return(this.configObject.token);
     }
 
-    public async getOwner(): Promise<string> {
+    public get owner(): string {
         return(this.configObject.owner);
     }
 
-    public async setOwner(newOwner: string) {
+    public set owner(newOwner: string) {
         this.configObject.owner = newOwner;
 
         this.saveConfig();
     }
 
-    public async getPrefix(): Promise<string> {
+    public get prefix(): string {
         return(this.configObject.prefix);
     }
 
-    public async setPrefix(newPrefix: string) {
+    public set prefix(newPrefix: string) {
         this.configObject.prefix = newPrefix;
 
         this.saveConfig();
     }
 
-    public async getAdminRole(): Promise<string> {
+    public get adminRole(): string {
         return(this.configObject.adminRole);
     }
 
-    public async setAdminRole(newAdminRole: string) {
+    public set adminRole(newAdminRole: string) {
         this.configObject.adminRole = newAdminRole;
 
         this.saveConfig();
     }
 
-    public async getModRole(): Promise<string> {
+    public get modRole(): string {
         return(this.configObject.modRole);
     }
 
-    public async setModRole(newModRole: string) {
+    public set modRole(newModRole: string) {
         this.configObject.modRole = newModRole;
 
         this.saveConfig();
     }
 
-    public async getVipRole(): Promise<string> {
+    public get vipRole(): string {
         return(this.configObject.vipRole);
     }
 
-    public async setVipRole(newVipRole: string) {
+    public set vipRole(newVipRole: string) {
         this.configObject.vipRole = newVipRole;
+
+        this.saveConfig();
+    }
+
+    public get webhookId(): string {
+        return(this.configObject.webhookId);
+    }
+
+    public set webhookId(newWebhookId: string) {
+        this.configObject.webhookId = newWebhookId;
+
+        this.saveConfig();
+    }
+
+    public get webhookToken(): string {
+        return(this.configObject.webhookToken);
+    }
+
+    public set webhookToken(newWebhookToken: string) {
+        this.configObject.webhookToken = newWebhookToken;
 
         this.saveConfig();
     }
@@ -92,12 +120,14 @@ export class Config {
             prefix: "!",
             adminRole: "",
             modRole: "",
-            vipRole: ""
+            vipRole: "",
+            webhookId: "",
+            webhookToken: ""
         };
 
         this.saveConfig();
 
-        console.log("Default config generated.");
+        this.bot.logger.logSync(LogLevel.INFO, "Default config generated.");
     }
 }
 
@@ -107,5 +137,7 @@ interface ConfigObjectJSON {
     prefix: string,
     adminRole: string,
     modRole: string,
-    vipRole: string
+    vipRole: string,
+    webhookId: string,
+    webhookToken: string
 }

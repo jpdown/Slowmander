@@ -6,6 +6,7 @@ import { Message, MessageEmbed } from "discord.js";
 import { CommandUtils } from "./utils/CommandUtils";
 import { PermissionsHelper } from "./utils/PermissionsHelper";
 import { CommandGroup } from "./commands/CommandGroup";
+import { LogLevel } from "./Logger";
 
 export class CommandManager {
     private commandMap: Map<string, Command>;
@@ -25,11 +26,11 @@ export class CommandManager {
             }
         }
         catch(err) {
-            console.log("Error fetching message.", err);
+            await this.bot.logger.log(LogLevel.WARNING, "Error fetching message.", err);
             return;
         }
 
-        let prefix: string = await this.bot.config.getPrefix();
+        let prefix: string = this.bot.config.prefix;
 
         //Ignore bot and system messages
         if(message.author.bot || message.system) {
@@ -62,7 +63,7 @@ export class CommandManager {
                     .setColor(await CommandUtils.getSelfColor(message.channel))
                     .setTitle("❌ Error runnning command.")
                     .setTimestamp(Date.now()));
-                console.log("Error running command.", err);
+                await this.bot.logger.log(LogLevel.ERROR, `Error running command "${command.fullName}".`, err);
             }
         }
     }

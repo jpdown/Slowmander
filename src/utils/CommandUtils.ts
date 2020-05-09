@@ -1,4 +1,4 @@
-import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, Emoji } from "discord.js";
+import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, Emoji, WebhookClient } from "discord.js";
 
 export class CommandUtils {
     static async getSelfColor(channel: TextChannel | DMChannel | NewsChannel): Promise<ColorResolvable> {
@@ -180,5 +180,17 @@ export class CommandUtils {
         }
 
         return(snowflake);
+    }
+
+    static async parseWebhookUrl(potentialWebhook: string): Promise<WebhookClient> {
+        "https://canary.discordapp.com/api/webhooks/406775579363377152/I3GxI-NKGLf1Zsjj5swsV0i_1krj0Dx1zXKT0znwHe_dltiJ2TR1hu4BwO8q5WUPWPhq"
+        let webhook: WebhookClient = undefined;
+        let splitUrl: string[] = potentialWebhook.split("/");
+
+        if(splitUrl.length === 7) {
+            webhook = new WebhookClient(splitUrl[5], splitUrl[6])
+        }
+
+        return(webhook);
     }
 }

@@ -14,6 +14,6 @@ export class Shutdown extends Command {
 
         message.client.destroy();
 
-        return {sendHelp: false, command: this, message: message};
+        process.exit();
     }
 }
