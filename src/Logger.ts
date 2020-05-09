@@ -68,15 +68,19 @@ export class Logger {
 
         try {
             let webhook: WebhookClient = new WebhookClient(webhookId, webhookToken);
-            //Split every 1994 chars (to allow for code block)
+            //Split every 1990 chars (to allow for code block plus some)
             let splitMessage: string[] = [];
-            for(let i = 0; i < message.length; i += 1994) {
-                splitMessage.push(message.substr(i, (i + 1994 < message.length) ? i + 1994 : message.length));
+            let currEnd: number;
+            for(let i = 0; i < message.length; i += 1990) {
+                if((i + 1990) < message.length)
+                    currEnd = 1990;
+                else
+                    currEnd = message.length - i;
+                splitMessage.push(message.substr(i, currEnd));
             }
-    
             //Post
-            for(let logMessage of splitMessage) {
-                await webhook.send("```" + logMessage + "```");
+            for(let i = 0; i < splitMessage.length; i++) {
+                await webhook.send("```" + splitMessage[i] + "```");
             }
         }
         //Nothing we can do

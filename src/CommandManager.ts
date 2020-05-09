@@ -60,7 +60,7 @@ export class CommandManager {
             }
             catch(err) {
                 await message.channel.send((new MessageEmbed)
-                    .setColor(await CommandUtils.getSelfColor(message.channel))
+                    .setColor(0xFF0000)
                     .setTitle("❌ Error runnning command.")
                     .setTimestamp(Date.now()));
                 await this.bot.logger.log(LogLevel.ERROR, `Error running command "${command.fullName}".`, err);
