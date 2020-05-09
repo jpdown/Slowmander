@@ -3,6 +3,7 @@ import { PantherBot } from '../Bot';
 
 import {Message, Channel, TextChannel, NewsChannel, DMChannel} from 'discord.js';
 import { CommandUtils } from '../utils/CommandUtils';
+import { LogLevel } from '../Logger';
 
 export class Say extends Command {
     constructor() {
@@ -16,7 +17,7 @@ export class Say extends Command {
         }
         catch(err) {
             //We probably just don't have perms, but log
-            console.log("Error deleting message from say command, likely missing perms", err);
+            await bot.logger.log(LogLevel.WARNING, "Error deleting message from say command, likely missing perms.", err);
         }
 
         let lastChannel: number = 0;

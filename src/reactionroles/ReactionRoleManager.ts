@@ -1,6 +1,7 @@
 import { ReactionRoleConfig, ReactionRole } from "./ReactionRoleConfig";
 import { PantherBot } from "../Bot";
 import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake } from "discord.js";
+import { LogLevel } from "../Logger";
 
 export class ReactionRoleManager {
     private _reactionRoleConfig: ReactionRoleConfig;
@@ -18,7 +19,7 @@ export class ReactionRoleManager {
             }
         }
         catch(err) {
-            console.log("Error fetching reaction.", err);
+            await this.bot.logger.log(LogLevel.ERROR, "Error fetching reaction.", err);
         }
 
         //Ignore bots
@@ -49,7 +50,7 @@ export class ReactionRoleManager {
             }
         }
         catch(err) {
-            console.log("Error fetching reaction.", err);
+            await this.bot.logger.log(LogLevel.ERROR, "Error fetching reaction.", err);
         }
 
         //Ignore bots
@@ -90,7 +91,7 @@ export class ReactionRoleManager {
                 await this.checkUsers(currMessage, currReactionRole);
             }
             catch(err) {
-                console.log("Error checking reaction role status.", err);
+                await this.bot.logger.log(LogLevel.ERROR, "Error checking reaction role status.", err);
             }
         }
     }

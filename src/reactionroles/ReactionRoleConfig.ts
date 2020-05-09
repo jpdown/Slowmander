@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import { Message, Emoji, Role, User, GuildMember, TextChannel, Client, NewsChannel } from 'discord.js';
 import { PantherBot } from '../Bot';
+import { LogLevel } from '../Logger';
 
 export class ReactionRoleConfig {
     readonly CONFIG_PATH: string = "./data/reactionroles/";
@@ -37,7 +38,7 @@ export class ReactionRoleConfig {
                 currMessage.push(currReactionRole);
             }
             catch(err) {
-                console.log(`Error loading reaction role ${jsonFile}`, err);
+                this.bot.logger.logSync(LogLevel.ERROR, `Error loading reaction role ${jsonFile}`, err);
             }
         }
 
@@ -159,7 +160,7 @@ export class ReactionRoleConfig {
                         await message.reactions.cache.get(reactionRoles[i].emoteID).users.remove(client.user);
                     }
                     catch(err) {
-                        console.log("Error removing reaction from message.", err);
+                        await this.bot.logger.log(LogLevel.ERROR, "Error removing reaction from message.", err);
                     }
 
                     //Remove the element
@@ -184,8 +185,8 @@ export class ReactionRoleConfig {
             }
         }
         catch(err) {
-            await channel.send(`There was an error adding the role to ${member.toString()}. <@${await this.bot.config.getOwner()}>, check logs.`);
-            console.log(`Error adding reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
+            await channel.send(`There was an error adding the role to ${member.toString()}. <@${this.bot.config.owner}>, check logs.`);
+            await this.bot.logger.log(LogLevel.ERROR, `Error adding reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
         }
     }
 
@@ -199,8 +200,8 @@ export class ReactionRoleConfig {
             }
         }
         catch(err) {
-            await channel.send(`There was an error removing the role from ${member.toString()}. <@${this.bot.config.getOwner()}>, check logs.`);
-            console.log(`Error removing reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
+            await channel.send(`There was an error removing the role from ${member.toString()}. <@${this.bot.config.owner}>, check logs.`);
+            await this.bot.logger.log(LogLevel.ERROR, `Error removing reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
         }
     }
 }

@@ -31,14 +31,14 @@ export class HelpManager {
         }
 
         //Build help message
-        helpMessage = `Usage: \`${await bot.config.getPrefix()}${command.fullName} ${command.usage}\`\n\n`;
+        helpMessage = `Usage: \`${bot.config.prefix}${command.fullName} ${command.usage}\`\n\n`;
         helpMessage += command.longDesc;
 
         //Build embed
         let embed: MessageEmbed = new MessageEmbed()
             .setColor(await CommandUtils.getSelfColor(message.channel))
             .setDescription(helpMessage)
-            .setTitle(await bot.config.getPrefix() + command.fullName)
+            .setTitle(bot.config.prefix + command.fullName)
             .setTimestamp(Date.now());
         
             await message.channel.send(embed);

@@ -3,8 +3,9 @@ import { Command, CommandResult } from "./Command";
 import { PermissionLevel } from "./Command";
 import { PantherBot } from "../Bot";
 
-import { Message, User, GuildMember, Role, ActivityOptions } from "discord.js";
+import { Message, User, GuildMember, Role, ActivityOptions, WebhookClient } from "discord.js";
 import { CommandUtils } from "../utils/CommandUtils";
+import { LogLevel } from "../Logger";
 
 export class Set extends CommandGroup {
     constructor() {
@@ -24,6 +25,7 @@ export class Set extends CommandGroup {
         this.registerSubCommand(new SetAdminRole(this));
         this.registerSubCommand(new SetStatus(this));
         this.registerSubCommand(new SetActivity(this));
+        this.registerSubCommand(new SetLogWebhook(this));
     }
 }
 
@@ -66,7 +68,7 @@ class SetAvatar extends Command {
         }
         catch(err) {
             await this.sendMessage("Error changing avatar, check console for details.", message.channel);
-            console.log("Error changing avatar", err);
+            await bot.logger.log(LogLevel.ERROR, "Error changing avatar.", err);
         }
         return {sendHelp: false, command: this, message: message};
     }
@@ -99,7 +101,7 @@ class SetNickname extends Command {
         }
         catch(err) {
             await this.sendMessage("Error changing nickname, missing perms? Check console for details.", message.channel);
-            console.log("Error changing nickname, missing perms?", err);
+            await bot.logger.log(LogLevel.ERROR, "Error changing nickname, missing perms?", err);
         }
         return {sendHelp: false, command: this, message: message};
     }
@@ -121,7 +123,7 @@ class SetOwner extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        await bot.config.setOwner(user.id);
+        bot.config.owner = user.id;
         await this.sendMessage(`Owner set to ${user.toString()} successfully.`, message.channel);
 
         return {sendHelp: false, command: this, message: message};
@@ -140,7 +142,7 @@ class SetPrefix extends Command {
 
         let prefix: string = args.join(" ");
 
-        await bot.config.setPrefix(prefix);
+        bot.config.prefix = prefix;
         await this.sendMessage(`Prefix set to ${prefix} successfully.`, message.channel);
 
         return {sendHelp: false, command: this, message: message};
@@ -163,7 +165,7 @@ class SetVipRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        await bot.config.setVipRole(role.id);
+        bot.config.vipRole = role.id;
         await this.sendMessage(`VIP role set to ${role.toString()} successfully.`, message.channel);
 
         return {sendHelp: false, command: this, message: message};
@@ -186,7 +188,7 @@ class SetModRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        await bot.config.setModRole(role.id);
+        bot.config.modRole = role.id;
         await this.sendMessage(`Mod role set to ${role.toString()} successfully.`, message.channel);
 
         return {sendHelp: false, command: this, message: message};
@@ -209,7 +211,7 @@ class SetAdminRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        await bot.config.setAdminRole(role.id);
+        bot.config.adminRole = role.id;
         await this.sendMessage(`Admin role set to ${role.toString()} successfully.`, message.channel);
 
         return {sendHelp: false, command: this, message: message};
@@ -290,6 +292,31 @@ class SetActivity extends Command {
 
         await message.client.user.setActivity(activityString, activityOptions);
         await this.sendMessage("Activity updated successfully.", message.channel);
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
+class SetLogWebhook extends Command {
+    constructor(group: CommandGroup) {
+        super("logwebhook", PermissionLevel.Owner, "Sets bot log webhook", "<webhook url>", true, group);
+    }
+
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        if(args.length < 1) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        let webhook: WebhookClient = await CommandUtils.parseWebhookUrl(args[0]);
+        if(webhook === undefined) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        //Set id and token
+        bot.config.webhookId = webhook.id;
+        bot.config.webhookToken = webhook.token;
+
+        await this.sendMessage("Log webhook set successfully.", message.channel);
 
         return {sendHelp: false, command: this, message: message};
     }
