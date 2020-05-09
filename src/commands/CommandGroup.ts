@@ -6,8 +6,8 @@ import { Message } from "discord.js";
 export abstract class CommandGroup extends Command {
     protected _subCommands: Map<string, Command>;
 
-    constructor(name: string, permLevel: PermissionLevel, desc: string, usage: string, runsInDm: boolean, group?: CommandGroup) {
-        super(name, permLevel, desc, usage, runsInDm, group);
+    constructor(name: string, permLevel: PermissionLevel, desc: string, runsInDm: boolean, group?: CommandGroup) {
+        super(name, permLevel, desc, "<subcommand>", runsInDm, group);
         this._subCommands = new Map<string, Command>();
     }
 
