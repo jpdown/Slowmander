@@ -18,6 +18,17 @@ export class CommandManager {
     }
 
     public async parseCommand(message: Message) {
+        //Handle partial events
+        try {
+            if(message.partial) {
+                await message.fetch();
+            }
+        }
+        catch(err) {
+            console.log("Error fetching message.", err);
+            return;
+        }
+
         let prefix: string = await this.bot.config.getPrefix();
 
         //Ignore bot and system messages
