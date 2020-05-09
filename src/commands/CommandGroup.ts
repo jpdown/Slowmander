@@ -19,6 +19,18 @@ export abstract class CommandGroup extends Command {
         return(this._subCommands);
     }
 
+    public async getSubCommand(arg: string): Promise<Command> {
+        return(this._subCommands.get(arg));
+    }
+
+    public get longDesc(): string {
+        let desc: string = this._desc + "\n\nSub Commands:\n";
+        for(let subcommand of this._subCommands.values()) {
+            desc += `• \`${subcommand.name}\` - ${subcommand.desc}\n`;
+        }
+        return(desc);
+    }
+
     protected registerSubCommand(command: Command) {
         this._subCommands.set(command.name, command);
     }

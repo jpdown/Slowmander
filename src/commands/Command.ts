@@ -15,14 +15,16 @@ export abstract class Command {
     protected _name: string;
     protected _permLevel: PermissionLevel;
     protected _desc: string;
+    protected _longDesc: string;
     protected _usage: string;
     protected _runsInDm: boolean;
     protected _group: CommandGroup;
 
-    constructor(name: string, permLevel: PermissionLevel, desc: string, usage: string, runsInDm: boolean, group?: CommandGroup) {
+    constructor(name: string, permLevel: PermissionLevel, desc: string, usage: string, runsInDm: boolean, group?: CommandGroup, longDesc?: string) {
         this._name = name;
         this._permLevel = permLevel;
         this._desc = desc;
+        this._longDesc = longDesc ? longDesc : "";
         this._usage = usage;
         this._runsInDm = runsInDm;
         this._group = group;
@@ -47,12 +49,30 @@ export abstract class Command {
         return(this._name);
     }
 
+    public get fullName(): string {
+        let name: string = "";
+        if(this._group) {
+            name = this._group.fullName + " ";
+        }
+        name += this._name;
+        return(name);
+    }
+
     public get permLevel(): PermissionLevel {
         return(this._permLevel);
     }
 
     public get desc(): string {
         return(this._desc);
+    }
+
+    public get longDesc(): string {
+        let desc: string = this._desc;
+        if(this._longDesc !== "") {
+            desc += "\n\n" + this._longDesc;
+        }
+
+        return(desc);
     }
 
     public get usage(): string {

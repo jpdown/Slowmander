@@ -77,9 +77,13 @@ export class CommandManager {
         return(await this.getCommandHelper(commandToGet, this.commandMap));
     }
 
+    public async getAllCommands(): Promise<Command[]> {
+        return(Array.from(this.commandMap.values()));
+    }
+
     private registerAll(): void {
         for(let command of Object.values(commands)) {
-            this.registerCommand(new command);
+            this.registerCommand(new command(this.bot));
         }
     }
 
@@ -95,7 +99,7 @@ export class CommandManager {
     private async checkPermsAndDM(message: Message, command: Command): Promise<boolean> {
         let permLevel: PermissionLevel;
         let inDm: boolean = false;
-        if(message.member === undefined) {
+        if(message.member === null) {
             permLevel = await PermissionsHelper.getUserPermLevel(message.author, this.bot);
             inDm = true;
         }
