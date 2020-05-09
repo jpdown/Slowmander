@@ -1,4 +1,4 @@
-import {Command, PermissionLevel} from './Command';
+import {Command, PermissionLevel, CommandResult} from './Command';
 import { PantherBot } from '../Bot';
 
 import {Message, MessageEmbed} from 'discord.js';
@@ -9,7 +9,7 @@ export class Ping extends Command {
         super("ping", PermissionLevel.Everyone, "Gets current bot ping to API", "", true);
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         let m: Message = await message.channel.send("Testing ping...");
 
         let embed: MessageEmbed = new MessageEmbed()
@@ -17,5 +17,7 @@ export class Ping extends Command {
             .setDescription(`Last Heartbeat: ${message.client.ws.ping}ms\nAPI Latency: ${m.createdTimestamp - message.createdTimestamp}ms`)
 
         await m.edit("", embed);
+
+        return {sendHelp: false, command: this, message: message};
     }
 }

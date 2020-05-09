@@ -1,8 +1,8 @@
-import { Command, PermissionLevel } from "./commands/Command";
+import { Command, PermissionLevel, CommandResult } from "./commands/Command";
 import * as commands from "./commands";
 import { PantherBot } from "./Bot";
 
-import { Message } from "discord.js";
+import { Message, MessageEmbed } from "discord.js";
 import { CommandUtils } from "./utils/CommandUtils";
 import { PermissionsHelper } from "./utils/PermissionsHelper";
 import { CommandGroup } from "./commands/CommandGroup";
@@ -51,22 +51,36 @@ export class CommandManager {
 
         //Check perms/in DM and run
         if(await this.checkPermsAndDM(message, command)) {
-            await command.run(this.bot, message, args);
+            try {
+                let result: CommandResult = await command.run(this.bot, message, args);
+                if(result.sendHelp) {
+                    await this.bot.helpManager.sendCommandHelp(result.command, result.message, this.bot);
+                }
+            }
+            catch(err) {
+                await message.channel.send((new MessageEmbed)
+                    .setColor(await CommandUtils.getSelfColor(message.channel))
+                    .setTitle("❌ Error runnning command.")
+                    .setTimestamp(Date.now()));
+                console.log("Error running command.", err);
+            }
         }
     }
 
-    public async parseSubCommand(group: CommandGroup, args: string[], message: Message, bot: PantherBot) {
+    public async parseSubCommand(group: CommandGroup, args: string[], message: Message, bot: PantherBot): Promise<CommandResult> {
         //Find command
         let command: Command = await this.getCommandHelper(args.shift(), group.subCommands);
         //If command not found, exit
         if(command === undefined) {
-            return;
+            return {sendHelp: false, command: null, message: message};
         }
 
         //Check perms/in DM and run
         if(await this.checkPermsAndDM(message, command)) {
-            await command.run(bot, message, args);
+            return await command.run(bot, message, args);
         }
+
+        return {sendHelp: false, command: null, message: message};
     }
 
     public registerCommand(command: Command) {

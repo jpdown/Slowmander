@@ -1,4 +1,4 @@
-import { Command, PermissionLevel } from "./Command";
+import { Command, PermissionLevel, CommandResult } from "./Command";
 import { PantherBot } from "../Bot";
 
 import { Message } from "discord.js";
@@ -11,8 +11,8 @@ export abstract class CommandGroup extends Command {
         this._subCommands = new Map<string, Command>();
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
-        await bot.commandManager.parseSubCommand(this, args, message, bot);
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        return await bot.commandManager.parseSubCommand(this, args, message, bot);
     }
 
     public get subCommands(): Map<string, Command> {

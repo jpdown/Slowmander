@@ -30,7 +30,7 @@ export abstract class Command {
         this._group = group;
     }
 
-    async abstract run(bot: PantherBot, message: Message, args: string[]): Promise<void>;
+    async abstract run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult>;
 
     async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel, messageOptions?: MessageOptions) {
         let embed: MessageEmbed = new MessageEmbed()
@@ -86,4 +86,10 @@ export abstract class Command {
     public get group(): CommandGroup {
         return(this.group);
     }
+}
+
+export interface CommandResult {
+    sendHelp: boolean,
+    command: Command,
+    message: Message
 }
