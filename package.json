@@ -5,13 +5,18 @@
   "main": "bot.js",
   "dependencies": {
     "@types/ws": "^7.2.4",
+    "bufferutil": "^4.0.1",
     "discord.js": "^12.2.0",
-    "typescript": "^3.8.3"
+    "erlpack": "github:discordapp/erlpack",
+    "typescript": "^3.8.3",
+    "utf-8-validate": "^5.0.2",
+    "zlib-sync": "^0.1.6"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "tsc -p tsconfig.json -w",
+    "build": "tsc -p tsconfig.json",
     "start": "cd dist && node Bot.js"
   },
   "repository": {
