@@ -1,5 +1,5 @@
 import { CommandGroup } from "./CommandGroup";
-import { Command } from "./Command";
+import { Command, CommandResult } from "./Command";
 import { PermissionLevel } from "./Command";
 import { PantherBot } from "../Bot";
 
@@ -29,15 +29,14 @@ export class Set extends CommandGroup {
 
 class SetUsername extends Command {
     constructor(group: CommandGroup) {
-        super("name", PermissionLevel.Owner, "Sets bot username", "<username>", true, group);
+        super("name", PermissionLevel.Owner, "Sets bot username.", "<username>", true, group, "Minimum username length is 2 characters.");
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         let newUsername: string = args.join(" ");
 
         if(newUsername.length < 2) {
-            await this.sendMessage("Username too short.", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         try {
@@ -47,6 +46,8 @@ class SetUsername extends Command {
         catch(err) {
             await this.sendMessage("Error changing username, rate limit?", message.channel);
         }
+
+        return {sendHelp: false, command: this, message: message};
     }
 }
 
@@ -55,10 +56,9 @@ class SetAvatar extends Command {
         super("avatar", PermissionLevel.Owner, "Sets bot avatar", "<image url>", true, group);
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
-            await this.sendMessage("you gotta give me an image dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
         try {
             await message.client.user.setAvatar(args[0]);
@@ -68,7 +68,7 @@ class SetAvatar extends Command {
             await this.sendMessage("Error changing avatar, check console for details.", message.channel);
             console.log("Error changing avatar", err);
         }
-
+        return {sendHelp: false, command: this, message: message};
     }
 }
 
@@ -77,7 +77,7 @@ class SetNickname extends Command {
         super("nickname", PermissionLevel.Owner, "Sets bot or another member's nickname", "[member] <new nickname>", false, group);
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         let member: GuildMember;
         let newNickname: string;
         if(args.length > 0) {
@@ -101,7 +101,7 @@ class SetNickname extends Command {
             await this.sendMessage("Error changing nickname, missing perms? Check console for details.", message.channel);
             console.log("Error changing nickname, missing perms?", err);
         }
-
+        return {sendHelp: false, command: this, message: message};
     }
 }
 
@@ -110,21 +110,21 @@ class SetOwner extends Command {
         super("owner", PermissionLevel.Owner, "Sets bot owner", "<owner>", true, group);
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
-            await this.sendMessage("you gotta give me a user dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         let user: User = await CommandUtils.parseUser(args.join(" "), message.client);
 
         if(user === undefined) {
-            await this.sendMessage("you gotta give me a user dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         await bot.config.setOwner(user.id);
         await this.sendMessage(`Owner set to ${user.toString()} successfully.`, message.channel);
+
+        return {sendHelp: false, command: this, message: message};
     }
 }
 
@@ -133,16 +133,17 @@ class SetPrefix extends Command {
         super("prefix", PermissionLevel.Owner, "Sets bot prefix", "<prefix>", true, group);
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
-            await this.sendMessage("you gotta give me a prefix dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         let prefix: string = args.join(" ");
 
         await bot.config.setPrefix(prefix);
         await this.sendMessage(`Prefix set to ${prefix} successfully.`, message.channel);
+
+        return {sendHelp: false, command: this, message: message};
     }
 }
 
@@ -151,21 +152,21 @@ class SetVipRole extends Command {
         super("viprole", PermissionLevel.Owner, "Sets bot's VIP role", "<role>", false, group);
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
-            await this.sendMessage("you gotta give me a role dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
 
         if(role === undefined) {
-            await this.sendMessage("you gotta give me a role dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         await bot.config.setVipRole(role.id);
         await this.sendMessage(`VIP role set to ${role.toString()} successfully.`, message.channel);
+
+        return {sendHelp: false, command: this, message: message};
     }
 }
 
@@ -174,21 +175,21 @@ class SetModRole extends Command {
         super("modrole", PermissionLevel.Owner, "Sets bot's mod role", "<role>", false, group);
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
-            await this.sendMessage("you gotta give me a role dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
 
         if(role === undefined) {
-            await this.sendMessage("you gotta give me a role dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         await bot.config.setModRole(role.id);
         await this.sendMessage(`Mod role set to ${role.toString()} successfully.`, message.channel);
+
+        return {sendHelp: false, command: this, message: message};
     }
 }
 
@@ -197,21 +198,21 @@ class SetAdminRole extends Command {
         super("adminrole", PermissionLevel.Owner, "Sets bot's admin role", "<role>", false, group);
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
-            await this.sendMessage("you gotta give me a role dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
 
         if(role === undefined) {
-            await this.sendMessage("you gotta give me a role dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         await bot.config.setAdminRole(role.id);
         await this.sendMessage(`Admin role set to ${role.toString()} successfully.`, message.channel);
+
+        return {sendHelp: false, command: this, message: message};
     }
 }
 
@@ -220,10 +221,9 @@ class SetStatus extends Command {
         super("status", PermissionLevel.Owner, "Sets bot status", "<online, away/idle, dnd, invis/offline>", true, group);
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
-            await this.sendMessage("you gotta give me a status dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         switch(args[0]) {
@@ -243,11 +243,11 @@ class SetStatus extends Command {
                 await message.client.user.setStatus("invisible");
                 break;
             default:
-                await this.sendMessage("you gotta give me a valid status dumbo", message.channel);
-                return;
+                return {sendHelp: true, command: this, message: message};
         }
 
         await this.sendMessage("Status updated successfully.", message.channel);
+        return {sendHelp: false, command: this, message: message};
     }
 }
 
@@ -258,10 +258,9 @@ class SetActivity extends Command {
         super("activity", PermissionLevel.Owner, "Sets bot activity", "<playing, streaming, listening, watching, clear> <activity string>", true, group);
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1 || (args.length < 2 && args[0] !== "clear")) {
-            await this.sendMessage("you gotta give me an acitivity dumbo", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         let activityType: string = args.shift();
@@ -286,11 +285,12 @@ class SetActivity extends Command {
                 activityOptions = {};
                 break;
             default:
-                await this.sendMessage("you gotta give me a valid activity dumbo", message.channel);
-                return;
+                return {sendHelp: true, command: this, message: message};
         }
 
         await message.client.user.setActivity(activityString, activityOptions);
         await this.sendMessage("Activity updated successfully.", message.channel);
+
+        return {sendHelp: false, command: this, message: message};
     }
 }

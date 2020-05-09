@@ -1,4 +1,4 @@
-import {Command, PermissionLevel} from './Command';
+import {Command, PermissionLevel, CommandResult} from './Command';
 import { PantherBot } from '../Bot';
 import { CommandUtils } from '..//utils/CommandUtils';
 import { PermissionsHelper } from '../utils/PermissionsHelper';
@@ -10,7 +10,7 @@ export class Whois extends Command {
         super("whois", PermissionLevel.Everyone, "Gets information on a member", "[member]", false);
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         let member: GuildMember = message.member;
 
         if(args.length > 0) {
@@ -59,5 +59,7 @@ export class Whois extends Command {
 
         //Send
         await message.channel.send(embed);
+
+        return {sendHelp: false, command: this, message: message};
     }
 }

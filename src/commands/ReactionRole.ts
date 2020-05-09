@@ -1,5 +1,5 @@
 import { CommandGroup } from "./CommandGroup";
-import { Command } from "./Command";
+import { Command, CommandResult } from "./Command";
 import { PermissionLevel } from "./Command";
 import { PantherBot } from "../Bot";
 
@@ -24,10 +24,9 @@ class AddReactionRole extends Command {
         super("add", PermissionLevel.Owner, "Adds a reaction role", "<channel> <messageID> <emote> <role> <name>", false, group);
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 5) {
-            await this.sendMessage("You didn't give me enough arguments.", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         let channel: TextChannel | NewsChannel;
@@ -44,13 +43,11 @@ class AddReactionRole extends Command {
             name = args[4]
         }
         catch(err) {
-            await this.sendMessage("Invalid arguments given.", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         if(channel === undefined || reactionMessage === undefined || emote === undefined || role === undefined) {
-            await this.sendMessage("Invalid arguments given.", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         let success: boolean = await bot.reactionRoleManager.reactionRoleConfig.add(reactionMessage, emote, role, name);
@@ -60,6 +57,8 @@ class AddReactionRole extends Command {
         else {
             await this.sendMessage("Error adding reaction role.", message.channel);
         }
+
+        return {sendHelp: false, command: this, message: message};
     }
 }
 
@@ -68,10 +67,9 @@ class RemoveReactionRole extends Command {
         super("remove", PermissionLevel.Owner, "Removes a reaction role", "<name>", false, group);
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
-            await this.sendMessage("You didn't give me a name.", message.channel);
-            return;
+            return {sendHelp: true, command: this, message: message};
         }
 
         let name: string = args[0];
@@ -83,5 +81,7 @@ class RemoveReactionRole extends Command {
         else {
             await this.sendMessage("Error removing reaction role.", message.channel);
         }
+
+        return {sendHelp: false, command: this, message: message};
     }
 }

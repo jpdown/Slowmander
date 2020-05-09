@@ -1,4 +1,4 @@
-import {Command, PermissionLevel} from './Command';
+import {Command, PermissionLevel, CommandResult} from './Command';
 import { PantherBot } from '../Bot';
 
 import {Message, Channel, TextChannel, NewsChannel, DMChannel} from 'discord.js';
@@ -9,7 +9,7 @@ export class Say extends Command {
         super("say", PermissionLevel.Owner, "Sends a message as the bot", "[channel/user]... <message>", true);
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<void> {
+    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         //we stealthy
         try {
             await message.delete();
@@ -42,5 +42,7 @@ export class Say extends Command {
         for(let channel of channelList) {
             await this.sendMessage(messageToSend, channel);
         }
+
+        return {sendHelp: false, command: this, message: message};
     }
 }
