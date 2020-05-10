@@ -73,7 +73,7 @@ export class CommandManager {
         let command: Command = await this.getCommandHelper(args.shift(), group.subCommands);
         //If command not found, exit
         if(command === undefined) {
-            return {sendHelp: true, command: null, message: message};
+            return {sendHelp: true, command: group, message: message};
         }
 
         //Check perms/in DM and run
