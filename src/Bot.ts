@@ -4,6 +4,7 @@ import { CommandManager } from './CommandManager';
 import { ReactionRoleManager } from './reactionroles/ReactionRoleManager';
 import { HelpManager } from './HelpManager';
 import { Logger, LogLevel } from './Logger';
+import { EventLogger } from './eventlogs/EventLogger';
 
 export class PantherBot {
     private _client: Client;
@@ -12,6 +13,7 @@ export class PantherBot {
     private _reactionRoleManager: ReactionRoleManager;
     private _helpManager: HelpManager;
     private _logger: Logger;
+    private _eventLogger: EventLogger;
 
     constructor() {
         this._client = new Client({partials: ['MESSAGE', 'REACTION']});
@@ -20,6 +22,7 @@ export class PantherBot {
         this._commandManager = new CommandManager(this);
         this._reactionRoleManager = new ReactionRoleManager(this);
         this._helpManager = new HelpManager;
+        this._eventLogger = new EventLogger(this);
 
         this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
         this._client.on('messageReactionAdd', this._reactionRoleManager.onMessageReactionAdd.bind(this._reactionRoleManager));

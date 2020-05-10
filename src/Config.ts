@@ -99,22 +99,32 @@ export class Config {
         this.saveConfig();
     }
 
-    public get webhookId(): string {
-        return(this.configObject.webhookId);
+    public get errorWebhookId(): string {
+        return(this.configObject.errorWebhookId);
     }
 
-    public set webhookId(newWebhookId: string) {
-        this.configObject.webhookId = newWebhookId;
+    public set errorWebhookId(newWebhookId: string) {
+        this.configObject.errorWebhookId = newWebhookId;
 
         this.saveConfig();
     }
 
-    public get webhookToken(): string {
-        return(this.configObject.webhookToken);
+    public get errorWebhookToken(): string {
+        return(this.configObject.errorWebhookToken);
     }
 
-    public set webhookToken(newWebhookToken: string) {
-        this.configObject.webhookToken = newWebhookToken;
+    public set errorWebhookToken(newWebhookToken: string) {
+        this.configObject.errorWebhookToken = newWebhookToken;
+
+        this.saveConfig();
+    }
+
+    public get eventlogChannelId(): string {
+        return(this.configObject.eventlogChannelId);
+    }
+
+    public set eventlogChannelId(newChannelId: string) {
+        this.configObject.eventlogChannelId = newChannelId;
 
         this.saveConfig();
     }
@@ -137,8 +147,9 @@ export class Config {
             adminRole: "",
             modRole: "",
             vipRole: "",
-            webhookId: "",
-            webhookToken: "",
+            errorWebhookId: "",
+            errorWebhookToken: "",
+            eventlogChannelId: "",
             defaultColor: "#f78acf"
         };
 
@@ -155,7 +166,8 @@ interface ConfigObjectJSON {
     adminRole: string,
     modRole: string,
     vipRole: string,
-    webhookId: string,
-    webhookToken: string,
+    errorWebhookId: string,
+    errorWebhookToken: string,
+    eventlogChannelId: string,
     defaultColor: string
 }
