@@ -32,17 +32,21 @@ export abstract class Command {
 
     async abstract run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult>;
 
-    async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel, bot: PantherBot, messageOptions?: MessageOptions) {
+    async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel, bot: PantherBot, messageOptions?: MessageOptions): Promise<Message> {
+        let messageSent: Message;
+
         let embed: MessageEmbed = new MessageEmbed()
             .setColor(await CommandUtils.getSelfColor(channel, bot))
             .setDescription(message);
 
         if(messageOptions !== undefined) {
-            await channel.send(embed, messageOptions);
+            messageSent = await channel.send(embed, messageOptions);
         }
         else {
-            await channel.send(embed);
+            messageSent = await channel.send(embed);
         }
+
+        return(messageSent);
     }
 
     public get name(): string {
