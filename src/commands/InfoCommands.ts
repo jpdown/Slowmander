@@ -3,7 +3,8 @@ import { PantherBot } from '../Bot';
 import { CommandUtils } from '..//utils/CommandUtils';
 import { PermissionsHelper } from '../utils/PermissionsHelper';
 
-import {Message, GuildMember, MessageEmbed, Role} from 'discord.js';
+import {Message, GuildMember, MessageEmbed, Role, CollectorFilter, ReactionCollector, Collection, Snowflake} from 'discord.js';
+import { ReactionPaginator } from '../utils/ReactionPaginator';
 
 export class Whois extends Command {
     constructor() {
@@ -45,10 +46,11 @@ export class Whois extends Command {
         }
 
         //Roles list
-        let rolesList: Role[] = member.roles.cache.array();
-        if(rolesList.length > 1) {
-            rolesList.pop();
-            embed.addField(`Roles (${rolesList.length})`, rolesList.join(", "), false);
+        let rolesList: Collection<Snowflake, Role> = member.roles.cache.clone();
+        rolesList.sort((a, b) => b.position - a.position);
+        rolesList.delete(message.guild.roles.everyone.id);
+        if(rolesList.size > 0) {
+            embed.addField(`Roles (${rolesList.size})`, rolesList.array().join(", "), false);
         }
 
         //Bot permission
@@ -59,6 +61,68 @@ export class Whois extends Command {
 
         //Send
         await message.channel.send(embed);
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
+export class Roles extends Command {
+    constructor() {
+        super("roles", PermissionLevel.Mod, "Gets list of roles", "", false);
+    }
+
+    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        //Roles list
+        let rolesList: Collection<Snowflake, Role> = message.guild.roles.cache.clone();
+        rolesList.sort((a, b) => b.position - a.position);
+        rolesList.delete(message.guild.roles.everyone.id);
+
+        //List of strings
+        let stringList: string[] = [];
+        for(let role of rolesList.array()) {
+            stringList.push(role.toString() + " - " + role.members.size + " members.");
+        }
+
+        //Make paginator
+        let paginator: ReactionPaginator = new ReactionPaginator(stringList, 10, 
+            "Roles in " + message.guild.name, message.channel, bot, this);
+
+        let paginatedMessage = await paginator.postMessage();
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
+export class Members extends Command {
+    constructor() {
+        super("members", PermissionLevel.Mod, "Gets list of members for given role", "<role>", false);
+    }
+
+    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        if(args.length < 1) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        //Get role
+        let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
+
+        if(role === undefined) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        let memberList: Collection<Snowflake, GuildMember> = role.members;
+
+        //List of strings
+        let stringList: string[] = [];
+        for(let member of memberList.array()) {
+            stringList.push("**" + member.user.username + "#" + member.user.discriminator + "** - " + member.id);
+        }
+
+        //Make paginator
+        let paginator: ReactionPaginator = new ReactionPaginator(stringList, 10, 
+            "Members of " + role.name, message.channel, bot, this);
+
+        let paginatedMessage = await paginator.postMessage();
 
         return {sendHelp: false, command: this, message: message};
     }
