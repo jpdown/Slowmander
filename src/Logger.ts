@@ -59,8 +59,8 @@ export class Logger {
     }
 
     private async logToDiscord(message: string) {
-        let webhookId: string = this.bot.config.webhookId;
-        let webhookToken: string = this.bot.config.webhookToken;
+        let webhookId: string = this.bot.config.errorWebhookId;
+        let webhookToken: string = this.bot.config.errorWebhookToken;
 
         if(webhookId === "" || webhookToken === "") {
             return;

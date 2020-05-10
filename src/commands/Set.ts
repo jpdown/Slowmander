@@ -3,7 +3,7 @@ import { Command, CommandResult } from "./Command";
 import { PermissionLevel } from "./Command";
 import { PantherBot } from "../Bot";
 
-import { Message, User, GuildMember, Role, ActivityOptions, WebhookClient, ColorResolvable } from "discord.js";
+import { Message, User, GuildMember, Role, ActivityOptions, WebhookClient, ColorResolvable, TextChannel, Channel } from "discord.js";
 import { CommandUtils } from "../utils/CommandUtils";
 import { LogLevel } from "../Logger";
 
@@ -25,7 +25,8 @@ export class Set extends CommandGroup {
         this.registerSubCommand(new SetAdminRole(this));
         this.registerSubCommand(new SetStatus(this));
         this.registerSubCommand(new SetActivity(this));
-        this.registerSubCommand(new SetLogWebhook(this));
+        this.registerSubCommand(new SetErrorLogWebhook(this));
+        this.registerSubCommand(new SetEventLogChannel(this));
         this.registerSubCommand(new SetDefaultColor(this));
     }
 }
@@ -299,9 +300,9 @@ class SetActivity extends Command {
     }
 }
 
-class SetLogWebhook extends Command {
+class SetErrorLogWebhook extends Command {
     constructor(group: CommandGroup) {
-        super("logwebhook", PermissionLevel.Owner, "Sets bot log webhook", "<webhook url>", true, group);
+        super("errorwebhook", PermissionLevel.Owner, "Sets bot error log webhook", "<webhook url>", true, group);
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -315,14 +316,40 @@ class SetLogWebhook extends Command {
         }
 
         //Set id and token
-        bot.config.webhookId = webhook.id;
-        bot.config.webhookToken = webhook.token;
+        bot.config.errorWebhookId = webhook.id;
+        bot.config.errorWebhookToken = webhook.token;
 
         await this.sendMessage("Log webhook set successfully.", message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
     }
 }
+
+class SetEventLogChannel extends Command {
+    constructor(group: CommandGroup) {
+        super("eventlog", PermissionLevel.Owner, "Sets bot eventlog channel", "<channel>", false, group);
+    }
+
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        if(args.length < 1) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        let channel: Channel = await CommandUtils.parseChannel(args.join(" "), message.client);
+
+        if(channel === undefined || !(channel as TextChannel)) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        //Set channel
+        bot.config.eventlogChannelId = channel.id;
+
+        await this.sendMessage("Eventlog channel set successfully.", message.channel, bot);
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
 
 class SetDefaultColor extends Command {
     constructor(group: CommandGroup) {
