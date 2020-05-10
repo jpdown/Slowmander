@@ -17,7 +17,7 @@ export class Cat extends Command {
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         let sentMessage: Message = await this.sendMessage("Looking for a cat...", message.channel, bot);
-        let catUrl: string = await CatDogAPIHelper.getImage(bot, this.API, this.API_TOKEN);
+        let catUrl: string = await CatAPIHelper.getImage(message.author, bot, this.API, this.API_TOKEN);
         let embed: MessageEmbed;
 
         if(catUrl !== undefined && catUrl !== "") {
@@ -41,8 +41,7 @@ export class Cat extends Command {
 }
 
 export class Dog extends Command {
-    private readonly API: string = "https://api.thedogapi.com/v1/images/search";
-    private readonly API_TOKEN: string = "9ca9f46a-cb4d-4aee-acf1-49d002a7c894";
+    private readonly API: string = "https://dog.ceo/api/breeds/image/random";
 
     constructor() {
         super("dog", PermissionLevel.Everyone, "Gives a random dog image", "", true);
@@ -50,16 +49,29 @@ export class Dog extends Command {
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         let sentMessage: Message = await this.sendMessage("Looking for a dog...", message.channel, bot);
-        let dogUrl: string = await CatDogAPIHelper.getImage(bot, this.API, this.API_TOKEN);
+        let dogJson: DogAPIResp;
+        let dogImage: string;
         let embed: MessageEmbed;
 
-        if(dogUrl !== undefined && dogUrl !== "") {
+        try {
+            let headers = {
+                "User-Agent": "PantherBot-discord.js"
+            }
+
+            dogJson = await (await fetch(this.API, { method: "get", headers: headers })).json();
+            dogImage = dogJson.message;
+        }
+        catch(err) {
+            bot.logger.log(LogLevel.ERROR, "Dog:run Error getting dog image from API", err);
+        }
+
+        if(dogImage !== undefined && dogImage !== "") {
             //Build embed
             embed = new MessageEmbed()
                 .setColor(await CommandUtils.getSelfColor(message.channel, bot))
-                .setTitle(`🐶 Found a dog!`)
-                .setURL(dogUrl)
-                .setImage(dogUrl);
+                .setTitle("🐶 Found a dog!")
+                .setURL(dogImage)
+                .setImage(dogImage);
         }
         else {
             embed = new MessageEmbed()
@@ -115,8 +127,8 @@ export class DadJoke extends Command {
     }
 }
 
-class CatDogAPIHelper {
-    public static async getImage(bot: PantherBot, api: string, token: string): Promise<string> {
+class CatAPIHelper {
+    public static async getImage(user: User, bot: PantherBot, api: string, token: string): Promise<string> {
         let imageUrl: string = undefined;
 
         let headers = {
@@ -124,12 +136,12 @@ class CatDogAPIHelper {
         };
         let params = {
             "limit": 1,
-            "size": "small"
         }
 
         try {
             let newUrl: string = api + "?" + querystring.stringify(params);
-            let respJson: CatDogAPIResp[] = await (await fetch(newUrl, { method: "get", headers: headers })).json();
+            console.log(newUrl);
+            let respJson: CatAPIResp[] = await (await fetch(newUrl, { method: "get", headers: headers })).json();
             imageUrl = respJson[0].url;
         }
         catch(err) {
@@ -140,10 +152,15 @@ class CatDogAPIHelper {
     }
 }
 
-interface CatDogAPIResp {
+interface CatAPIResp {
     breeds: Object[],
     height: number,
     id: string,
     url: string,
     width: number
+}
+
+interface DogAPIResp {
+    message: string,
+    status: string
 }
