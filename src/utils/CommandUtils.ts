@@ -1,14 +1,13 @@
 import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, Emoji, WebhookClient } from "discord.js";
+import { PantherBot } from "../Bot";
 
 export class CommandUtils {
-    static async getSelfColor(channel: TextChannel | DMChannel | NewsChannel): Promise<ColorResolvable> {
-        const DEFAULT_COLOR = 0x00a4ff;
-
+    static async getSelfColor(channel: TextChannel | DMChannel | NewsChannel, bot: PantherBot): Promise<ColorResolvable> {
         if(channel.type === "text" || channel.type === "news") {
             return(channel.guild.me.displayColor);
         }
         else {
-            return(DEFAULT_COLOR);
+            return(bot.config.defaultColor);
         }
     }
 

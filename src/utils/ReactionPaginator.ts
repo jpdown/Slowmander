@@ -69,7 +69,7 @@ export class ReactionPaginator {
     
     private async generateEmbed(): Promise<MessageEmbed> {
         let embed: MessageEmbed = new MessageEmbed()
-            .setColor(await CommandUtils.getSelfColor(this.channel))
+            .setColor(await CommandUtils.getSelfColor(this.channel, this.bot))
             .setFooter(`Page ${this.currPage + 1} of ${this.numPages}`)
             .setDescription(this.elements.slice(this.currPage * this.numPerPage, (this.currPage + 1) * this.numPerPage).join("\n"))
             .setTitle(this.title);

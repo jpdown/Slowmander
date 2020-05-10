@@ -27,8 +27,8 @@ export class ReactionRoleConfig {
         let currMessage: ReactionRole[];
 
         for(let jsonFile of jsonFiles) {
-            currJsonData = fs.readFileSync(this.CONFIG_PATH + jsonFile).toString();
             try {
+                currJsonData = fs.readFileSync(this.CONFIG_PATH + jsonFile).toString();
                 currReactionRole = <ReactionRole>JSON.parse(currJsonData);
 
                 if(!this.reactionRoleMessages.has(currReactionRole.messageID)) {
@@ -59,8 +59,13 @@ export class ReactionRoleConfig {
             for(let currReactionRole of reactionRoles) {
                 currJsonFile = this.CONFIG_PATH + currReactionRole.name + ".json";
                 
-                currJsonData = JSON.stringify(currReactionRole);
-                fs.writeFileSync(currJsonFile, currJsonData);
+                try {
+                    currJsonData = JSON.stringify(currReactionRole);
+                    fs.writeFileSync(currJsonFile, currJsonData);
+                }
+                catch(err) {
+                    this.bot.logger.logSync(LogLevel.ERROR, `Error saving reaction role ${currJsonFile}`, err);
+                }
             }
         }
     }
@@ -160,7 +165,7 @@ export class ReactionRoleConfig {
                         await message.reactions.cache.get(reactionRoles[i].emoteID).users.remove(client.user);
                     }
                     catch(err) {
-                        await this.bot.logger.log(LogLevel.ERROR, "Error removing reaction from message.", err);
+                        await this.bot.logger.log(LogLevel.ERROR, "ReactionRoles:remove Error removing reaction from message.", err);
                     }
 
                     //Remove the element
@@ -186,7 +191,7 @@ export class ReactionRoleConfig {
         }
         catch(err) {
             await channel.send(`There was an error adding the role to ${member.toString()}. <@${this.bot.config.owner}>, check logs.`);
-            await this.bot.logger.log(LogLevel.ERROR, `Error adding reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
+            await this.bot.logger.log(LogLevel.ERROR, `ReactionRoles:addUser Error adding reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
         }
     }
 
@@ -201,7 +206,7 @@ export class ReactionRoleConfig {
         }
         catch(err) {
             await channel.send(`There was an error removing the role from ${member.toString()}. <@${this.bot.config.owner}>, check logs.`);
-            await this.bot.logger.log(LogLevel.ERROR, `Error removing reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
+            await this.bot.logger.log(LogLevel.ERROR, `ReactionRoles:removeUser Error removing reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
         }
     }
 }

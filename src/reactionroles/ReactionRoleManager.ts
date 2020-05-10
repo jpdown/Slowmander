@@ -19,7 +19,7 @@ export class ReactionRoleManager {
             }
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, "Error fetching reaction.", err);
+            await this.bot.logger.log(LogLevel.ERROR, "ReactionRoleManager:onMessageReactionAdd Error fetching reaction.", err);
         }
 
         //Ignore bots
@@ -50,7 +50,7 @@ export class ReactionRoleManager {
             }
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, "Error fetching reaction.", err);
+            await this.bot.logger.log(LogLevel.ERROR, "ReactionRoleManager:onMessageReactionRemove Error fetching reaction.", err);
         }
 
         //Ignore bots
@@ -91,7 +91,7 @@ export class ReactionRoleManager {
                 await this.checkUsers(currMessage, currReactionRole);
             }
             catch(err) {
-                await this.bot.logger.log(LogLevel.ERROR, "Error checking reaction role status.", err);
+                await this.bot.logger.log(LogLevel.ERROR, "ReactionRoleManager:onReady Error checking reaction role status.", err);
             }
         }
     }

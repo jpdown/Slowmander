@@ -1,6 +1,7 @@
 import { PermissionLevel } from "../commands/Command";
-import { User, GuildMember, Collection, Snowflake, Role } from "discord.js";
+import { User, GuildMember, Collection, Snowflake, Role, Message } from "discord.js";
 import { PantherBot } from "../Bot";
+import { Command } from "../commands/Command";
 
 export class PermissionsHelper {
     public static async getUserPermLevel(user: User, bot: PantherBot): Promise<PermissionLevel> {
@@ -30,5 +31,19 @@ export class PermissionsHelper {
         else {
             return(PermissionLevel.Everyone);
         }
+    }
+
+    public static async checkPermsAndDM(message: Message, command: Command, bot: PantherBot): Promise<boolean> {
+        let permLevel: PermissionLevel;
+        let inDm: boolean = false;
+        if(message.member === null) {
+            permLevel = await PermissionsHelper.getUserPermLevel(message.author, bot);
+            inDm = true;
+        }
+        else {
+            permLevel = await PermissionsHelper.getMemberPermLevel(message.member, bot)
+        }
+
+        return(permLevel >= command.permLevel && (!inDm || command.runsInDm));
     }
 }

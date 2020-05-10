@@ -10,7 +10,7 @@ export class Shutdown extends Command {
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        await this.sendMessage("Shutting down... 👋", message.channel);
+        await this.sendMessage("Shutting down... 👋", message.channel, bot);
 
         message.client.destroy();
 

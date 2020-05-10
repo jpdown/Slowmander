@@ -33,7 +33,7 @@ export class PantherBot {
     public run() {
         let token: string = this._config.token;
         if(token === "") {
-            this._logger.logSync(LogLevel.ERROR, "No token provided, please put a valid token in the config file.");
+            this._logger.logSync(LogLevel.ERROR, "PantherBot:run No token provided, please put a valid token in the config file.");
             process.exit();
         }
 

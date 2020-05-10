@@ -26,7 +26,7 @@ export class CommandManager {
             }
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.WARNING, "Error fetching message.", err);
+            await this.bot.logger.log(LogLevel.WARNING, "CommandManager:parseCommand Error fetching message.", err);
             return;
         }
 
@@ -51,7 +51,7 @@ export class CommandManager {
         }
 
         //Check perms/in DM and run
-        if(await this.checkPermsAndDM(message, command)) {
+        if(await PermissionsHelper.checkPermsAndDM(message, command, this.bot)) {
             try {
                 let result: CommandResult = await command.run(this.bot, message, args);
                 if(result.sendHelp) {
@@ -59,11 +59,11 @@ export class CommandManager {
                 }
             }
             catch(err) {
+                await this.bot.logger.log(LogLevel.ERROR, `CommandManager:parseCommand Error running command "${command.fullName}".`, err);
                 await message.channel.send((new MessageEmbed)
                     .setColor(0xFF0000)
                     .setTitle("❌ Error runnning command.")
                     .setTimestamp(Date.now()));
-                await this.bot.logger.log(LogLevel.ERROR, `Error running command "${command.fullName}".`, err);
             }
         }
     }
@@ -77,23 +77,23 @@ export class CommandManager {
         }
 
         //Check perms/in DM and run
-        if(await this.checkPermsAndDM(message, command)) {
+        if(await PermissionsHelper.checkPermsAndDM(message, command, bot)) {
             return await command.run(bot, message, args);
         }
 
         return {sendHelp: false, command: null, message: message};
     }
 
-    public registerCommand(command: Command) {
-        this.commandMap.set(command.name, command);
-    }
-
     public async getCommand(commandToGet: string): Promise<Command> {
         return(await this.getCommandHelper(commandToGet, this.commandMap));
     }
-
+    
     public async getAllCommands(): Promise<Command[]> {
         return(Array.from(this.commandMap.values()));
+    }
+    
+    private registerCommand(command: Command) {
+        this.commandMap.set(command.name, command);
     }
 
     private registerAll(): void {
@@ -109,19 +109,5 @@ export class CommandManager {
         else {
             return(undefined);
         }
-    }
-
-    private async checkPermsAndDM(message: Message, command: Command): Promise<boolean> {
-        let permLevel: PermissionLevel;
-        let inDm: boolean = false;
-        if(message.member === null) {
-            permLevel = await PermissionsHelper.getUserPermLevel(message.author, this.bot);
-            inDm = true;
-        }
-        else {
-            permLevel = await PermissionsHelper.getMemberPermLevel(message.member, this.bot)
-        }
-
-        return(permLevel >= command.permLevel && (!inDm || command.runsInDm));
     }
 }

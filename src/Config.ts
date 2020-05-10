@@ -18,11 +18,12 @@ export class Config {
         let jsonData: string;
 
         if(fs.existsSync(this.CONFIG_PATH)) {
-            jsonData = fs.readFileSync(this.CONFIG_PATH).toString();
             try {
+                jsonData = fs.readFileSync(this.CONFIG_PATH).toString();
                 this.configObject = <ConfigObjectJSON>JSON.parse(jsonData);
             }
             catch(err) {
+                this.bot.logger.logSync(LogLevel.ERROR, "Config:loadConfig Error loading main config file.", err);
                 this.configObject = undefined;
             }
         }
@@ -35,8 +36,13 @@ export class Config {
     public saveConfig() {
         if(!fs.existsSync("data"))
             fs.mkdirSync("data");
-        let jsonData: string = JSON.stringify(this.configObject);
-        fs.writeFileSync(this.CONFIG_PATH, jsonData);
+        try {
+            let jsonData: string = JSON.stringify(this.configObject);
+            fs.writeFileSync(this.CONFIG_PATH, jsonData);
+        }
+        catch(err) {
+            this.bot.logger.logSync(LogLevel.ERROR, "Config:saveConfig Error saving main config file.", err);
+        }
     }
 
     public get token(): string {
@@ -113,6 +119,16 @@ export class Config {
         this.saveConfig();
     }
 
+    public get defaultColor(): string {
+        return(this.configObject.defaultColor);
+    }
+
+    public set defaultColor(newDefaultColor: string) {
+        this.configObject.defaultColor = newDefaultColor;
+
+        this.saveConfig();
+    }
+
     private generateConfig() {
         this.configObject = {
             owner: "",
@@ -122,12 +138,13 @@ export class Config {
             modRole: "",
             vipRole: "",
             webhookId: "",
-            webhookToken: ""
+            webhookToken: "",
+            defaultColor: "#f78acf"
         };
 
         this.saveConfig();
 
-        this.bot.logger.logSync(LogLevel.INFO, "Default config generated.");
+        this.bot.logger.logSync(LogLevel.INFO, "Config:generateConfig Default config generated.");
     }
 }
 
@@ -139,5 +156,6 @@ interface ConfigObjectJSON {
     modRole: string,
     vipRole: string,
     webhookId: string,
-    webhookToken: string
+    webhookToken: string,
+    defaultColor: string
 }

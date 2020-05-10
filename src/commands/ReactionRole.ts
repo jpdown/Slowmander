@@ -2,11 +2,13 @@ import { CommandGroup } from "./CommandGroup";
 import { Command, CommandResult } from "./Command";
 import { PermissionLevel } from "./Command";
 import { PantherBot } from "../Bot";
+import { ReactionRole } from "../reactionroles/ReactionRoleConfig";
+import { ReactionPaginator } from "../utils/ReactionPaginator"
 
 import { Message, User, GuildMember, Role, TextChannel, NewsChannel, Channel, Emoji } from "discord.js";
 import { CommandUtils } from "../utils/CommandUtils";
 
-export class ReactionRole extends CommandGroup {
+export class ReactionRoleManagement extends CommandGroup {
     constructor() {
         super("reactionrole", PermissionLevel.Owner, "Manages reaction roles", false);
 
@@ -16,6 +18,7 @@ export class ReactionRole extends CommandGroup {
     protected registerSubCommands(): void {
         this.registerSubCommand(new AddReactionRole(this));
         this.registerSubCommand(new RemoveReactionRole(this));
+        this.registerSubCommand(new ListReactionRoles(this));
     }
 }
 
@@ -52,10 +55,10 @@ class AddReactionRole extends Command {
 
         let success: boolean = await bot.reactionRoleManager.reactionRoleConfig.add(reactionMessage, emote, role, name);
         if(success) {
-            await this.sendMessage(`Reaction role ${name} added successfully.`, message.channel);
+            await this.sendMessage(`Reaction role ${name} added successfully.`, message.channel, bot);
         }
         else {
-            await this.sendMessage("Error adding reaction role.", message.channel);
+            await this.sendMessage("Error adding reaction role.", message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -76,11 +79,44 @@ class RemoveReactionRole extends Command {
 
         let success: boolean = await bot.reactionRoleManager.reactionRoleConfig.remove(name, message.client);
         if(success) {
-            await this.sendMessage(`Reaction role ${name} removed successfully.`, message.channel);
+            await this.sendMessage(`Reaction role ${name} removed successfully.`, message.channel, bot);
         }
         else {
-            await this.sendMessage("Error removing reaction role.", message.channel);
+            await this.sendMessage("Error removing reaction role.", message.channel, bot);
         }
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
+class ListReactionRoles extends Command {
+    constructor(group: CommandGroup) {
+        super("list", PermissionLevel.Owner, "Gets list of reaction roles", "", false, group);
+    }
+
+    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        //Get reactionroles
+        let reactionRoles: ReactionRole[] = await bot.reactionRoleManager.reactionRoleConfig.getAll();
+
+        if(reactionRoles.length < 1) {
+            await this.sendMessage("I have no current reaction roles.", message.channel, bot);
+            return {sendHelp: false, command: this, message: message};
+        }
+
+        //List of strings
+        let stringList: string[] = [];
+        let currString: string;
+        for(let reactionRole of reactionRoles) {
+            currString = `\`${reactionRole.name}\` - <#${reactionRole.channelID}>, Message: ${reactionRole.messageID},`;
+            currString += ` Emote: ${message.client.emojis.resolve(reactionRole.emoteID).toString()}`;
+            stringList.push(currString);
+        }
+
+        //Make paginator
+        let paginator: ReactionPaginator = new ReactionPaginator(stringList, 10, 
+            "Reaction Roles", message.channel, bot, this);
+
+        let paginatedMessage = await paginator.postMessage();
 
         return {sendHelp: false, command: this, message: message};
     }
