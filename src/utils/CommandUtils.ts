@@ -1,4 +1,4 @@
-import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, Emoji, WebhookClient } from "discord.js";
+import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, Emoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake } from "discord.js";
 import { PantherBot } from "../Bot";
 
 export class CommandUtils {
@@ -32,9 +32,14 @@ export class CommandUtils {
         let parsedUser: User = undefined;
 
         try {
-            parsedUser = await client.users.fetch(await CommandUtils.parseUserID(potentialUser));
+            let snowflake: Snowflake = await CommandUtils.parseUserID(potentialUser);
+            if(snowflake) {
+                parsedUser = await client.users.fetch(snowflake);
+            }
         }
-        catch(err) {
+        catch(err) {}
+
+        if(!parsedUser) {
             parsedUser = await CommandUtils.parseUserByName(potentialUser, client);
         }
 
@@ -58,19 +63,29 @@ export class CommandUtils {
     static async parseUserID(potentialUser: string): Promise<Snowflake> {
         let snowflake: string = potentialUser;
 
-        if(snowflake.startsWith("<@") && snowflake.endsWith(">"))
+        if(snowflake.startsWith("<@") && snowflake.endsWith(">")) {
             snowflake = snowflake.substring(2, snowflake.length - 1);
-        if(snowflake.startsWith("!"))
+        }
+        if(snowflake.startsWith("!")) {
             snowflake = snowflake.substring(1);
+        }
+        
+        if(!await CommandUtils.verifySnowflake(snowflake)) {
+            snowflake = undefined;
+        }
 
         return(snowflake);
     }
 
     static async parseRole(potentialRole: string, guild: Guild): Promise<Role> {
         let parsedRole: Role = undefined;
+        let snowflake: Snowflake = await CommandUtils.parseRoleID(potentialRole, guild);
 
-        parsedRole = await guild.roles.fetch(await CommandUtils.parseRoleID(potentialRole, guild));
-        if(parsedRole === null) {
+        if(snowflake) {
+            parsedRole = await guild.roles.fetch(snowflake);
+        }
+        
+        if(!parsedRole || parsedRole === null) {
             parsedRole = await CommandUtils.parseRoleByName(potentialRole, guild);
         }
 
@@ -93,8 +108,13 @@ export class CommandUtils {
 
     static async parseRoleID(potentialRole: string, guild: Guild): Promise<Snowflake> {
         let snowflake: Snowflake = potentialRole;
-        if(snowflake.startsWith("<@&") && snowflake.endsWith(">"))
+        if(snowflake.startsWith("<@&") && snowflake.endsWith(">")) {
             snowflake = snowflake.substring(3, snowflake.length - 1);
+        }
+
+        if(!await CommandUtils.verifySnowflake(snowflake)) {
+            snowflake = undefined;
+        }
         
         return(snowflake);
     }
@@ -126,15 +146,19 @@ export class CommandUtils {
         let parsedChannel: Channel = undefined;
 
         try {
-            parsedChannel = await client.channels.fetch(await CommandUtils.parseChannelID(potentialChannel));
+            let snowflake = await CommandUtils.parseChannelID(potentialChannel);
+            if(snowflake) {
+                parsedChannel = await client.channels.fetch(snowflake);
+            }
         }
-        catch(err) {
+        catch(err) {}
+        
+        if(!parsedChannel) {
             let parsedUser: User = await CommandUtils.parseUser(potentialChannel, client);
             if(parsedUser !== undefined) {
                 parsedChannel = await parsedUser.createDM();
             }
         }
-
         return(parsedChannel);
     }
 
@@ -144,6 +168,10 @@ export class CommandUtils {
             snowflake = snowflake.substring(2, potentialChannel.length - 1);
         }
 
+        if(!await CommandUtils.verifySnowflake(snowflake)) {
+            snowflake = undefined;
+        }
+
         return(snowflake);
     }
 
@@ -151,12 +179,16 @@ export class CommandUtils {
         let parsedEmote: Emoji = undefined;
 
         try {
-            parsedEmote = client.emojis.resolve(await CommandUtils.parseEmoteID(potentialEmote));
+            let snowflake: Snowflake = await CommandUtils.parseEmoteID(potentialEmote);
+            if(snowflake) {
+                parsedEmote = client.emojis.resolve(snowflake);
+            }
         }
-        catch(err) {
+        catch(err) {}
+        
+        if(!parsedEmote) {
             parsedEmote = await CommandUtils.parseEmoteByName(potentialEmote, client);
         }
-
         return(parsedEmote);
     }
 
@@ -178,6 +210,10 @@ export class CommandUtils {
             snowflake = snowflake.substring(snowflake.lastIndexOf(":") + 1, snowflake.length - 1);
         }
 
+        if(!await CommandUtils.verifySnowflake(snowflake)) {
+            snowflake = undefined;
+        }
+
         return(snowflake);
     }
 
@@ -191,5 +227,23 @@ export class CommandUtils {
         }
 
         return(webhook);
+    }
+
+    static async verifySnowflake(potentialSnowflake: string): Promise<boolean> {
+        const discordEpoch: number = 1420070400000;
+
+        //If doesn't consist solely of digits
+        if(!/^\d*$/.test(potentialSnowflake)) {
+            return(false);
+        }
+        
+        //Deconstruct snowflake
+        let deconstructedSnowflake: DeconstructedSnowflake = SnowflakeUtil.deconstruct(potentialSnowflake);
+        if(deconstructedSnowflake.timestamp <= discordEpoch) {
+            return(false);
+        }
+
+        //We good
+        return(true);
     }
 }
