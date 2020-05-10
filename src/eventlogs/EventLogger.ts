@@ -161,7 +161,7 @@ export class EventLogger {
         let embed: MessageEmbed = new MessageEmbed()
             .setAuthor(newMessage.author.username + "#" + newMessage.author.discriminator, avatarUrl)
             .setThumbnail(avatarUrl)
-            .setDescription(`**Message edited by ${newMessage.author.toString()} in ${newMessage.channel.toString()}**`)
+            .setDescription(`**Message edited by ${newMessage.author.toString()} in ${newMessage.channel.toString()}** [Jump](${newMessage.url})`)
             .setFooter("Author: " + newMessage.author.id + " | Message: " + newMessage.id)
             .setTimestamp(Date.now())
             .setColor("AQUA");
