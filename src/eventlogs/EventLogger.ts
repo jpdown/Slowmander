@@ -109,7 +109,7 @@ export class EventLogger {
     public async onMessageDelete(message: Message) {
         let channel: TextChannel = await this.getLogChannel();
 
-        if(channel === undefined || message.guild !== channel.guild) {
+        if(channel === undefined || message.guild !== channel.guild || message.author.bot) {
             return;
         }
 
@@ -151,7 +151,7 @@ export class EventLogger {
     public async onMessageUpdate(oldMessage: Message, newMessage: Message) {
         let channel: TextChannel = await this.getLogChannel();
 
-        if(channel === undefined || newMessage.guild !== channel.guild) {
+        if(channel === undefined || newMessage.guild !== channel.guild || newMessage.author.bot) {
             return;
         }
 
