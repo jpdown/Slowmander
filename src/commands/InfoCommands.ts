@@ -3,7 +3,7 @@ import { PantherBot } from '../Bot';
 import { CommandUtils } from '..//utils/CommandUtils';
 import { PermissionsHelper } from '../utils/PermissionsHelper';
 
-import {Message, GuildMember, MessageEmbed, Role, CollectorFilter, ReactionCollector, Collection, Snowflake} from 'discord.js';
+import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake} from 'discord.js';
 import { ReactionPaginator } from '../utils/ReactionPaginator';
 
 export class Whois extends Command {
@@ -123,6 +123,36 @@ export class Members extends Command {
             "Members of " + role.name, message.channel, bot, this);
 
         let paginatedMessage = await paginator.postMessage();
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
+export class Avatar extends Command {
+    constructor() {
+        super("avatar", PermissionLevel.Everyone, "Gets avatar for given user", "<user>", true);
+    }
+
+    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        if(args.length < 1) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        //Get user
+        let user: User = await CommandUtils.parseUser(args.join(" "), message.client);
+
+        if(user === undefined) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        //Build the embed
+        let avatarUrl: string = user.displayAvatarURL({size: 4096, format: "png", dynamic: true});
+        let embed: MessageEmbed = new MessageEmbed()
+            .setColor(await CommandUtils.getSelfColor(message.channel, bot))
+            .setImage(avatarUrl)
+            .setAuthor(user.username + "#" + user.discriminator, avatarUrl, avatarUrl);
+        
+        await message.channel.send(embed);
 
         return {sendHelp: false, command: this, message: message};
     }
