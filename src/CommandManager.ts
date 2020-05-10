@@ -62,7 +62,7 @@ export class CommandManager {
                 await this.bot.logger.log(LogLevel.ERROR, `CommandManager:parseCommand Error running command "${command.fullName}".`, err);
                 await message.channel.send((new MessageEmbed)
                     .setColor(0xFF0000)
-                    .setTitle("❌ Error runnning command.")
+                    .setTitle("❌ Error running command.")
                     .setTimestamp(Date.now()));
             }
         }
