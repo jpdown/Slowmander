@@ -31,7 +31,7 @@ export class Cat extends Command {
         else {
             embed = new MessageEmbed()
                 .setColor(await CommandUtils.getSelfColor(message.channel, bot))
-                .setTitle("I couldn't find a cat... :(");
+                .setDescription("I couldn't find a cat... :(");
         }
         
         await sentMessage.edit(embed);
@@ -64,7 +64,49 @@ export class Dog extends Command {
         else {
             embed = new MessageEmbed()
                 .setColor(await CommandUtils.getSelfColor(message.channel, bot))
-                .setTitle("I couldn't find a dog... :(");
+                .setDescription("I couldn't find a dog... :(");
+        }
+        
+        await sentMessage.edit(embed);
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
+export class DadJoke extends Command {
+    private readonly API: string = "https://icanhazdadjoke.com/";
+
+    constructor() {
+        super("dadjoke", PermissionLevel.Everyone, "Gives a random dad joke", "", true);
+    }
+
+    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        let sentMessage: Message = await this.sendMessage("Looking for a dad joke...", message.channel, bot);
+        let dadJokeMessage: string = "";
+        let embed: MessageEmbed;
+
+        try {
+            let headers = {
+                "Accept": "text/plain",
+                "User-Agent": "PantherBot-discord.js"
+            }
+
+            dadJokeMessage = await (await fetch(this.API, { method: "get", headers: headers })).text();
+        }
+        catch(err) {
+            bot.logger.log(LogLevel.ERROR, "DadJoke:run Error getting dad joke from API", err);
+        }
+
+        if(dadJokeMessage !== undefined && dadJokeMessage !== "") {
+            //Build embed
+            embed = new MessageEmbed()
+                .setColor(await CommandUtils.getSelfColor(message.channel, bot))
+                .setDescription(dadJokeMessage);
+        }
+        else {
+            embed = new MessageEmbed()
+                .setColor(await CommandUtils.getSelfColor(message.channel, bot))
+                .setDescription("I couldn't find a dad joke... :(");
         }
         
         await sentMessage.edit(embed);
