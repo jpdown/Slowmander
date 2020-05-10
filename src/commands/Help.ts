@@ -11,7 +11,7 @@ export class Help extends Command {
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length === 0) {
             await bot.helpManager.sendFullHelp(message, bot);
-            return;
+            return {sendHelp: false, command: this, message: message};;
         }
 
         let command: Command = await bot.commandManager.getCommand(args.shift());

@@ -11,13 +11,17 @@ export class Say extends Command {
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        if(args.length < 1) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
         //we stealthy
         try {
             await message.delete();
         }
         catch(err) {
             //We probably just don't have perms, but log
-            await bot.logger.log(LogLevel.WARNING, "Error deleting message from say command, likely missing perms.", err);
+            await bot.logger.log(LogLevel.WARNING, "Say:run Error deleting message from say command, likely missing perms.", err);
         }
 
         let lastChannel: number = 0;
@@ -41,7 +45,7 @@ export class Say extends Command {
 
         //Send message(s)
         for(let channel of channelList) {
-            await this.sendMessage(messageToSend, channel);
+            await this.sendMessage(messageToSend, channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};

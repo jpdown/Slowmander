@@ -17,16 +17,7 @@ export class HelpManager {
         let permLevel: PermissionLevel;
 
         //Get perms and is DM
-        if(message.guild) {
-            isDm = false;
-            permLevel = await PermissionsHelper.getMemberPermLevel(message.member, bot);
-        }
-        else {
-            isDm = true;
-            permLevel = await PermissionsHelper.getUserPermLevel(message.author, bot);
-        }
-
-        if(permLevel < command.permLevel || (isDm && !command.runsInDm)) {
+        if(!await PermissionsHelper.checkPermsAndDM(message, command, bot)) {
             return;
         }
 
@@ -36,12 +27,12 @@ export class HelpManager {
 
         //Build embed
         let embed: MessageEmbed = new MessageEmbed()
-            .setColor(await CommandUtils.getSelfColor(message.channel))
+            .setColor(await CommandUtils.getSelfColor(message.channel, bot))
             .setDescription(helpMessage)
             .setTitle(bot.config.prefix + command.fullName)
             .setTimestamp(Date.now());
         
-            await message.channel.send(embed);
+        await message.channel.send(embed);
     }
 
     public async sendFullHelp(message: Message, bot: PantherBot) {
@@ -50,26 +41,16 @@ export class HelpManager {
         let isDm: boolean;
         let permLevel: PermissionLevel;
 
-        //Get perms and is DM
-        if(message.guild) {
-            isDm = false;
-            permLevel = await PermissionsHelper.getMemberPermLevel(message.member, bot);
-        }
-        else {
-            isDm = true;
-            permLevel = await PermissionsHelper.getUserPermLevel(message.author, bot);
-        }
-
         //Build string
         for(let command of commandList) {
-            if(permLevel >= command.permLevel && (!isDm || command.runsInDm)) {
+            if(await PermissionsHelper.checkPermsAndDM(message, command, bot)) {
                 helpMessage += `\`${command.name}\` - ${command.desc}\n`;
             }
         }
 
         //Build embed
         let embed: MessageEmbed = new MessageEmbed()
-            .setColor(await CommandUtils.getSelfColor(message.channel))
+            .setColor(await CommandUtils.getSelfColor(message.channel, bot))
             .setTitle("Help")
             .setDescription(helpMessage)
             .setTimestamp(Date.now());
@@ -84,9 +65,11 @@ export class HelpManager {
             if(command as CommandGroup) {
                 subCommand = await (command as CommandGroup).getSubCommand(extraArgs[i]);
             }
+
             if(!subCommand) {
                 break;
             }
+            
             command = subCommand;
         }
 

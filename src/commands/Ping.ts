@@ -13,7 +13,7 @@ export class Ping extends Command {
         let m: Message = await message.channel.send("Testing ping...");
 
         let embed: MessageEmbed = new MessageEmbed()
-            .setColor(await CommandUtils.getSelfColor(message.channel))
+            .setColor(await CommandUtils.getSelfColor(message.channel, bot))
             .setDescription(`Last Heartbeat: ${message.client.ws.ping}ms\nAPI Latency: ${m.createdTimestamp - message.createdTimestamp}ms`)
 
         await m.edit("", embed);
