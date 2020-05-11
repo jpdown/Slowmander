@@ -155,6 +155,10 @@ export class EventLogger {
             return;
         }
 
+        if(oldMessage && oldMessage.content === newMessage.content) {
+            return;
+        }
+
         let avatarUrl: string = newMessage.author.displayAvatarURL({size: 4096, format: "png", dynamic: true});
 
         //Build embed
