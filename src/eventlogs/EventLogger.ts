@@ -55,7 +55,7 @@ export class EventLogger {
             .setThumbnail(avatarUrl)
             .setDescription(member.user.toString() + " " + member.user.username + "#" + member.user.discriminator)
             .setFooter("ID: " + member.user.id)
-            .setTimestamp(member.joinedAt)
+            .setTimestamp(Date.now())
             .setColor("RED");
         
         //Send message
