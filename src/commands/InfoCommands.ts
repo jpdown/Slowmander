@@ -73,6 +73,7 @@ export class Roles extends Command {
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         //Roles list
+        await message.guild.roles.fetch(); //Fetch all roles (just to be sure)
         let rolesList: Collection<Snowflake, Role> = message.guild.roles.cache.clone();
         rolesList.sort((a, b) => b.position - a.position);
         rolesList.delete(message.guild.roles.everyone.id);

@@ -1,6 +1,6 @@
 import { ReactionRoleConfig, ReactionRole } from "./ReactionRoleConfig";
 import { PantherBot } from "../Bot";
-import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake } from "discord.js";
+import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Guild } from "discord.js";
 import { LogLevel } from "../Logger";
 
 export class ReactionRoleManager {
@@ -103,26 +103,35 @@ export class ReactionRoleManager {
             return;
         }
 
-        let reactionUsers: Collection<Snowflake, User> = await reaction.users.fetch();
+        //Fetch all members of guild
+        let guildMembers: GuildMember[] = Array.from((await message.guild.members.fetch()).values());
 
-        let usersToAdd: Snowflake[] = reactionUsers.keyArray().filter((snowflake) => {
-            return(!reactionRole.usersWithRole.includes(snowflake));
-        });
-        let usersToRemove: Snowflake[] = reactionRole.usersWithRole.filter((snowflake) => {
-            return(!reactionUsers.keyArray().includes(snowflake));
-        });
+        //Get all members who have reacted
+        let tempCollection: Collection<Snowflake, User> = await reaction.users.fetch();
+        let reactionUsers: Collection<Snowflake, User> = new Collection<Snowflake, User>();
 
-        let currMember: GuildMember;
-
-        for(let snowflake of usersToRemove) {
-            currMember = reaction.message.guild.member(snowflake);
-            if(currMember !== undefined && !currMember.user.bot)
-                await this._reactionRoleConfig.removeUser(currMember, reactionRole, <TextChannel | NewsChannel>reaction.message.channel);
+        while(tempCollection.size > 0) {
+            reactionUsers = reactionUsers.concat(tempCollection, reactionUsers);
+            //Get next 100
+            tempCollection = await reaction.users.fetch({after: tempCollection.lastKey()});
         }
-        for(let snowflake of usersToAdd) {
-            currMember = reaction.message.guild.member(snowflake);
-            if(currMember !== undefined && !currMember.user.bot)
-                await this._reactionRoleConfig.addUser(currMember, reactionRole, <TextChannel | NewsChannel>reaction.message.channel);
+
+        let hasReacted: boolean;
+        let hasRole: boolean;
+
+        //Iterate, updating role if necessary
+        for(let member of guildMembers) {
+            hasReacted = reactionUsers.has(member.user.id);
+            hasRole = member.roles.cache.has(reactionRole.roleID);
+            //Do we need to add role?
+            if(hasReacted && !hasRole) {
+                await this._reactionRoleConfig.addUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel);
+            }
+
+            //Do we need to remove role?
+            else if(!hasReacted && hasRole) {
+                await this._reactionRoleConfig.removeUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel);
+            }
         }
     }
 }
