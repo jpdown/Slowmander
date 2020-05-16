@@ -139,7 +139,6 @@ export class ReactionRoleConfig {
             emoteID: emoteID,
             roleID: roleID,
             name: name,
-            usersWithRole: []
         })
 
         //Add reaction to message
@@ -184,10 +183,6 @@ export class ReactionRoleConfig {
         try {
             let role: Role = await channel.guild.roles.fetch(reactionRole.roleID);
             await member.roles.add(role);
-            if(!reactionRole.usersWithRole.includes(member.user.id)) {
-                reactionRole.usersWithRole.push(member.user.id);
-                this.saveConfigs();
-            }
         }
         catch(err) {
             await channel.send(`There was an error adding the role to ${member.toString()}. <@${this.bot.config.owner}>, check logs.`);
@@ -199,10 +194,6 @@ export class ReactionRoleConfig {
         try {
             let role: Role = await channel.guild.roles.fetch(reactionRole.roleID);
             await member.roles.remove(role);
-            if(reactionRole.usersWithRole.includes(member.user.id)) {
-                reactionRole.usersWithRole.splice(reactionRole.usersWithRole.indexOf(member.user.id), 1);
-                this.saveConfigs();
-            }
         }
         catch(err) {
             await channel.send(`There was an error removing the role from ${member.toString()}. <@${this.bot.config.owner}>, check logs.`);
@@ -216,6 +207,5 @@ export interface ReactionRole {
     messageID: string,
     emoteID: string,
     roleID: string,
-    name: string,
-    usersWithRole: string[]
+    name: string
 }
