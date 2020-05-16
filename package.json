@@ -2,7 +2,7 @@
   "name": "pantherbot-discord-js",
   "version": "1.0.0",
   "description": "PantherBot-Discord with discord.js",
-  "main": "bot.js",
+  "main": "Bot.js",
   "dependencies": {
     "@types/node-fetch": "^2.5.7",
     "@types/ws": "^7.2.4",
