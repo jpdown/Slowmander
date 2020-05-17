@@ -17,7 +17,9 @@ export class Say extends Command {
 
         //we stealthy
         try {
-            await message.delete();
+            if(!(message.channel.type === "dm")) {
+                await message.delete();
+            }
         }
         catch(err) {
             //We probably just don't have perms, but log
