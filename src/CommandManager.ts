@@ -30,7 +30,14 @@ export class CommandManager {
             return;
         }
 
-        let prefix: string = this.bot.config.prefix;
+        let prefix: string;
+
+        try {
+            prefix = await this.bot.configs.botConfig.getDefaultPrefix();
+        }
+        catch(err) {
+            await this.bot.logger.log(LogLevel.ERROR, "Error getting default prefix", err);
+        }
 
         //Ignore bot and system messages
         if(message.author.bot || message.system) {

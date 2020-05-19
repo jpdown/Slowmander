@@ -185,7 +185,7 @@ export class ReactionRoleConfig {
             await member.roles.add(role);
         }
         catch(err) {
-            await channel.send(`There was an error adding the role to ${member.toString()}. <@${this.bot.config.owner}>, check logs.`);
+            await channel.send(`There was an error adding the role to ${member.toString()}. <@${this.bot.credentials.owner}>, check logs.`);
             await this.bot.logger.log(LogLevel.ERROR, `ReactionRoles:addUser Error adding reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
         }
     }
@@ -196,7 +196,7 @@ export class ReactionRoleConfig {
             await member.roles.remove(role);
         }
         catch(err) {
-            await channel.send(`There was an error removing the role from ${member.toString()}. <@${this.bot.config.owner}>, check logs.`);
+            await channel.send(`There was an error removing the role from ${member.toString()}. <@${this.bot.credentials.owner}>, check logs.`);
             await this.bot.logger.log(LogLevel.ERROR, `ReactionRoles:removeUser Error removing reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
         }
     }

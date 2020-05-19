@@ -1,6 +1,7 @@
 import * as fs from 'fs';
-import { PantherBot } from './Bot';
-import { LogLevel } from './Logger';
+import { PantherBot } from '../Bot';
+import { LogLevel } from '../Logger';
+import { DatabaseManager } from './DatabaseManager';
 
 export class Config {
     readonly CONFIG_PATH: string = "./data/config.json";
@@ -59,16 +60,6 @@ export class Config {
         this.saveConfig();
     }
 
-    public get prefix(): string {
-        return(this.configObject.prefix);
-    }
-
-    public set prefix(newPrefix: string) {
-        this.configObject.prefix = newPrefix;
-
-        this.saveConfig();
-    }
-
     public get adminRole(): string {
         return(this.configObject.adminRole);
     }
@@ -99,26 +90,6 @@ export class Config {
         this.saveConfig();
     }
 
-    public get errorWebhookId(): string {
-        return(this.configObject.errorWebhookId);
-    }
-
-    public set errorWebhookId(newWebhookId: string) {
-        this.configObject.errorWebhookId = newWebhookId;
-
-        this.saveConfig();
-    }
-
-    public get errorWebhookToken(): string {
-        return(this.configObject.errorWebhookToken);
-    }
-
-    public set errorWebhookToken(newWebhookToken: string) {
-        this.configObject.errorWebhookToken = newWebhookToken;
-
-        this.saveConfig();
-    }
-
     public get eventlogChannelId(): string {
         return(this.configObject.eventlogChannelId);
     }
@@ -129,28 +100,40 @@ export class Config {
         this.saveConfig();
     }
 
-    public get defaultColor(): string {
-        return(this.configObject.defaultColor);
+    public get rethinkHost(): string {
+        return(this.configObject.rethinkHost);
     }
 
-    public set defaultColor(newDefaultColor: string) {
-        this.configObject.defaultColor = newDefaultColor;
+    public get rethinkPort(): number {
+        return(this.configObject.rethinkPort);
+    }
 
-        this.saveConfig();
+    public get rethinkUser(): string {
+        return(this.configObject.rethinkUser);
+    }
+
+    public get rethinkPass(): string {
+        return(this.configObject.rethinkPass);
+    }
+
+    public get rethinkDb(): string {
+        return(this.configObject.rethinkDb);
     }
 
     private generateConfig() {
         this.configObject = {
-            owner: "",
             token: "",
+            owner: "",
             prefix: "!",
             adminRole: "",
             modRole: "",
             vipRole: "",
-            errorWebhookId: "",
-            errorWebhookToken: "",
             eventlogChannelId: "",
-            defaultColor: "#f78acf"
+            rethinkHost: "localhost",
+            rethinkPort: 28015,
+            rethinkUser: "admin",
+            rethinkPass: "",
+            rethinkDb: "pantherbot"
         };
 
         this.saveConfig();
@@ -160,14 +143,16 @@ export class Config {
 }
 
 interface ConfigObjectJSON {
-    owner: string,
     token: string,
+    owner: string,
     prefix: string,
     adminRole: string,
     modRole: string,
     vipRole: string,
-    errorWebhookId: string,
-    errorWebhookToken: string,
     eventlogChannelId: string,
-    defaultColor: string
+    rethinkHost: string,
+    rethinkPort: number,
+    rethinkUser: string,
+    rethinkPass: string,
+    rethinkDb: string
 }
