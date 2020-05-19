@@ -7,7 +7,7 @@ export class CommandUtils {
             return(channel.guild.me.displayColor);
         }
         else {
-            return(bot.config.defaultColor);
+            return(await bot.configs.botConfig.getDefaultColor());
         }
     }
 

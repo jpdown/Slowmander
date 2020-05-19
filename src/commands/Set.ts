@@ -126,7 +126,7 @@ class SetOwner extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        bot.config.owner = user.id;
+        bot.credentials.owner = user.id;
         await this.sendMessage(`Owner set to ${user.toString()} successfully.`, message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
@@ -145,7 +145,7 @@ class SetPrefix extends Command {
 
         let prefix: string = args.join(" ");
 
-        bot.config.prefix = prefix;
+        await bot.configs.botConfig.setDefaultPrefix(prefix);
         await this.sendMessage(`Prefix set to ${prefix} successfully.`, message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
@@ -168,7 +168,7 @@ class SetVipRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        bot.config.vipRole = role.id;
+        bot.credentials.vipRole = role.id;
         await this.sendMessage(`VIP role set to ${role.toString()} successfully.`, message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
@@ -191,7 +191,7 @@ class SetModRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        bot.config.modRole = role.id;
+        bot.credentials.modRole = role.id;
         await this.sendMessage(`Mod role set to ${role.toString()} successfully.`, message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
@@ -214,7 +214,7 @@ class SetAdminRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        bot.config.adminRole = role.id;
+        bot.credentials.adminRole = role.id;
         await this.sendMessage(`Admin role set to ${role.toString()} successfully.`, message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
@@ -315,9 +315,8 @@ class SetErrorLogWebhook extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        //Set id and token
-        bot.config.errorWebhookId = webhook.id;
-        bot.config.errorWebhookToken = webhook.token;
+        //Set webhook
+        await bot.configs.botConfig.setErrorWebhook(webhook);
 
         await this.sendMessage("Log webhook set successfully.", message.channel, bot);
 
@@ -342,7 +341,7 @@ class SetEventLogChannel extends Command {
         }
 
         //Set channel
-        bot.config.eventlogChannelId = channel.id;
+        bot.credentials.eventlogChannelId = channel.id;
 
         await this.sendMessage("Eventlog channel set successfully.", message.channel, bot);
 
@@ -361,7 +360,7 @@ class SetDefaultColor extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        bot.config.defaultColor = args.join(" ");
+        await bot.configs.botConfig.setDefaultColor(args.join(" "));
         await this.sendMessage("Default color set successfully.", message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};

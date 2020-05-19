@@ -181,7 +181,7 @@ export class EventLogger {
     }
 
     private async getLogChannel(): Promise<TextChannel> {
-        let channelId: string = this.bot.config.eventlogChannelId;
+        let channelId: string = this.bot.credentials.eventlogChannelId;
         let channel: Channel = this.bot.client.channels.resolve(channelId);
         if(channel as TextChannel) {
             return(channel as TextChannel);
