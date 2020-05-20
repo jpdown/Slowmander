@@ -1,5 +1,5 @@
 import {Client, Message, Snowflake} from 'discord.js';
-import {Config} from './config/Credentials';
+import {Credentials} from './config/Credentials';
 import { CommandManager } from './CommandManager';
 import { ReactionRoleManager } from './reactionroles/ReactionRoleManager';
 import { HelpManager } from './HelpManager';
@@ -10,7 +10,7 @@ import { ConfigManager } from './config/ConfigManager';
 
 export class PantherBot {
     private _client: Client;
-    private _credentials: Config;
+    private _credentials: Credentials;
     private _configManager: ConfigManager;
     private _databaseManager: DatabaseManager;
     private _commandManager: CommandManager;
@@ -22,7 +22,7 @@ export class PantherBot {
     constructor() {
         this._client = new Client({partials: ['MESSAGE', 'REACTION']});
         this._logger = new Logger(this);
-        this._credentials = new Config(this);
+        this._credentials = new Credentials(this);
         this._databaseManager = new DatabaseManager(this, this._credentials.rethinkCreds);
         this._commandManager = new CommandManager(this);
         this._reactionRoleManager = new ReactionRoleManager(this);
@@ -65,6 +65,10 @@ export class PantherBot {
 
     public get owners(): Snowflake[] {
         return(this._credentials.owners);
+    }
+
+    public get catApiToken(): string {
+        return(this._credentials.catApiToken)
     }
 
     public get configs(): ConfigManager {

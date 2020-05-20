@@ -3,7 +3,7 @@ import { Command, CommandResult } from "./Command";
 import { PermissionLevel } from "./Command";
 import { PantherBot } from "../Bot";
 
-import { Message, User, GuildMember, Role, ActivityOptions, WebhookClient, ColorResolvable, TextChannel, Channel, Permissions } from "discord.js";
+import { Message, GuildMember, Role, TextChannel, Channel, Permissions } from "discord.js";
 import { CommandUtils } from "../utils/CommandUtils";
 import { LogLevel } from "../Logger";
 
@@ -68,8 +68,14 @@ class SetGuildPrefix extends Command {
 
         let prefix: string = args.join(" ");
 
-        await bot.commandManager.setGuildPrefix(message.guild.id, prefix);
-        await this.sendMessage(`Prefix for guild ${message.guild.name} set to ${prefix} successfully.`, message.channel, bot);
+        let result: boolean = await bot.commandManager.setGuildPrefix(message.guild.id, prefix);
+
+        if(result) {
+            await this.sendMessage(`Prefix for guild ${message.guild.name} set to ${prefix} successfully.`, message.channel, bot);
+        }
+        else {
+            await this.sendMessage(`Prefix was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+        }
 
         return {sendHelp: false, command: this, message: message};
     }
@@ -91,8 +97,14 @@ class SetModRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        await bot.configs.guildConfig.setModRole(message.guild.id, role.id);
-        await this.sendMessage(`Mod role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
+        let result: boolean = await bot.configs.guildConfig.setModRole(message.guild.id, role.id);
+
+        if(result) {
+            await this.sendMessage(`Mod role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
+        }
+        else {
+            await this.sendMessage(`Mod role was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+        }
 
         return {sendHelp: false, command: this, message: message};
     }
@@ -114,8 +126,14 @@ class SetAdminRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        await bot.configs.guildConfig.setAdminRole(message.guild.id, role.id);
-        await this.sendMessage(`Admin role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
+        let result: boolean = await bot.configs.guildConfig.setAdminRole(message.guild.id, role.id);
+
+        if(result) {
+            await this.sendMessage(`Admin role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
+        }
+        else {
+            await this.sendMessage(`Admin role was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+        }
 
         return {sendHelp: false, command: this, message: message};
     }
@@ -138,9 +156,15 @@ class SetEventLogChannel extends Command {
         }
 
         //Set channel
-        await bot.configs.guildConfig.setEventlogChannel(message.guild.id, channel.id);
+        let result: boolean = await bot.configs.guildConfig.setEventlogChannel(message.guild.id, channel.id);
 
-        await this.sendMessage(`Eventlog channel set to ${channel.toString()} for guild ${message.guild.name} successfully.`, message.channel, bot);
+
+        if(result) {
+            await this.sendMessage(`Eventlog channel set to ${channel.toString()} for guild ${message.guild.name} successfully.`, message.channel, bot);
+        }
+        else {
+            await this.sendMessage(`Eventlog channel was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+        }
 
         return {sendHelp: false, command: this, message: message};
     }

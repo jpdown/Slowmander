@@ -1,6 +1,6 @@
 import r from "rethinkdb";
 import { PantherBot } from "../Bot";
-import { Config } from "./Credentials";
+import { Credentials } from "./Credentials";
 import { LogLevel } from "../Logger";
 
 export class DatabaseManager {
@@ -30,7 +30,10 @@ export class DatabaseManager {
         
     }
 
-    public get connection(): r.Connection {
+    public async getConnection(): Promise<r.Connection> {
+        if(!this._connection) {
+            await this.connect();
+        }
         return(this._connection);
     }
 
