@@ -9,7 +9,7 @@ export class PermissionsHelper {
         let permLevel: PermissionLevel;
         let hasPerm: boolean;
         let inDm: boolean = false;
-        if(!(user as GuildMember)) {
+        if(!(user as GuildMember).guild) {
             permLevel = await PermissionsHelper.getUserPermLevel(user as User, bot);
             inDm = true;
         }
