@@ -6,21 +6,21 @@ import { LogLevel } from "../Logger";
 export class DatabaseManager {
     private _connection: r.Connection;
     private bot: PantherBot;
+    private creds: RethinkCredentials
 
-    constructor(bot: PantherBot) {
+    constructor(bot: PantherBot, rethinkCreds: RethinkCredentials) {
         this.bot = bot;
+        this.creds = rethinkCreds
     }
 
     public async connect() {
-        let config: Config = this.bot.credentials;
-
         try {
-            this._connection = await r.connect({host: config.rethinkHost, port: config.rethinkPort,
-                user: config.rethinkUser, password: config.rethinkPass, db: config.rethinkDb});
+            this._connection = await r.connect({host: this.creds.rethinkHost, port: this.creds.rethinkPort,
+                user: this.creds.rethinkUser, password: this.creds.rethinkPass, db: this.creds.rethinkDb});
 
             let dbList: string[] = await r.dbList().run(this._connection);
-            if(!dbList.includes(config.rethinkDb)) {
-                await r.dbCreate(config.rethinkDb).run(this._connection);
+            if(!dbList.includes(this.creds.rethinkDb)) {
+                await r.dbCreate(this.creds.rethinkDb).run(this._connection);
             }
         }
         catch(err) {
@@ -30,9 +30,19 @@ export class DatabaseManager {
         
     }
 
-    
-
     public get connection(): r.Connection {
         return(this._connection);
     }
+
+    public get db(): string {
+        return(this.creds.rethinkDb);
+    }
+}
+
+export interface RethinkCredentials {
+    rethinkHost: string,
+    rethinkPort: number,
+    rethinkUser: string,
+    rethinkPass: string,
+    rethinkDb: string
 }

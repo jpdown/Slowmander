@@ -18,7 +18,8 @@ export class Set extends CommandGroup {
         this.registerSubCommand(new SetUsername(this));
         this.registerSubCommand(new SetAvatar(this));
         this.registerSubCommand(new SetNickname(this));
-        this.registerSubCommand(new SetOwner(this));
+        this.registerSubCommand(new AddOwner(this));
+        this.registerSubCommand(new RemoveOwner(this));
         this.registerSubCommand(new SetDefaultPrefix(this));
         this.registerSubCommand(new SetGuildPrefix(this));
         this.registerSubCommand(new SetVipRole(this));
@@ -111,9 +112,9 @@ class SetNickname extends Command {
     }
 }
 
-class SetOwner extends Command {
+class AddOwner extends Command {
     constructor(group: CommandGroup) {
-        super("owner", PermissionLevel.Owner, "Sets bot owner", "<owner>", true, group);
+        super("addowner", PermissionLevel.Owner, "Adds a bot owner", "<owner>", true, group);
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -127,8 +128,39 @@ class SetOwner extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        bot.credentials.owner = user.id;
-        await this.sendMessage(`Owner set to ${user.toString()} successfully.`, message.channel, bot);
+        if(await bot.addOwner(user.id)) {
+            await this.sendMessage(`Owner ${user.toString()} added successfully.`, message.channel, bot);
+        }
+        else {
+            await this.sendMessage(`User ${user.toString()} is already an owner.`, message.channel, bot);
+        }
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
+class RemoveOwner extends Command {
+    constructor(group: CommandGroup) {
+        super("removeowner", PermissionLevel.Owner, "Removes a bot owner", "<owner>", true, group);
+    }
+
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        if(args.length < 1) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        let user: User = await CommandUtils.parseUser(args.join(" "), message.client);
+
+        if(user === undefined) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        if(await bot.removeOwner(user.id)) {
+            await this.sendMessage(`Owner ${user.toString()} removed successfully.`, message.channel, bot);
+        }
+        else {
+            await this.sendMessage(`User ${user.toString()} is not an owner.`, message.channel, bot);
+        }
 
         return {sendHelp: false, command: this, message: message};
     }
