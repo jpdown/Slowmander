@@ -123,7 +123,7 @@ class SetAdminRole extends Command {
 
 class SetEventLogChannel extends Command {
     constructor(group: CommandGroup) {
-        super("eventlog", PermissionLevel.Owner, "Sets bot eventlog channel", {usage: "<channel>", runsInDm: false, group: group});
+        super("eventlog", PermissionLevel.Admin, "Sets bot eventlog channel", {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
