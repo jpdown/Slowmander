@@ -6,7 +6,7 @@ import { CommandUtils } from '../utils/CommandUtils';
 
 export class Ping extends Command {
     constructor() {
-        super("ping", PermissionLevel.Everyone, "Gets current bot ping to API", "", true);
+        super("ping", PermissionLevel.Everyone, "Gets current bot ping to API");
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

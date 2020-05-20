@@ -1,13 +1,13 @@
 import {Command, PermissionLevel, CommandResult} from './Command';
 import { PantherBot } from '../Bot';
 
-import {Message, Channel, TextChannel, NewsChannel, DMChannel} from 'discord.js';
+import {Message, Channel, TextChannel, NewsChannel, DMChannel, Permissions} from 'discord.js';
 import { CommandUtils } from '../utils/CommandUtils';
 import { LogLevel } from '../Logger';
 
 export class Say extends Command {
     constructor() {
-        super("say", PermissionLevel.Owner, "Sends a message as the bot", "[channel/user]... <message>", true);
+        super("say", PermissionLevel.Admin, "Sends a message as the bot", {usage: "[channel/user]... <message>", requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

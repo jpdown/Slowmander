@@ -11,7 +11,7 @@ export class WelcomeMessages extends Command {
     private readonly MESSAGE_THREE_ID: string = "702747245446955108";
 
     constructor() {
-        super("welcome", PermissionLevel.Owner, "Edits welcome messages", "", true);
+        super("welcome", PermissionLevel.Owner, "Edits welcome messages");
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

@@ -5,12 +5,12 @@ import { PantherBot } from "../Bot";
 import { ReactionRole } from "../reactionroles/ReactionRoleConfig";
 import { ReactionPaginator } from "../utils/ReactionPaginator"
 
-import { Message, User, GuildMember, Role, TextChannel, NewsChannel, Channel, Emoji } from "discord.js";
+import { Message, User, GuildMember, Role, TextChannel, NewsChannel, Channel, Emoji, Permissions } from "discord.js";
 import { CommandUtils } from "../utils/CommandUtils";
 
 export class ReactionRoleManagement extends CommandGroup {
     constructor() {
-        super("reactionrole", PermissionLevel.Owner, "Manages reaction roles", false);
+        super("reactionrole", PermissionLevel.Owner, "Manages reaction roles", {runsInDm: false});
 
         this.registerSubCommands();
     }
@@ -24,7 +24,7 @@ export class ReactionRoleManagement extends CommandGroup {
 
 class AddReactionRole extends Command {
     constructor(group: CommandGroup) {
-        super("add", PermissionLevel.Owner, "Adds a reaction role", "<channel> <messageID> <emote> <role> <name>", false, group);
+        super("add", PermissionLevel.Admin, "Adds a reaction role", {usage: "<channel> <messageID> <emote> <role> <name>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -67,7 +67,7 @@ class AddReactionRole extends Command {
 
 class RemoveReactionRole extends Command {
     constructor(group: CommandGroup) {
-        super("remove", PermissionLevel.Owner, "Removes a reaction role", "<name>", false, group);
+        super("remove", PermissionLevel.Admin, "Removes a reaction role", {usage: "<name>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -91,7 +91,7 @@ class RemoveReactionRole extends Command {
 
 class ListReactionRoles extends Command {
     constructor(group: CommandGroup) {
-        super("list", PermissionLevel.Owner, "Gets list of reaction roles", "", false, group);
+        super("list", PermissionLevel.Admin, "Gets list of reaction roles", {runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
