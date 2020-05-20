@@ -6,7 +6,7 @@ import {Message} from 'discord.js';
 
 export class Shutdown extends Command {
     constructor() {
-        super("shutdown", PermissionLevel.Owner, "Shuts down the bot.", "", true);
+        super("shutdown", PermissionLevel.Owner, "Shuts down the bot.");
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

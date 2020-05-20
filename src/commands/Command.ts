@@ -1,5 +1,5 @@
 import {PantherBot} from '../Bot';
-import {Message, TextChannel, DMChannel, NewsChannel, MessageEmbed, Guild, MessageOptions} from 'discord.js';
+import {Message, TextChannel, DMChannel, NewsChannel, MessageEmbed, Guild, MessageOptions, PermissionResolvable} from 'discord.js';
 import {CommandUtils} from '../utils/CommandUtils';
 import { CommandGroup } from './CommandGroup';
 
@@ -14,20 +14,25 @@ export enum PermissionLevel {
 export abstract class Command {
     protected _name: string;
     protected _permLevel: PermissionLevel;
+    protected _requiredPerm: PermissionResolvable;
     protected _desc: string;
     protected _longDesc: string;
     protected _usage: string;
     protected _runsInDm: boolean;
     protected _group: CommandGroup;
 
-    constructor(name: string, permLevel: PermissionLevel, desc: string, usage: string, runsInDm: boolean, group?: CommandGroup, longDesc?: string) {
+    constructor(name: string, permLevel: PermissionLevel, desc: string, params?: CommandParameters) {
         this._name = name;
         this._permLevel = permLevel;
         this._desc = desc;
-        this._longDesc = longDesc ? longDesc : "";
-        this._usage = usage;
-        this._runsInDm = runsInDm;
-        this._group = group;
+
+        if(!params) params = <CommandParameters>{};
+
+        this._requiredPerm = params.requiredPerm;
+        this._longDesc = params.longDesc ? params.longDesc : "";
+        this._usage = params.usage ? params.usage : "";
+        this._runsInDm = params.runsInDm ? params.runsInDm : true;
+        this._group = params.group;
     }
 
     async abstract run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult>;
@@ -66,6 +71,10 @@ export abstract class Command {
         return(this._permLevel);
     }
 
+    public get requiredPerm(): PermissionResolvable {
+        return(this._requiredPerm);
+    }
+
     public get desc(): string {
         return(this._desc);
     }
@@ -96,4 +105,12 @@ export interface CommandResult {
     sendHelp: boolean,
     command: Command,
     message: Message
+}
+
+export interface CommandParameters {
+    requiredPerm?: PermissionResolvable,
+    longDesc?: string,
+    usage?: string,
+    runsInDm?: boolean,
+    group?: CommandGroup
 }

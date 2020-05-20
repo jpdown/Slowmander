@@ -1,4 +1,4 @@
-import { Command, PermissionLevel, CommandResult } from "./Command";
+import { Command, PermissionLevel, CommandResult, CommandParameters } from "./Command";
 import { PantherBot } from "../Bot";
 
 import { Message } from "discord.js";
@@ -6,8 +6,12 @@ import { Message } from "discord.js";
 export abstract class CommandGroup extends Command {
     protected _subCommands: Map<string, Command>;
 
-    constructor(name: string, permLevel: PermissionLevel, desc: string, runsInDm: boolean, group?: CommandGroup) {
-        super(name, permLevel, desc, "<subcommand>", runsInDm, group);
+    constructor(name: string, permLevel: PermissionLevel, desc: string, params?: CommandParameters) {
+        if(!params) {
+            params = <CommandParameters>{};
+        }
+        params.usage = "<subcommand>";
+        super(name, permLevel, desc, params);
         this._subCommands = new Map<string, Command>();
     }
 
