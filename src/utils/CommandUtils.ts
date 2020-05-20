@@ -3,12 +3,18 @@ import { PantherBot } from "../Bot";
 
 export class CommandUtils {
     static async getSelfColor(channel: TextChannel | DMChannel | NewsChannel, bot: PantherBot): Promise<ColorResolvable> {
+        let color: ColorResolvable;
+
         if(channel.type === "text" || channel.type === "news") {
-            return(channel.guild.me.displayColor);
+            color = channel.guild.me.displayColor;
         }
-        else {
-            return(await bot.configs.botConfig.getDefaultColor());
+
+        //If no color or color is black, we want default color
+        if(!color || color === 0) {
+            color = await bot.configs.botConfig.getDefaultColor();
         }
+
+        return(color);
     }
 
     static async splitCommandArgs(args: string, startPos?: number): Promise<string[]> {
