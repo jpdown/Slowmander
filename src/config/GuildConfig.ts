@@ -66,27 +66,6 @@ export class GuildConfig {
         }).run(this.bot.databaseManager.connection);
     }
 
-    public async getVipRole(guildId: Snowflake): Promise<string> {
-        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
-
-        if(gc) {
-            return(gc.vipRole);
-        }
-
-        return(undefined);
-    }
-
-    public async setVipRole(guildId: Snowflake, newVipRole: string) {
-        await r.table(GuildConfig.TABLE).insert({
-            id: guildId,
-            vipRole: newVipRole
-        },
-        //Options
-        {
-            conflict: "update"
-        }).run(this.bot.databaseManager.connection);
-    }
-
     public async getModRole(guildId: Snowflake): Promise<string> {
         let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
 
@@ -161,7 +140,6 @@ interface GuildConfigObject {
     id: string,
     prefix: string,
     eventlogChannel: string,
-    vipRole: string,
     modRole: string,
     adminRole: string
 }

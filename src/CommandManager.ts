@@ -62,7 +62,7 @@ export class CommandManager {
         }
 
         //Check perms/in DM and run
-        if(await PermissionsHelper.checkPermsAndDM(message, command, this.bot)) {
+        if(await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, this.bot)) {
             try {
                 let result: CommandResult = await command.run(this.bot, message, args);
                 if(result.sendHelp) {
@@ -88,7 +88,7 @@ export class CommandManager {
         }
 
         //Check perms/in DM and run
-        if(await PermissionsHelper.checkPermsAndDM(message, command, bot)) {
+        if(await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, bot)) {
             return await command.run(bot, message, args);
         }
 

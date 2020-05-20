@@ -10,7 +10,7 @@ import { CommandUtils } from "../utils/CommandUtils";
 
 export class ReactionRoleManagement extends CommandGroup {
     constructor() {
-        super("reactionrole", PermissionLevel.Owner, "Manages reaction roles", {runsInDm: false});
+        super("reactionrole", "Manages reaction roles", {runsInDm: false});
 
         this.registerSubCommands();
     }

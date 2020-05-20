@@ -78,14 +78,15 @@ export class ReactionPaginator {
     }
 
     private async checkPerms(reaction: MessageReaction, user: User): Promise<boolean> {
-        let permLevel: PermissionLevel;
+        let hasPerms: boolean;
+
         if(reaction.message.guild) {
-            permLevel = await PermissionsHelper.getMemberPermLevel(reaction.message.guild.member(user), this.bot);
+            hasPerms = await PermissionsHelper.checkPermsAndDM(reaction.message.guild.member(user), this.command, this.bot);
         }
         else {
-            permLevel = await PermissionsHelper.getUserPermLevel(user, this.bot);
+            hasPerms = await PermissionsHelper.checkPermsAndDM(user, this.command, this.bot);
         }
 
-        return(permLevel >= this.command.permLevel);
+        return(hasPerms);
     }
 }

@@ -9,7 +9,7 @@ import { LogLevel } from "../Logger";
 
 export class Owner extends CommandGroup {
     constructor() {
-        super("owner", PermissionLevel.Owner, "Owner commands (you know this already)");
+        super("owner", "Owner commands (you know this already)");
 
         this.registerSubCommands();
     }

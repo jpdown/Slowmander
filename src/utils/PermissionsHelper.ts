@@ -1,9 +1,26 @@
 import { PermissionLevel } from "../commands/Command";
-import { User, GuildMember, Collection, Snowflake, Role, Message } from "discord.js";
+import { User, GuildMember, Collection, Snowflake, Role } from "discord.js";
 import { PantherBot } from "../Bot";
 import { Command } from "../commands/Command";
 
 export class PermissionsHelper {
+    
+    public static async checkPermsAndDM(user: User | GuildMember, command: Command, bot: PantherBot): Promise<boolean> {
+        let permLevel: PermissionLevel;
+        let hasPerm: boolean;
+        let inDm: boolean = false;
+        if(!(user as GuildMember)) {
+            permLevel = await PermissionsHelper.getUserPermLevel(user as User, bot);
+            inDm = true;
+        }
+        else {
+            permLevel = await PermissionsHelper.getMemberPermLevel(user as GuildMember, bot);
+            hasPerm = await PermissionsHelper.checkHasPerm(user as GuildMember, command);
+        }
+        
+        return((permLevel >= command.permLevel || hasPerm) && (!inDm || command.runsInDm));
+    }
+
     public static async getUserPermLevel(user: User, bot: PantherBot): Promise<PermissionLevel> {
         if(bot.owners.includes(user.id)) {
             return(PermissionLevel.Owner);
@@ -19,31 +36,23 @@ export class PermissionsHelper {
         if(bot.owners.includes(member.user.id)) {
             return(PermissionLevel.Owner);
         }
-        else if(roleList.has(await bot.configs.guildConfig.getAdminRole(member.guild.id))) {
-            return(PermissionLevel.Admin)
+        else if(roleList.has(await bot.configs.guildConfig.getAdminRole(member.guild.id))
+            || member.guild.ownerID === member.id) {
+                return(PermissionLevel.Admin)
         }
         else if(roleList.has(await bot.configs.guildConfig.getModRole(member.guild.id))) {
             return(PermissionLevel.Mod)
-        }
-        else if(roleList.has(await bot.configs.guildConfig.getVipRole(member.guild.id))) {
-            return(PermissionLevel.VIP)
         }
         else {
             return(PermissionLevel.Everyone);
         }
     }
 
-    public static async checkPermsAndDM(message: Message, command: Command, bot: PantherBot): Promise<boolean> {
-        let permLevel: PermissionLevel;
-        let inDm: boolean = false;
-        if(message.member === null) {
-            permLevel = await PermissionsHelper.getUserPermLevel(message.author, bot);
-            inDm = true;
-        }
-        else {
-            permLevel = await PermissionsHelper.getMemberPermLevel(message.member, bot)
+    private static async checkHasPerm(member: GuildMember, command: Command) {
+        if(command.requiredPerm) {
+            return(member.permissions.any(command.requiredPerm))
         }
 
-        return(permLevel >= command.permLevel && (!inDm || command.runsInDm));
+        return(false);
     }
 }

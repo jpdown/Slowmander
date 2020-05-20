@@ -17,7 +17,7 @@ export class HelpManager {
         let permLevel: PermissionLevel;
 
         //Get perms and is DM
-        if(!await PermissionsHelper.checkPermsAndDM(message, command, bot)) {
+        if(!await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, bot)) {
             return;
         }
 
@@ -43,7 +43,7 @@ export class HelpManager {
 
         //Build string
         for(let command of commandList) {
-            if(await PermissionsHelper.checkPermsAndDM(message, command, bot)) {
+            if(await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, bot)) {
                 helpMessage += `\`${command.name}\` - ${command.desc}\n`;
             }
         }
