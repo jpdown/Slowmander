@@ -2,7 +2,7 @@ import { Command, PermissionLevel, CommandResult } from "./commands/Command";
 import * as commands from "./commands";
 import { PantherBot } from "./Bot";
 
-import { Message, MessageEmbed } from "discord.js";
+import { Message, MessageEmbed, Snowflake } from "discord.js";
 import { CommandUtils } from "./utils/CommandUtils";
 import { PermissionsHelper } from "./utils/PermissionsHelper";
 import { CommandGroup } from "./commands/CommandGroup";
@@ -10,11 +10,13 @@ import { LogLevel } from "./Logger";
 
 export class CommandManager {
     private commandMap: Map<string, Command>;
+    private prefixMap: Map<Snowflake, string>;
     private bot: PantherBot;
 
     constructor(bot: PantherBot) {
         this.bot = bot;
         this.commandMap = new Map<string, Command>();
+        this.prefixMap = new Map<Snowflake, string>();
         this.registerAll();
     }
 
@@ -32,12 +34,14 @@ export class CommandManager {
 
         let prefix: string;
 
-        try {
-            prefix = await this.bot.configs.botConfig.getDefaultPrefix();
+        if(message.guild) {
+            prefix = await this.getPrefix(message.guild.id);
         }
-        catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, "Error getting default prefix", err);
+        else {
+            prefix = await this.getPrefix();
         }
+
+        if(!prefix) return;
 
         //Ignore bot and system messages
         if(message.author.bot || message.system) {
@@ -97,6 +101,46 @@ export class CommandManager {
     
     public async getAllCommands(): Promise<Command[]> {
         return(Array.from(this.commandMap.values()));
+    }
+
+    public async getPrefix(guildId?: string): Promise<string> {
+        if(guildId) {
+            if(this.prefixMap.has(guildId)) {
+                return(this.prefixMap.get(guildId));
+            }
+            else {
+                try {
+                    let prefix: string = await this.bot.configs.guildConfig.getPrefix(guildId);
+                    if(prefix) {
+                        this.prefixMap.set(guildId, prefix);
+                        return(prefix);
+                    }
+                }
+                catch(err) {
+                    await this.bot.logger.log(LogLevel.ERROR, "Error getting guild prefix", err);
+                }
+            }
+        }
+
+        try {
+            return(await this.bot.configs.botConfig.getDefaultPrefix());
+        }
+        catch(err) {
+            await this.bot.logger.log(LogLevel.ERROR, "Error getting default prefix", err);
+            return(undefined);
+        }
+    }
+
+    public async setGuildPrefix(guildId: string, newPrefix: string): Promise<boolean> {
+        try {
+            await this.bot.configs.guildConfig.setPrefix(guildId, newPrefix);
+            this.prefixMap.set(guildId, newPrefix);
+            return(true);
+        }
+        catch(err) {
+            await this.bot.logger.log(LogLevel.ERROR, "Error setting guild prefix.", err);
+            return(false);
+        }
     }
     
     private registerCommand(command: Command) {

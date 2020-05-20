@@ -19,7 +19,8 @@ export class Set extends CommandGroup {
         this.registerSubCommand(new SetAvatar(this));
         this.registerSubCommand(new SetNickname(this));
         this.registerSubCommand(new SetOwner(this));
-        this.registerSubCommand(new SetPrefix(this));
+        this.registerSubCommand(new SetDefaultPrefix(this));
+        this.registerSubCommand(new SetGuildPrefix(this));
         this.registerSubCommand(new SetVipRole(this));
         this.registerSubCommand(new SetModRole(this));
         this.registerSubCommand(new SetAdminRole(this));
@@ -133,9 +134,9 @@ class SetOwner extends Command {
     }
 }
 
-class SetPrefix extends Command {
+class SetDefaultPrefix extends Command {
     constructor(group: CommandGroup) {
-        super("prefix", PermissionLevel.Owner, "Sets bot prefix", "<prefix>", true, group);
+        super("prefix", PermissionLevel.Owner, "Sets bot default prefix", "<prefix>", true, group);
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -152,9 +153,28 @@ class SetPrefix extends Command {
     }
 }
 
+class SetGuildPrefix extends Command {
+    constructor(group: CommandGroup) {
+        super("prefix", PermissionLevel.Admin, "Sets prefix in guild", "<prefix>", true, group);
+    }
+
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        if(args.length < 1) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        let prefix: string = args.join(" ");
+
+        await bot.commandManager.setGuildPrefix(message.guild.id, prefix);
+        await this.sendMessage(`Prefix for guild ${message.guild.name} set to ${prefix} successfully.`, message.channel, bot);
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
 class SetVipRole extends Command {
     constructor(group: CommandGroup) {
-        super("viprole", PermissionLevel.Owner, "Sets bot's VIP role", "<role>", false, group);
+        super("viprole", PermissionLevel.Admin, "Sets bot's VIP role", "<role>", false, group);
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -168,8 +188,8 @@ class SetVipRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        bot.credentials.vipRole = role.id;
-        await this.sendMessage(`VIP role set to ${role.toString()} successfully.`, message.channel, bot);
+        await bot.configs.guildConfig.setVipRole(message.guild.id, role.id);
+        await this.sendMessage(`VIP role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
     }
@@ -177,7 +197,7 @@ class SetVipRole extends Command {
 
 class SetModRole extends Command {
     constructor(group: CommandGroup) {
-        super("modrole", PermissionLevel.Owner, "Sets bot's mod role", "<role>", false, group);
+        super("modrole", PermissionLevel.Admin, "Sets bot's mod role", "<role>", false, group);
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -191,8 +211,8 @@ class SetModRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        bot.credentials.modRole = role.id;
-        await this.sendMessage(`Mod role set to ${role.toString()} successfully.`, message.channel, bot);
+        await bot.configs.guildConfig.setModRole(message.guild.id, role.id);
+        await this.sendMessage(`Mod role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
     }
@@ -200,7 +220,7 @@ class SetModRole extends Command {
 
 class SetAdminRole extends Command {
     constructor(group: CommandGroup) {
-        super("adminrole", PermissionLevel.Owner, "Sets bot's admin role", "<role>", false, group);
+        super("adminrole", PermissionLevel.Admin, "Sets bot's admin role", "<role>", false, group);
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -214,8 +234,8 @@ class SetAdminRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        bot.credentials.adminRole = role.id;
-        await this.sendMessage(`Admin role set to ${role.toString()} successfully.`, message.channel, bot);
+        await bot.configs.guildConfig.setAdminRole(message.guild.id, role.id);
+        await this.sendMessage(`Admin role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
     }
@@ -341,9 +361,9 @@ class SetEventLogChannel extends Command {
         }
 
         //Set channel
-        bot.credentials.eventlogChannelId = channel.id;
+        await bot.configs.guildConfig.setEventlogChannel(message.guild.id, channel.id);
 
-        await this.sendMessage("Eventlog channel set successfully.", message.channel, bot);
+        await this.sendMessage(`Eventlog channel set to ${channel.toString()} for guild ${message.guild.name} successfully.`, message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
     }

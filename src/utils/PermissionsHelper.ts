@@ -19,13 +19,13 @@ export class PermissionsHelper {
         if(member.user.id === bot.credentials.owner) {
             return(PermissionLevel.Owner);
         }
-        else if(roleList.has(bot.credentials.adminRole)) {
+        else if(roleList.has(await bot.configs.guildConfig.getAdminRole(member.guild.id))) {
             return(PermissionLevel.Admin)
         }
-        else if(roleList.has(bot.credentials.modRole)) {
+        else if(roleList.has(await bot.configs.guildConfig.getModRole(member.guild.id))) {
             return(PermissionLevel.Mod)
         }
-        else if(roleList.has(bot.credentials.vipRole)) {
+        else if(roleList.has(await bot.configs.guildConfig.getVipRole(member.guild.id))) {
             return(PermissionLevel.VIP)
         }
         else {
