@@ -1,5 +1,5 @@
 import { PermissionLevel } from "../commands/Command";
-import { User, GuildMember, Collection, Snowflake, Role } from "discord.js";
+import { User, GuildMember, Collection, Snowflake, Role, Permissions } from "discord.js";
 import { PantherBot } from "../Bot";
 import { Command } from "../commands/Command";
 
@@ -46,6 +46,15 @@ export class PermissionsHelper {
         else {
             return(PermissionLevel.Everyone);
         }
+    }
+
+    public static async getString(perms: Permissions): Promise<string> {
+        let permsStrings = perms.toArray();
+        if(permsStrings.includes("ADMINISTRATOR")) {
+            permsStrings = ["ADMINISTRATOR"];
+        }
+
+        return(permsStrings.join(", "));
     }
 
     private static async checkHasPerm(member: GuildMember, command: Command) {

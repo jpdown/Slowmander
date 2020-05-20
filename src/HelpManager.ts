@@ -1,5 +1,5 @@
 import { PantherBot } from "./Bot";
-import { Message, MessageEmbed, GuildMember, User } from "discord.js";
+import { Message, MessageEmbed, GuildMember, User, Permissions } from "discord.js";
 import { Command, PermissionLevel } from "./commands/Command";
 import { PermissionsHelper } from "./utils/PermissionsHelper";
 import { CommandUtils } from "./utils/CommandUtils";
@@ -42,6 +42,16 @@ export class HelpManager {
             .setDescription(helpMessage)
             .setTitle(prefix + command.fullName)
             .setTimestamp(Date.now());
+        
+        if(!(command instanceof CommandGroup)) {
+            if(command.permLevel > PermissionLevel.Everyone) {
+                embed.addField("Bot Permission", PermissionLevel[command.permLevel], true);
+            }
+
+            if(command.requiredPerm) {
+                embed.addField("Required Permission", await PermissionsHelper.getString(new Permissions(command.requiredPerm)), true);
+            }
+        }
         
         await message.channel.send(embed);
     }
