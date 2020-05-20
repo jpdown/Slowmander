@@ -1,5 +1,6 @@
 export * from "./Ping"
 export * from "./Set"
+export * from "./Owner"
 export * from "./Shutdown"
 export * from "./InfoCommands"
 export * from "./Say"

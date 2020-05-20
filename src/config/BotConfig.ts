@@ -2,29 +2,24 @@ import r from "rethinkdb";
 import { PantherBot } from "../Bot";
 import { LogLevel } from "../Logger";
 import { WebhookClient, NewsChannel } from "discord.js";
+import { DatabaseEntry, DatabaseObject } from "./DatabaseEntry";
 
-export class BotConfig {
+export class BotConfig extends DatabaseEntry<BotConfigObject> {
     private static readonly TABLE: string = "BotConfig";
 
-    private bot: PantherBot;
+    private static readonly DEFAULT_ENTRY: BotConfigObject = {
+        defaultPrefix: "!",
+        defaultColor: "#00a4ff",
+        errorWebhookId: "",
+        errorWebhookToken: ""
+    }
+
     private _defaultPrefix: string;
     private _defaultColor: string;
     private _errorWebhook: WebhookClient;
 
     constructor(bot: PantherBot) {
-        this.bot = bot;
-
-        //If we need to generate the table, do so
-        r.db(this.bot.databaseManager.db).tableList().run(this.bot.databaseManager.connection, (err, result) => {
-            if(err) { 
-                this.bot.logger.logSync(LogLevel.ERROR, "Error getting table list.", err);
-                return;
-            }
-
-            if(!result.includes(BotConfig.TABLE)) {
-                this.generateTable();
-            }
-        })
+        super(BotConfig.TABLE, BotConfig.DEFAULT_ENTRY, bot);
     }
 
     public async getDefaultPrefix(): Promise<string> {
@@ -78,64 +73,35 @@ export class BotConfig {
         return(undefined)
     }
 
-    public async setDefaultPrefix(newPrefix: string) {
-        await r.table(BotConfig.TABLE).update({defaultPrefix: newPrefix}).run(this.bot.databaseManager.connection);
-        this._defaultPrefix = newPrefix;
+    public async setDefaultPrefix(newPrefix: string): Promise<boolean> {
+        let result: boolean = await this.updateFirstDocument({defaultPrefix: newPrefix});
+        if(result) this._defaultPrefix = newPrefix;
+
+        return(result);
     }
 
-    public async setDefaultColor(newColor: string) {
-        await r.table(BotConfig.TABLE).update({defaultColor: newColor}).run(this.bot.databaseManager.connection);
-        this._defaultColor = newColor;
+    public async setDefaultColor(newColor: string): Promise<boolean> {
+        let result: boolean = await this.updateFirstDocument({defaultColor: newColor});
+        if(result) this._defaultColor = newColor;
+
+        return(result);
     }
 
-    public async setErrorWebhook(newWebhook: WebhookClient) {
-        await r.table(BotConfig.TABLE).update({errorWebhookId: newWebhook.id, errorWebhookToken: newWebhook.token}).run(this.bot.databaseManager.connection);
-        this._errorWebhook = newWebhook;
-    }
+    public async setErrorWebhook(newWebhook: WebhookClient): Promise<boolean> {
+        let result: boolean = await this.updateFirstDocument({errorWebhookId: newWebhook.id, errorWebhookToken: newWebhook.token});
+        if(result) this._errorWebhook = newWebhook;
 
-    private generateTable(): void {
-        try {
-            r.db(this.bot.databaseManager.db).tableCreate(BotConfig.TABLE).run(this.bot.databaseManager.connection,
-                (err, result) => {
-                    if(err) throw err;
-                    this.bot.logger.logSync(LogLevel.INFO, `Table ${BotConfig.TABLE} created successfully.`);
-                });
-
-            r.table(BotConfig.TABLE).insert({
-                    defaultPrefix: "!",
-                    defaultColor: "#f78acf",
-                    errorWebhookId: "",
-                    errorWebhookToken: ""
-                }).run(this.bot.databaseManager.connection, 
-                    (err, result) => {
-                        if(err) throw err;
-                        this.bot.logger.logSync(LogLevel.INFO, `Default data put in ${BotConfig.TABLE} successfully.`);
-                    });
-        }
-        catch(err) {
-            this.bot.logger.logSync(LogLevel.ERROR, "BotConfig:generateTable Error creating table.", err);
-        }
+        return(result);
     }
 
     private async getBotConfigObject(): Promise<BotConfigObject> {
-        let bc: BotConfigObject = undefined;
-
-        try {
-            let result = await r.table(BotConfig.TABLE).limit(1).run(this.bot.databaseManager.connection)
-            let resultArray = await result.toArray()
-            bc = resultArray[0];
-        }
-        catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, "BotConfig:getBotConfigObject Error getting from database.", err);
-        }
-
-        return(bc);
+        return(<BotConfigObject> await this.getFirstDocument());
     }
 }
 
-interface BotConfigObject {
-    defaultPrefix: string,
-    defaultColor: string,
-    errorWebhookId: string,
-    errorWebhookToken: string
+interface BotConfigObject extends DatabaseObject {
+    defaultPrefix?: string,
+    defaultColor?: string,
+    errorWebhookId?: string,
+    errorWebhookToken?: string
 }

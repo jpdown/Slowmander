@@ -138,8 +138,14 @@ class SetDefaultPrefix extends Command {
 
         let prefix: string = args.join(" ");
 
-        await bot.configs.botConfig.setDefaultPrefix(prefix);
-        await this.sendMessage(`Prefix set to ${prefix} successfully.`, message.channel, bot);
+        let result: boolean = await bot.configs.botConfig.setDefaultPrefix(prefix);
+
+        if(result) {
+            await this.sendMessage(`Default prefix set to ${prefix} successfully.`, message.channel, bot);
+        }
+        else {
+            await this.sendMessage("Default prefix was unable to be set.", message.channel, bot);
+        }
 
         return {sendHelp: false, command: this, message: message};
     }
@@ -240,9 +246,14 @@ class SetErrorLogWebhook extends Command {
         }
 
         //Set webhook
-        await bot.configs.botConfig.setErrorWebhook(webhook);
+        let result: boolean = await bot.configs.botConfig.setErrorWebhook(webhook);
 
-        await this.sendMessage("Log webhook set successfully.", message.channel, bot);
+        if(result) {
+            await this.sendMessage("Log webhook set successfully.", message.channel, bot);
+        }
+        else {
+            await this.sendMessage("Log webhook was unable to be set.", message.channel, bot);
+        }
 
         return {sendHelp: false, command: this, message: message};
     }

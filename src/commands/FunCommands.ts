@@ -9,15 +9,23 @@ import { LogLevel } from '../Logger';
 
 export class Cat extends Command {
     private readonly API: string = "https://api.thecatapi.com/v1/images/search";
-    private readonly API_TOKEN: string = "dfc67c5a-ee60-4621-8200-93a1a3336de9";
+    private apiToken: string;
 
     constructor() {
         super("cat", PermissionLevel.Everyone, "Gives a random cat image");
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        if(!this.apiToken) {
+            if(bot.catApiToken === "") {
+                this.sendMessage("I don't have an API token.", message.channel, bot);
+                return;
+            }
+            this.apiToken = bot.catApiToken;
+        }
+
         let sentMessage: Message = await this.sendMessage("Looking for a cat...", message.channel, bot);
-        let catUrl: string = await CatAPIHelper.getImage(message.author, bot, this.API, this.API_TOKEN);
+        let catUrl: string = await CatAPIHelper.getImage(message.author, bot, this.API, this.apiToken);
         let embed: MessageEmbed;
 
         if(catUrl !== undefined && catUrl !== "") {

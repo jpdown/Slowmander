@@ -3,14 +3,14 @@ import { PantherBot } from '../Bot';
 import { LogLevel } from '../Logger';
 import { RethinkCredentials } from './DatabaseManager';
 
-export class Config {
-    readonly CONFIG_PATH: string = "./data/config.json";
+export class Credentials {
+    readonly CREDENTIALS_PATH: string = "./data/config.json";
 
-    private configObject: ConfigObjectJSON;
+    private credentialsObject: CredentialsObject;
     private bot: PantherBot;
 
     constructor(bot: PantherBot) {
-        this.configObject = undefined;
+        this.credentialsObject = undefined;
         this.bot = bot;
         this.loadConfig();
     }
@@ -18,18 +18,18 @@ export class Config {
     public loadConfig() {
         let jsonData: string;
 
-        if(fs.existsSync(this.CONFIG_PATH)) {
+        if(fs.existsSync(this.CREDENTIALS_PATH)) {
             try {
-                jsonData = fs.readFileSync(this.CONFIG_PATH).toString();
-                this.configObject = <ConfigObjectJSON>JSON.parse(jsonData);
+                jsonData = fs.readFileSync(this.CREDENTIALS_PATH).toString();
+                this.credentialsObject = <CredentialsObject>JSON.parse(jsonData);
             }
             catch(err) {
                 this.bot.logger.logSync(LogLevel.ERROR, "Config:loadConfig Error loading main config file.", err);
-                this.configObject = undefined;
+                this.credentialsObject = undefined;
             }
         }
 
-        if(this.configObject === undefined) {
+        if(this.credentialsObject === undefined) {
             this.generateConfig();
         }
     }
@@ -38,8 +38,8 @@ export class Config {
         if(!fs.existsSync("data"))
             fs.mkdirSync("data");
         try {
-            let jsonData: string = JSON.stringify(this.configObject);
-            fs.writeFileSync(this.CONFIG_PATH, jsonData);
+            let jsonData: string = JSON.stringify(this.credentialsObject);
+            fs.writeFileSync(this.CREDENTIALS_PATH, jsonData);
         }
         catch(err) {
             this.bot.logger.logSync(LogLevel.ERROR, "Config:saveConfig Error saving main config file.", err);
@@ -47,8 +47,8 @@ export class Config {
     }
 
     public async addOwner(ownerId: string): Promise<boolean> {
-        if(!this.configObject.owners.includes(ownerId)) {
-            this.configObject.owners.push(ownerId);
+        if(!this.credentialsObject.owners.includes(ownerId)) {
+            this.credentialsObject.owners.push(ownerId);
     
             this.saveConfig();
             return(true);
@@ -57,8 +57,8 @@ export class Config {
     }
 
     public async removeOwner(ownerId: string): Promise<boolean> {
-        if(this.configObject.owners.includes(ownerId)) {
-            this.configObject.owners.splice(this.configObject.owners.indexOf(ownerId), 1);
+        if(this.credentialsObject.owners.includes(ownerId)) {
+            this.credentialsObject.owners.splice(this.credentialsObject.owners.indexOf(ownerId), 1);
 
             this.saveConfig();
             return(true);
@@ -67,26 +67,31 @@ export class Config {
     }
 
     public get token(): string {
-        return(this.configObject.token);
+        return(this.credentialsObject.token);
     }
 
     public get owners(): string[] {
-        return(this.configObject.owners);
+        return(this.credentialsObject.owners);
     }
 
     public get rethinkCreds(): RethinkCredentials {
         return({
-            rethinkHost: this.configObject.rethinkHost,
-            rethinkPort: this.configObject.rethinkPort,
-            rethinkUser: this.configObject.rethinkUser,
-            rethinkPass: this.configObject.rethinkPass,
-            rethinkDb: this.configObject.rethinkDb
+            rethinkHost: this.credentialsObject.rethinkHost,
+            rethinkPort: this.credentialsObject.rethinkPort,
+            rethinkUser: this.credentialsObject.rethinkUser,
+            rethinkPass: this.credentialsObject.rethinkPass,
+            rethinkDb: this.credentialsObject.rethinkDb
         })
     }
 
+    public get catApiToken(): string {
+        return(this.credentialsObject.catApiToken);
+    }
+
     private generateConfig() {
-        this.configObject = {
+        this.credentialsObject = {
             token: "",
+            catApiToken: "",
             owners: [],
             rethinkHost: "localhost",
             rethinkPort: 28015,
@@ -101,8 +106,9 @@ export class Config {
     }
 }
 
-interface ConfigObjectJSON {
+interface CredentialsObject {
     token: string,
+    catApiToken: "",
     owners: string[],
     rethinkHost: string,
     rethinkPort: number,

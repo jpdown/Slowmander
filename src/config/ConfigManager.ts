@@ -1,6 +1,6 @@
 import { BotConfig } from "./BotConfig";
 import { PantherBot } from "../Bot";
-import { Config } from "./Credentials";
+import { Credentials } from "./Credentials";
 import { GuildConfig } from "./GuildConfig";
 
 export class ConfigManager {
