@@ -1,4 +1,4 @@
-import {Client, Message} from 'discord.js';
+import {Client, Message, Snowflake} from 'discord.js';
 import {Config} from './config/Credentials';
 import { CommandManager } from './CommandManager';
 import { ReactionRoleManager } from './reactionroles/ReactionRoleManager';
@@ -23,7 +23,7 @@ export class PantherBot {
         this._client = new Client({partials: ['MESSAGE', 'REACTION']});
         this._logger = new Logger(this);
         this._credentials = new Config(this);
-        this._databaseManager = new DatabaseManager(this);
+        this._databaseManager = new DatabaseManager(this, this._credentials.rethinkCreds);
         this._commandManager = new CommandManager(this);
         this._reactionRoleManager = new ReactionRoleManager(this);
         this._helpManager = new HelpManager;
@@ -55,8 +55,16 @@ export class PantherBot {
         this._client.login(token);
     }
 
-    public get credentials(): Config { //TODO: remove
-        return(this._credentials);
+    public async addOwner(ownerId: Snowflake) {
+        return(await this._credentials.addOwner(ownerId));
+    }
+
+    public async removeOwner(ownerId: Snowflake) {
+        return(await this._credentials.removeOwner(ownerId));
+    }
+
+    public get owners(): Snowflake[] {
+        return(this._credentials.owners);
     }
 
     public get configs(): ConfigManager {

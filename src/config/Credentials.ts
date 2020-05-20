@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { PantherBot } from '../Bot';
 import { LogLevel } from '../Logger';
-import { DatabaseManager } from './DatabaseManager';
+import { RethinkCredentials } from './DatabaseManager';
 
 export class Config {
     readonly CONFIG_PATH: string = "./data/config.json";
@@ -46,89 +46,48 @@ export class Config {
         }
     }
 
+    public async addOwner(ownerId: string): Promise<boolean> {
+        if(!this.configObject.owners.includes(ownerId)) {
+            this.configObject.owners.push(ownerId);
+    
+            this.saveConfig();
+            return(true);
+        }
+        return(false);
+    }
+
+    public async removeOwner(ownerId: string): Promise<boolean> {
+        if(this.configObject.owners.includes(ownerId)) {
+            this.configObject.owners.splice(this.configObject.owners.indexOf(ownerId), 1);
+
+            this.saveConfig();
+            return(true);
+        }
+        return(false);
+    }
+
     public get token(): string {
         return(this.configObject.token);
     }
 
-    public get owner(): string {
-        return(this.configObject.owner);
+    public get owners(): string[] {
+        return(this.configObject.owners);
     }
 
-    public set owner(newOwner: string) {
-        this.configObject.owner = newOwner;
-
-        this.saveConfig();
-    }
-
-    public get adminRole(): string {
-        return(this.configObject.adminRole);
-    }
-
-    public set adminRole(newAdminRole: string) {
-        this.configObject.adminRole = newAdminRole;
-
-        this.saveConfig();
-    }
-
-    public get modRole(): string {
-        return(this.configObject.modRole);
-    }
-
-    public set modRole(newModRole: string) {
-        this.configObject.modRole = newModRole;
-
-        this.saveConfig();
-    }
-
-    public get vipRole(): string {
-        return(this.configObject.vipRole);
-    }
-
-    public set vipRole(newVipRole: string) {
-        this.configObject.vipRole = newVipRole;
-
-        this.saveConfig();
-    }
-
-    public get eventlogChannelId(): string {
-        return(this.configObject.eventlogChannelId);
-    }
-
-    public set eventlogChannelId(newChannelId: string) {
-        this.configObject.eventlogChannelId = newChannelId;
-
-        this.saveConfig();
-    }
-
-    public get rethinkHost(): string {
-        return(this.configObject.rethinkHost);
-    }
-
-    public get rethinkPort(): number {
-        return(this.configObject.rethinkPort);
-    }
-
-    public get rethinkUser(): string {
-        return(this.configObject.rethinkUser);
-    }
-
-    public get rethinkPass(): string {
-        return(this.configObject.rethinkPass);
-    }
-
-    public get rethinkDb(): string {
-        return(this.configObject.rethinkDb);
+    public get rethinkCreds(): RethinkCredentials {
+        return({
+            rethinkHost: this.configObject.rethinkHost,
+            rethinkPort: this.configObject.rethinkPort,
+            rethinkUser: this.configObject.rethinkUser,
+            rethinkPass: this.configObject.rethinkPass,
+            rethinkDb: this.configObject.rethinkDb
+        })
     }
 
     private generateConfig() {
         this.configObject = {
             token: "",
-            owner: "",
-            prefix: "!",
-            adminRole: "",
-            modRole: "",
-            vipRole: "",
-            eventlogChannelId: "",
+            owners: [],
             rethinkHost: "localhost",
             rethinkPort: 28015,
             rethinkUser: "admin",
@@ -144,12 +103,7 @@ export class Config {
 
 interface ConfigObjectJSON {
     token: string,
-    owner: string,
-    prefix: string,
-    adminRole: string,
-    modRole: string,
-    vipRole: string,
-    eventlogChannelId: string,
+    owners: string[],
     rethinkHost: string,
     rethinkPort: number,
     rethinkUser: string,

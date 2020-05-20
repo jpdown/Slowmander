@@ -5,7 +5,7 @@ import { Command } from "../commands/Command";
 
 export class PermissionsHelper {
     public static async getUserPermLevel(user: User, bot: PantherBot): Promise<PermissionLevel> {
-        if(user.id === bot.credentials.owner) {
+        if(bot.owners.includes(user.id)) {
             return(PermissionLevel.Owner);
         }
         else {
@@ -16,7 +16,7 @@ export class PermissionsHelper {
     public static async getMemberPermLevel(member: GuildMember, bot: PantherBot): Promise<PermissionLevel> {
         let roleList: Collection<Snowflake, Role> = member.roles.cache;
 
-        if(member.user.id === bot.credentials.owner) {
+        if(bot.owners.includes(member.user.id)) {
             return(PermissionLevel.Owner);
         }
         else if(roleList.has(await bot.configs.guildConfig.getAdminRole(member.guild.id))) {

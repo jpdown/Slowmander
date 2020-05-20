@@ -15,7 +15,7 @@ export class BotConfig {
         this.bot = bot;
 
         //If we need to generate the table, do so
-        r.db(this.bot.credentials.rethinkDb).tableList().run(this.bot.databaseManager.connection, (err, result) => {
+        r.db(this.bot.databaseManager.db).tableList().run(this.bot.databaseManager.connection, (err, result) => {
             if(err) { 
                 this.bot.logger.logSync(LogLevel.ERROR, "Error getting table list.", err);
                 return;
@@ -95,7 +95,7 @@ export class BotConfig {
 
     private generateTable(): void {
         try {
-            r.db(this.bot.credentials.rethinkDb).tableCreate(BotConfig.TABLE).run(this.bot.databaseManager.connection,
+            r.db(this.bot.databaseManager.db).tableCreate(BotConfig.TABLE).run(this.bot.databaseManager.connection,
                 (err, result) => {
                     if(err) throw err;
                     this.bot.logger.logSync(LogLevel.INFO, `Table ${BotConfig.TABLE} created successfully.`);

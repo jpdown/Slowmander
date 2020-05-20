@@ -12,7 +12,7 @@ export class GuildConfig {
         this.bot = bot;
 
         //If we need to generate the table, do so
-        r.db(this.bot.credentials.rethinkDb).tableList().run(this.bot.databaseManager.connection, (err, result) => {
+        r.db(this.bot.databaseManager.db).tableList().run(this.bot.databaseManager.connection, (err, result) => {
             if(err) { 
                 this.bot.logger.logSync(LogLevel.ERROR, "Error getting table list.", err);
                 return;
@@ -131,7 +131,7 @@ export class GuildConfig {
 
     private generateTable(): void {
         try {
-            r.db(this.bot.credentials.rethinkDb).tableCreate(GuildConfig.TABLE).run(this.bot.databaseManager.connection,
+            r.db(this.bot.databaseManager.db).tableCreate(GuildConfig.TABLE).run(this.bot.databaseManager.connection,
                 (err, result) => {
                     if(err) throw err;
                     this.bot.logger.logSync(LogLevel.INFO, `Table ${GuildConfig.TABLE} created successfully.`);
