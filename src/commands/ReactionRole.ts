@@ -2,7 +2,7 @@ import { CommandGroup } from "./CommandGroup";
 import { Command, CommandResult } from "./Command";
 import { PermissionLevel } from "./Command";
 import { PantherBot } from "../Bot";
-import { ReactionRole } from "../reactionroles/ReactionRoleConfig";
+import { ReactionRoleConfig, ReactionRoleObject } from "../config/ReactionRoleConfig";
 import { ReactionPaginator } from "../utils/ReactionPaginator"
 
 import { Message, User, GuildMember, Role, TextChannel, NewsChannel, Channel, Emoji, Permissions } from "discord.js";
@@ -53,7 +53,21 @@ class AddReactionRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let success: boolean = await bot.reactionRoleManager.reactionRoleConfig.add(reactionMessage, emote, role, name);
+        if(await bot.reactionRoleManager.reactionRoleConfig.guildHasReactionRole(reactionMessage.guild.id, name)) {
+            await this.sendMessage(`Reaction role ${name} already exists.`, message.channel, bot);
+            return {sendHelp: false, command: this, message: message};
+        }
+
+        let reactionRoleObject: ReactionRoleObject = {
+            guildID: reactionMessage.guild.id,
+            channelID: channel.id,
+            messageID: reactionMessage.id,
+            emoteID: emote.id,
+            roleID: role.id,
+            name: name
+        }
+
+        let success: boolean = await bot.reactionRoleManager.addReactionRole(reactionRoleObject, reactionMessage);
         if(success) {
             await this.sendMessage(`Reaction role ${name} added successfully.`, message.channel, bot);
         }
@@ -77,7 +91,12 @@ class RemoveReactionRole extends Command {
 
         let name: string = args[0];
 
-        let success: boolean = await bot.reactionRoleManager.reactionRoleConfig.remove(name, message.client);
+        if(!await bot.reactionRoleManager.reactionRoleConfig.guildHasReactionRole(message.guild.id, name)) {
+            await this.sendMessage(`Reaction role ${name} does not exist.`, message.channel, bot);
+            return;
+        }
+
+        let success: boolean = await bot.reactionRoleManager.removeReactionRole(message.guild.id, name, message.client);
         if(success) {
             await this.sendMessage(`Reaction role ${name} removed successfully.`, message.channel, bot);
         }
@@ -96,7 +115,7 @@ class ListReactionRoles extends Command {
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         //Get reactionroles
-        let reactionRoles: ReactionRole[] = await bot.reactionRoleManager.reactionRoleConfig.getAll();
+        let reactionRoles: ReactionRoleObject[] = await bot.reactionRoleManager.reactionRoleConfig.getGuildReactionRoles(message.guild.id);
 
         if(reactionRoles.length < 1) {
             await this.sendMessage("I have no current reaction roles.", message.channel, bot);
@@ -108,7 +127,7 @@ class ListReactionRoles extends Command {
         let currString: string;
         for(let reactionRole of reactionRoles) {
             currString = `\`${reactionRole.name}\` - <#${reactionRole.channelID}>, Message: ${reactionRole.messageID},`;
-            currString += ` Emote: ${message.client.emojis.resolve(reactionRole.emoteID).toString()}`;
+            currString += ` Emote: ${message.client.emojis.resolve(reactionRole.emoteID).toString()}, Role: <@&${reactionRole.roleID}>`;
             stringList.push(currString);
         }
 

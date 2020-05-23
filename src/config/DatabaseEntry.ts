@@ -1,7 +1,7 @@
 import { PantherBot } from "../Bot";
 import { LogLevel } from "../Logger";
 
-import r from "rethinkdb";
+import r, { Row } from "rethinkdb";
 
 export abstract class DatabaseEntry<T extends DatabaseObject> {
     protected readonly TABLE: string;
@@ -69,6 +69,25 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
         return(dbObj);
     }
 
+    protected async getAllDocuments(): Promise<T[]> {
+        if(!await this.checkTable()) return(undefined);
+
+        let resultArray: T[] = undefined;
+
+        try {
+            let result: r.Cursor = await r.table(this.TABLE).run(await this.bot.databaseManager.getConnection());
+            resultArray = await result.toArray();
+            if(resultArray.length === 0) {
+                resultArray = undefined;
+            }
+        }
+        catch(err) {
+            await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:getAllDocuments Error getting from database.`, err);
+        }
+
+        return(resultArray);
+    }
+
     protected async updateDocument(id: any, object: T): Promise<boolean> {
         if(!await this.checkTable()) return(false);
 
@@ -133,6 +152,41 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
         else {
             return(await this.insertDocument(object, id));
         }
+    }
+
+    protected async removeMatchingDocuments(object: T): Promise<boolean> {
+        if(!await this.checkTable()) return(false);
+
+        try {
+            let result: r.WriteResult = await r.table(this.TABLE).filter(object).delete().run(await this.bot.databaseManager.getConnection());
+            if(result.errors > 0) {
+                await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:removeMatchingDocuments Error removing documents. Table: ${this.TABLE}, Filter: ${object}. First error: ${result.first_error}`);
+                return(false);
+            }
+
+            return(true);
+        }
+        catch(err) {
+            await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:removeMatchingDocuments Error removing documents. Table: ${this.TABLE}, Filter: ${object}.`, err);
+            return(false);
+        }
+    }
+
+    protected async getAllMatches(row: string, value: string): Promise<T[]> {
+        let resultsArr: T[] = undefined;
+        
+        if(!await this.checkTable()) return(resultsArr);
+
+        try {
+            let cursor: r.Cursor = await r.table(this.TABLE).filter(r.row(row).eq(value)).run(await this.bot.databaseManager.getConnection());
+            resultsArr = await cursor.toArray();
+        }
+        catch(err) {
+            await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:getAllMatches Error getting matching documents. Table: ${this.TABLE}, Row: ${row}, Value: ${value}`, err);
+            return(undefined);
+        }
+
+        return(resultsArr);
     }
 
     private async generateTable(): Promise<boolean> {
