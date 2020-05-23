@@ -1,7 +1,8 @@
 import { ReactionRoleConfig, ReactionRoleObject } from "../config/ReactionRoleConfig";
 import { PantherBot } from "../Bot";
-import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Guild, Client } from "discord.js";
+import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Guild, Client, ReactionEmoji } from "discord.js";
 import { LogLevel } from "../Logger";
+import { ReactionRoleParsedArgs } from "../commands";
 
 export class ReactionRoleManager {
     private _reactionRoleConfig: ReactionRoleConfig;
@@ -78,12 +79,23 @@ export class ReactionRoleManager {
         let guildReactionRoles: Map<Snowflake, ReactionRoleObject[]> = await this._reactionRoleConfig.getAllReactionRoles();
         let currChannel: TextChannel | NewsChannel;
         let currMessage: Message;
+        let iterableReactionRoles: IterableIterator<ReactionRoleObject[]> = guildReactionRoles.values();
         
-        for(let currGuild of guildReactionRoles.values()) {
+        for(let currGuild of iterableReactionRoles) {
             for(let currReactionRole of currGuild) {
                 try {
                     currChannel = <TextChannel | NewsChannel> this.bot.client.channels.resolve(currReactionRole.channelID);
-                    currMessage = await currChannel.messages.fetch(currReactionRole.messageID);
+                    if(!currChannel) {
+                        continue;
+                    }
+
+                    try {
+                        currMessage = await currChannel.messages.fetch(currReactionRole.messageID);
+                    }
+                    catch(err) {
+                        await currChannel.send(`Error checking status of ${currReactionRole.name}, does the message still exist?`);
+                        continue;
+                    }
 
                     await this.checkUsers(currMessage, currReactionRole);
                 }
@@ -105,6 +117,7 @@ export class ReactionRoleManager {
         }
         catch(err) {
             await this.bot.logger.log(LogLevel.WARNING, "ReactionRoleManager:addReactionRole Error reacting to message, missing perms?", err);
+            await this._reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
             return(false);
         }
     }
@@ -121,12 +134,11 @@ export class ReactionRoleManager {
             let reaction: MessageReaction = message.reactions.cache.get(removedReactionRole.emoteID);
             await reaction.users.remove(client.user);
 
-            return(true);
         }
         catch(err) {
             await this.bot.logger.log(LogLevel.WARNING, "ReactionRoleManager:removeReactionRole Error removing reaction from message, missing perms?", err);
-            return(false);
         }
+        return(true);
     }
 
     public get reactionRoleConfig(): ReactionRoleConfig {
@@ -134,7 +146,14 @@ export class ReactionRoleManager {
     }
 
     private async checkUsers(message: Message, reactionRole: ReactionRoleObject) {
-        let reaction: MessageReaction = message.reactions.resolve(reactionRole.emoteID);
+        //Find our reaction
+        let reaction: MessageReaction;
+        for(let currReaction of message.reactions.cache.array()) {
+            if(currReaction.emoji.identifier === reactionRole.emoteID) {
+                reaction = currReaction;
+                break;
+            }
+        }
 
         if(reaction === undefined || reaction === null) {
             return;
