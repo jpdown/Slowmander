@@ -1,4 +1,4 @@
-import { Message, Emoji, Role, User, GuildMember, TextChannel, Client, NewsChannel, Snowflake } from 'discord.js';
+import { Message, Emoji, Role, User, GuildMember, TextChannel, Client, NewsChannel, Snowflake, GuildEmoji, ReactionEmoji } from 'discord.js';
 
 import { PantherBot } from "../Bot";
 import { LogLevel } from '../Logger';
@@ -33,8 +33,8 @@ export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {
         return(reactionRoles);
     }
 
-    public async getFromReaction(message: Message, emoji: Emoji): Promise<ReactionRoleObject> {
-        return(await this.getReactionRole({guildID: message.guild.id, messageID: message.id, emoteID: emoji.id}));
+    public async getFromReaction(message: Message, emoji: GuildEmoji | ReactionEmoji): Promise<ReactionRoleObject> {
+        return(await this.getReactionRole({guildID: message.guild.id, messageID: message.id, emoteID: emoji.identifier}));
     }
 
     public async getReactionRole(filter: ReactionRoleFilter): Promise<ReactionRoleObject> {
@@ -61,7 +61,7 @@ export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {
         if(this.guildReactionRoleCache.size > 0) return(this.guildReactionRoleCache);
 
         let reactionRoles = await this.getAllDocuments();
-        if(!reactionRoles) return(undefined);
+        if(!reactionRoles) return(this.guildReactionRoleCache);
 
         //Cache
         for(let reactionRole of reactionRoles) {
@@ -127,8 +127,12 @@ export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {
         return(undefined);
     }
 
-    public async guildHasReactionRole(guildId: Snowflake, name: string): Promise<boolean> {
+    public async guildHasReactionRoleName(guildId: Snowflake, name: string): Promise<boolean> {
         return(await this.getReactionRole({guildID: guildId, name: name}) !== undefined);
+    }
+
+    public async guildHasReactionRoleEmote(guildId: Snowflake, emoteID: string, messageID: Snowflake): Promise<boolean> {
+        return(await this.getReactionRole({guildID: guildId, emoteID: emoteID, messageID: messageID}) !== undefined);
     }
 }
 
