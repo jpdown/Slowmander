@@ -31,26 +31,28 @@ export class ReactionPaginator {
 
     public async postMessage(): Promise<Message> {
         this.message = await this.channel.send(await this.generateEmbed());
-        await this.message.react(ReactionPaginator.PREV_PAGE);
-        await this.message.react(ReactionPaginator.NEXT_PAGE);
-
-        //Handle reactions
-        let reactionFilter: CollectorFilter = (reaction: MessageReaction, user: User) =>  {
-            return !user.bot && (reaction.emoji.name === ReactionPaginator.NEXT_PAGE || reaction.emoji.name === ReactionPaginator.PREV_PAGE);
-        }
-        let reactionCollector: ReactionCollector = this.message.createReactionCollector(reactionFilter, {time: 60000, dispose: true});
-        reactionCollector.on("collect", this.onReaction.bind(this));
-        reactionCollector.on("end", async (collected) => {
-            for(let reaction of collected.values()) {
-                try {
-                    await reaction.remove();
-                }
-                catch(err) {
-                    await reaction.message.channel.send("I don't have perms to remove the reaction.");
-                    break;
-                }
+        if(this.numPages > 1) {
+            await this.message.react(ReactionPaginator.PREV_PAGE);
+            await this.message.react(ReactionPaginator.NEXT_PAGE);
+            
+            //Handle reactions
+            let reactionFilter: CollectorFilter = (reaction: MessageReaction, user: User) =>  {
+                return !user.bot && (reaction.emoji.name === ReactionPaginator.NEXT_PAGE || reaction.emoji.name === ReactionPaginator.PREV_PAGE);
             }
-        })
+            let reactionCollector: ReactionCollector = this.message.createReactionCollector(reactionFilter, {time: 60000, dispose: true});
+            reactionCollector.on("collect", this.onReaction.bind(this));
+            reactionCollector.on("end", async (collected) => {
+                for(let reaction of collected.values()) {
+                    try {
+                        await reaction.remove();
+                    }
+                    catch(err) {
+                        await reaction.message.channel.send("I don't have perms to remove the reaction.");
+                        break;
+                    }
+                }
+            })
+        }
 
         return this.message;
     }
