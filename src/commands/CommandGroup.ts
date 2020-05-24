@@ -43,11 +43,17 @@ export abstract class CommandGroup extends Command {
 
     public get requiredPerm(): PermissionResolvable {
         let perms: Permissions = new Permissions();
+        let numWithPerms: number = 0;
 
         for(let subCommand of this._subCommands.values()) {
             if(subCommand.requiredPerm && !perms.any(subCommand.requiredPerm)) {
                 perms.add(subCommand.requiredPerm);
+                numWithPerms++;
             }
+        }
+
+        if(numWithPerms === 0) {
+            perms = undefined;
         }
 
         return(perms);
