@@ -6,7 +6,7 @@ import { CommandUtils } from '../utils/CommandUtils';
 
 export class Say extends Command {
     constructor(bot: PantherBot) {
-        super("say", PermissionLevel.Admin, "Sends a message as the bot", bot, {usage: "[channel/user]... <message>", requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+        super("say", PermissionLevel.Owner, "Sends a message as the bot", bot, {usage: "[channel/user]... <message>"});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
