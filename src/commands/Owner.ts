@@ -22,6 +22,7 @@ export class Owner extends CommandGroup {
         this.registerSubCommand(new SetStatus(this, bot));
         this.registerSubCommand(new SetActivity(this, bot));
         this.registerSubCommand(new SetErrorLogWebhook(this, bot));
+        this.registerSubCommand(new GetInviteLink(this, bot));
     }
 }
 
@@ -253,6 +254,22 @@ class SetErrorLogWebhook extends Command {
         else {
             await this.sendMessage("Log webhook was unable to be set.", message.channel, bot);
         }
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
+class GetInviteLink extends Command {
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("getinvite", PermissionLevel.Owner, "Gets invite link (wow you're lazy)", bot, {group: group});
+    }
+
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        let invite: string = await message.client.generateInvite(["ADD_REACTIONS", "CHANGE_NICKNAME", "BAN_MEMBERS", "KICK_MEMBERS", 
+            "ATTACH_FILES", "CONNECT", "MANAGE_MESSAGES", "MANAGE_NICKNAMES", "MANAGE_ROLES", "MANAGE_WEBHOOKS", "READ_MESSAGE_HISTORY",
+            "SEND_MESSAGES", "USE_EXTERNAL_EMOJIS", "SPEAK", "VIEW_CHANNEL"]);
+        
+        await this.sendMessage(`[Invite Link](${invite})`, message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
     }
