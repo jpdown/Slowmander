@@ -57,7 +57,7 @@ export class CommandUtils {
         let userCache: Collection<Snowflake, User> = client.users.cache;
 
         for(let user of userCache.values()) {
-            if(user.username.startsWith(potentialUser.toLowerCase()) || `${user.username}#${user.discriminator}` === potentialUser) {
+            if(user.username.toLowerCase().startsWith(potentialUser.toLowerCase()) || `${user.username}#${user.discriminator}` === potentialUser) {
                 parsedUser = user;
                 break;
             }
