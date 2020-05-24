@@ -1,7 +1,6 @@
 import r from "rethinkdb";
 import { PantherBot } from "../Bot";
-import { LogLevel } from "../Logger";
-import { WebhookClient, NewsChannel } from "discord.js";
+import { WebhookClient } from "discord.js";
 import { DatabaseEntry, DatabaseObject } from "./DatabaseEntry";
 
 export class BotConfig extends DatabaseEntry<BotConfigObject> {

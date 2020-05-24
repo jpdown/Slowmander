@@ -1,4 +1,4 @@
-import { Command, PermissionLevel, CommandResult } from "./commands/Command";
+import { Command, CommandResult } from "./commands/Command";
 import * as commands from "./commands";
 import { PantherBot } from "./Bot";
 
@@ -6,15 +6,17 @@ import { Message, MessageEmbed, Snowflake } from "discord.js";
 import { CommandUtils } from "./utils/CommandUtils";
 import { PermissionsHelper } from "./utils/PermissionsHelper";
 import { CommandGroup } from "./commands/CommandGroup";
-import { LogLevel } from "./Logger";
+import { Logger } from "./Logger";
 
 export class CommandManager {
     private commandMap: Map<string, Command>;
     private prefixMap: Map<Snowflake, string>;
     private bot: PantherBot;
+    private logger: Logger;
 
     constructor(bot: PantherBot) {
         this.bot = bot;
+        this.logger = Logger.getLogger(bot, this);
         this.commandMap = new Map<string, Command>();
         this.prefixMap = new Map<Snowflake, string>();
         this.registerAll();
@@ -28,7 +30,7 @@ export class CommandManager {
             }
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.WARNING, "CommandManager:parseCommand Error fetching message.", err);
+            await this.logger.warning("Error fetching message.", err);
             return;
         }
 
@@ -70,7 +72,7 @@ export class CommandManager {
                 }
             }
             catch(err) {
-                await this.bot.logger.log(LogLevel.ERROR, `CommandManager:parseCommand Error running command "${command.fullName}".`, err);
+                await this.logger.error(`Error running command "${command.fullName}".`, err);
                 await message.channel.send((new MessageEmbed)
                     .setColor(0xFF0000)
                     .setTitle("❌ Error running command.")
@@ -117,7 +119,7 @@ export class CommandManager {
                     }
                 }
                 catch(err) {
-                    await this.bot.logger.log(LogLevel.ERROR, "Error getting guild prefix", err);
+                    await this.logger.error("Error getting guild prefix", err);
                 }
             }
         }
@@ -126,7 +128,7 @@ export class CommandManager {
             return(await this.bot.configs.botConfig.getDefaultPrefix());
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, "Error getting default prefix", err);
+            await this.logger.error("Error getting default prefix", err);
             return(undefined);
         }
     }
@@ -138,7 +140,7 @@ export class CommandManager {
             return(true);
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, "Error setting guild prefix.", err);
+            await this.logger.error("Error setting guild prefix.", err);
             return(false);
         }
     }

@@ -11,9 +11,15 @@ export class Logger {
     private readonly LOG_PATH = "./logs/pantherbot.log"
 
     private bot: PantherBot;
+    private className: string;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: PantherBot, className: string) {
         this.bot = bot;
+        this.className = className
+    }
+
+    public static getLogger(bot: PantherBot, object: any): Logger {
+        return(new Logger(bot, object.constructor.name));
     }
 
     public logSync(logLevel: LogLevel, message: string, err?: any): void {
@@ -24,9 +30,14 @@ export class Logger {
 
     public async log(logLevel: LogLevel, message: string, err?: any) {
         //build log string
-        let logString: string = `${(new Date()).toISOString()} - ${LogLevel[logLevel]} ${message}`;
+        let logString: string = `${(new Date()).toISOString()} - ${LogLevel[logLevel]} - ${this.className} - ${message}`;
         if(err) {
-            logString += `\n${err}`;
+            if(err.stack) {
+                logString += `\n${err.stack}`;
+            }
+            else {
+                logString += `\n${err}`;
+            }
         }
 
         //Log to console
@@ -46,6 +57,22 @@ export class Logger {
             await this.logToDiscord(logString);
     }
 
+    public async debug(message: string, err?: any) {
+        await this.log(LogLevel.DEBUG, message, err);
+    }
+
+    public async info(message: string, err?: any) {
+        await this.log(LogLevel.INFO, message, err);
+    }
+
+    public async warning(message: string, err?: any) {
+        await this.log(LogLevel.WARNING, message, err);
+    }
+
+    public async error(message: string, err?: any) {
+        await this.log(LogLevel.ERROR, message, err);
+    }
+
     private logToFile(message: string) {
         if(!fs.existsSync("logs"))
             fs.mkdirSync("logs")
@@ -59,7 +86,6 @@ export class Logger {
     }
 
     private async logToDiscord(message: string) {
-        
         try {
             let webhook: WebhookClient = await this.bot.configs.botConfig.getErrorWebhook();
             //Split every 1990 chars (to allow for code block plus some)
