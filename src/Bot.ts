@@ -94,6 +94,10 @@ export class PantherBot {
     public get client(): Client {
         return(this._client);
     }
+
+    public get eventLogger(): EventLogger {
+        return(this._eventLogger);
+    }
 }
 
 let bot = new PantherBot;

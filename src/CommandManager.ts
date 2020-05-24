@@ -135,9 +135,9 @@ export class CommandManager {
 
     public async setGuildPrefix(guildId: string, newPrefix: string): Promise<boolean> {
         try {
-            await this.bot.configs.guildConfig.setPrefix(guildId, newPrefix);
-            this.prefixMap.set(guildId, newPrefix);
-            return(true);
+            let result: boolean = await this.bot.configs.guildConfig.setPrefix(guildId, newPrefix);
+            if(result) this.prefixMap.set(guildId, newPrefix);
+            return(result);
         }
         catch(err) {
             await this.logger.error("Error setting guild prefix.", err);
