@@ -16,8 +16,14 @@ export class DatabaseManager {
 
     public async connect() {
         try {
-            this._connection = await r.connect({host: this.creds.rethinkHost, port: this.creds.rethinkPort,
-                user: this.creds.rethinkUser, password: this.creds.rethinkPass, db: this.creds.rethinkDb});
+            let rethinkOptions: r.ConnectionOptions = {host: this.creds.rethinkHost, port: this.creds.rethinkPort,
+                user: this.creds.rethinkUser, password: this.creds.rethinkPass, db: this.creds.rethinkDb};
+            if(this.creds.rethinkCert !== "") {
+                rethinkOptions.ssl = {
+                    "ca": this.creds.rethinkCert
+                }
+            }
+            this._connection = await r.connect(rethinkOptions);
 
             let dbList: string[] = await r.dbList().run(this._connection);
             if(!dbList.includes(this.creds.rethinkDb)) {
@@ -48,5 +54,6 @@ export interface RethinkCredentials {
     rethinkPort: number,
     rethinkUser: string,
     rethinkPass: string,
-    rethinkDb: string
+    rethinkDb: string,
+    rethinkCert: string
 }
