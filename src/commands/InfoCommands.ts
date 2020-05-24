@@ -200,13 +200,7 @@ export class Stats extends Command {
     }
 
     private async getUserCount(client: Client): Promise<number> {
-        let userCount: number = 0;
-
-        for(let guild of client.guilds.cache.array()) {
-            userCount += guild.memberCount;
-        }
-
-        return(userCount);
+        return(client.users.cache.size);
     }
 
     private async getLoadString(): Promise<string> {
@@ -214,7 +208,7 @@ export class Stats extends Command {
         let loadString: string = "";
 
         for(let num of load) {
-            loadString += num.toFixed(2) + ", ";
+            loadString += num.toFixed(2) + " ";
         }
 
         return(loadString.slice(0, loadString.length - 2));
