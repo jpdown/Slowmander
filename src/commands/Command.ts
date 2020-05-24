@@ -14,6 +14,7 @@ export enum PermissionLevel {
 
 export abstract class Command {
     protected _name: string;
+    protected _aliases: string[];
     protected _permLevel: PermissionLevel;
     protected _requiredPerm: PermissionResolvable;
     protected _desc: string;
@@ -30,6 +31,7 @@ export abstract class Command {
 
         if(!params) params = <CommandParameters>{};
 
+        this._aliases = params.aliases ? params.aliases : [];
         this._requiredPerm = params.requiredPerm;
         this._longDesc = params.longDesc ? params.longDesc : "";
         this._usage = params.usage ? params.usage : "";
@@ -60,6 +62,10 @@ export abstract class Command {
 
     public get name(): string {
         return(this._name);
+    }
+
+    public get aliases(): string[] {
+        return(this._aliases);
     }
 
     public get fullName(): string {
@@ -112,6 +118,7 @@ export interface CommandResult {
 }
 
 export interface CommandParameters {
+    aliases?: string[],
     requiredPerm?: PermissionResolvable,
     longDesc?: string,
     usage?: string,

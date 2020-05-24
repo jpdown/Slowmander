@@ -61,6 +61,9 @@ export abstract class CommandGroup extends Command {
 
     protected registerSubCommand(command: Command) {
         this._subCommands.set(command.name, command);
+        for(let alias of command.aliases) {
+            this._subCommands.set(alias, command);
+        }
     }
 
     protected abstract registerSubCommands(bot: PantherBot): void;

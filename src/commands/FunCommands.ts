@@ -12,7 +12,7 @@ export class Cat extends Command {
     private apiToken: string;
 
     constructor(bot: PantherBot) {
-        super("cat", PermissionLevel.Everyone, "Gives a random cat image", bot);
+        super("cat", PermissionLevel.Everyone, "Gives a random cat image", bot, {aliases: ["kitty", "meow"]});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -52,7 +52,7 @@ export class Dog extends Command {
     private readonly API: string = "https://dog.ceo/api/breeds/image/random";
 
     constructor(bot: PantherBot) {
-        super("dog", PermissionLevel.Everyone, "Gives a random dog image", bot);
+        super("dog", PermissionLevel.Everyone, "Gives a random dog image", bot, {aliases: ["woof", "bark"]});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -97,7 +97,7 @@ export class DadJoke extends Command {
     private readonly API: string = "https://icanhazdadjoke.com/";
 
     constructor(bot: PantherBot) {
-        super("dadjoke", PermissionLevel.Everyone, "Gives a random dad joke", bot);
+        super("dadjoke", PermissionLevel.Everyone, "Gives a random dad joke", bot, {aliases: ["dad"]});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

@@ -5,7 +5,7 @@ import {Message} from 'discord.js';
 
 export class Help extends Command {    
     constructor(bot: PantherBot) {
-        super("help", PermissionLevel.Everyone, "You're using it!", bot, {usage: "[command]"});
+        super("help", PermissionLevel.Everyone, "You're using it!", bot, {usage: "[command]", aliases: ["h"]});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -16,9 +16,9 @@ export class Help extends Command {
 
         let command: Command = await bot.commandManager.getCommand(args.shift());
 
-        if(command === undefined) {
+        if(!command) {
             await bot.helpManager.sendFullHelp(message, bot);
-            return;
+            return {sendHelp: false, command: this, message: message};
         }
 
         if(args.length > 0) {

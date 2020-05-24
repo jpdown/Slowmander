@@ -21,8 +21,14 @@ export class HelpManager {
         }
 
         //Build help message
-        helpMessage = `Usage: \`${prefix}${command.fullName} ${command.usage}\`\n\n`;
-        helpMessage += command.longDesc;
+        if(command.aliases.length > 0) {
+            helpMessage += "Aliases: `" + command.aliases.join("`, `") + "`\n";
+        }
+        helpMessage += `Usage: \`${prefix}${command.fullName}`;
+        if(command.usage.length > 0) {
+            helpMessage += ` ${command.usage}`;    
+        }
+        helpMessage += "`\n\n" + command.longDesc;
 
         if(command instanceof CommandGroup) {
             let subCommands: Command[] = await this.getSubCommandsWithPerms(message.member ? message.member : message.author, command as CommandGroup, bot);
@@ -102,6 +108,8 @@ export class HelpManager {
         let subCommandsWithPerms: Command[] = [];
 
         for(let subCommand of subCommands) {
+            if(subCommandsWithPerms.includes(subCommand)) continue;
+
             if(await PermissionsHelper.checkPermsAndDM(user, subCommand, bot)) {
                 subCommandsWithPerms.push(subCommand);
             }
