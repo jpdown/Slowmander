@@ -1,13 +1,17 @@
-import { Command, PermissionLevel, CommandResult } from "./Command";
+import { Command, PermissionLevel, CommandResult, CommandParameters } from "./Command";
 import { PantherBot } from "../Bot";
 
-import { Message } from "discord.js";
+import { Message, PermissionResolvable, Permissions } from "discord.js";
 
 export abstract class CommandGroup extends Command {
     protected _subCommands: Map<string, Command>;
 
-    constructor(name: string, permLevel: PermissionLevel, desc: string, runsInDm: boolean, group?: CommandGroup) {
-        super(name, permLevel, desc, "<subcommand>", runsInDm, group);
+    constructor(name: string, desc: string, bot: PantherBot, params?: CommandParameters) {
+        if(!params) {
+            params = <CommandParameters>{};
+        }
+        params.usage = "<subcommand>";
+        super(name, PermissionLevel.Owner, desc, bot, params);
         this._subCommands = new Map<string, Command>();
     }
 
@@ -23,17 +27,35 @@ export abstract class CommandGroup extends Command {
         return(this._subCommands.get(arg));
     }
 
-    public get longDesc(): string {
-        let desc: string = this._desc + "\n\nSub Commands:\n";
-        for(let subcommand of this._subCommands.values()) {
-            desc += `• \`${subcommand.name}\` - ${subcommand.desc}\n`;
+    public get permLevel(): PermissionLevel {
+        let lowestPerm = PermissionLevel.Owner;
+        for(let subCommand of this._subCommands.values()) {
+            if(subCommand.permLevel < lowestPerm) {
+                lowestPerm = subCommand.permLevel;
+            }
+            if(lowestPerm === PermissionLevel.Everyone) {
+                break;
+            }
         }
-        return(desc);
+
+        return(lowestPerm);
+    }
+
+    public get requiredPerm(): PermissionResolvable {
+        let perms: Permissions = new Permissions();
+
+        for(let subCommand of this._subCommands.values()) {
+            if(subCommand.requiredPerm && !perms.any(subCommand.requiredPerm)) {
+                perms.add(subCommand.requiredPerm);
+            }
+        }
+
+        return(perms);
     }
 
     protected registerSubCommand(command: Command) {
         this._subCommands.set(command.name, command);
     }
 
-    protected abstract registerSubCommands(): void;
+    protected abstract registerSubCommands(bot: PantherBot): void;
 }
