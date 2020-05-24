@@ -130,15 +130,11 @@ class AddReactionRole extends Command {
 
         return({channel: channel, reactionMessage: reactionMessage, role: role, name: name});
     }
-
-    private async onReaction(reaction: MessageReaction, user: User) {
-
-    }
 }
 
 class RemoveReactionRole extends Command {
     constructor(group: CommandGroup, bot: PantherBot) {
-        super("remove", PermissionLevel.Admin, "Removes a reaction role", bot, {usage: "<name>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+        super("remove", PermissionLevel.Admin, "Removes a reaction role", bot, {usage: "<name>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR, aliases: ["del", "delete"]});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

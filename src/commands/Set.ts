@@ -24,7 +24,7 @@ export class Set extends CommandGroup {
 
 class SetNickname extends Command {
     constructor(group: CommandGroup, bot: PantherBot) {
-        super("nickname", PermissionLevel.Mod, "Sets bot or another member's nickname", bot, {usage: "[member] <new nickname>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.MANAGE_NICKNAMES});
+        super("nickname", PermissionLevel.Mod, "Sets bot or another member's nickname", bot, {usage: "[member] <new nickname>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.MANAGE_NICKNAMES, aliases: ["nick"]});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

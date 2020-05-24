@@ -28,7 +28,7 @@ export class Owner extends CommandGroup {
 
 class SetUsername extends Command {
     constructor(group: CommandGroup, bot: PantherBot) {
-        super("name", PermissionLevel.Owner, "Sets bot username.", bot, {usage: "<username>", group: group, longDesc: "Minimum username length is 2 characters."});
+        super("name", PermissionLevel.Owner, "Sets bot username.", bot, {usage: "<username>", group: group, longDesc: "Minimum username length is 2 characters.", aliases: ["username"]});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -101,7 +101,7 @@ class AddOwner extends Command {
 
 class RemoveOwner extends Command {
     constructor(group: CommandGroup, bot: PantherBot) {
-        super("removeowner", PermissionLevel.Owner, "Removes a bot owner", bot, {usage: "<owner>", group: group});
+        super("removeowner", PermissionLevel.Owner, "Removes a bot owner", bot, {usage: "<owner>", group: group, aliases: ["delowner"]});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -190,7 +190,7 @@ class SetActivity extends Command {
     private readonly STREAMING_URL: string = "https://twitch.tv/poisonedpanther";
 
     constructor(group: CommandGroup, bot: PantherBot) {
-        super("activity", PermissionLevel.Owner, "Sets bot activity", bot, {usage: "<playing, streaming, listening, watching, clear> <activity string>", group: group});
+        super("activity", PermissionLevel.Owner, "Sets bot activity", bot, {usage: "<playing, streaming, listening, watching, clear> <activity string>", group: group, aliases: ["presence"]});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

@@ -11,7 +11,7 @@ import * as os from "os";
 
 export class Whois extends Command {
     constructor(bot: PantherBot) {
-        super("whois", PermissionLevel.Everyone, "Gets information on a member", bot, {usage: "[member]", runsInDm: false});
+        super("whois", PermissionLevel.Everyone, "Gets information on a member", bot, {usage: "[member]", runsInDm: false, aliases: ["who"]});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -71,7 +71,7 @@ export class Whois extends Command {
 
 export class Roles extends Command {
     constructor(bot: PantherBot) {
-        super("roles", PermissionLevel.Mod, "Gets list of roles", bot, {runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES});
+        super("roles", PermissionLevel.Mod, "Gets list of roles", bot, {runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ["rolelist"]});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -99,7 +99,7 @@ export class Roles extends Command {
 
 export class Members extends Command {
     constructor(bot: PantherBot) {
-        super("members", PermissionLevel.Mod, "Gets list of members for given role", bot, {usage: "<role>", runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES});
+        super("members", PermissionLevel.Mod, "Gets list of members for given role", bot, {usage: "<role>", runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ["rolemembers"]});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -164,7 +164,7 @@ export class Avatar extends Command {
 
 export class Stats extends Command {
     constructor(bot: PantherBot) {
-        super("stats", PermissionLevel.Everyone, "Gets bot statistics", bot);
+        super("stats", PermissionLevel.Everyone, "Gets bot statistics", bot, {aliases: ["statistics"]});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

@@ -102,7 +102,13 @@ export class CommandManager {
     }
     
     public async getAllCommands(): Promise<Command[]> {
-        return(Array.from(this.commandMap.values()));
+        let commandList: Command[] = [];
+        for(let command of this.commandMap.values()) {
+            if(commandList.includes(command)) continue;
+            commandList.push(command);
+        }
+
+        return(commandList);
     }
 
     public async getPrefix(guildId?: string): Promise<string> {
@@ -147,6 +153,9 @@ export class CommandManager {
     
     private registerCommand(command: Command) {
         this.commandMap.set(command.name, command);
+        for(let alias of command.aliases) {
+            this.commandMap.set(alias, command);
+        }
     }
 
     private registerAll(): void {
