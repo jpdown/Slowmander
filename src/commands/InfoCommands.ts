@@ -211,6 +211,6 @@ export class Stats extends Command {
             loadString += num.toFixed(2) + " ";
         }
 
-        return(loadString.slice(0, loadString.length - 2));
+        return(loadString.slice(0, loadString.length - 1));
     }
 }
