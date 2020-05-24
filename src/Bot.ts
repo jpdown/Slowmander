@@ -25,29 +25,29 @@ export class PantherBot {
         this._credentials = new Credentials(this);
         this._databaseManager = new DatabaseManager(this, this._credentials.rethinkCreds);
         this._commandManager = new CommandManager(this);
-        this._reactionRoleManager = new ReactionRoleManager(this);
         this._helpManager = new HelpManager;
         this._eventLogger = new EventLogger(this);
-
+        
         this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
-        this._client.on('messageReactionAdd', this._reactionRoleManager.onMessageReactionAdd.bind(this._reactionRoleManager));
-        this._client.on('messageReactionRemove', this._reactionRoleManager.onMessageReactionRemove.bind(this._reactionRoleManager));
-        this._client.on("ready", this._reactionRoleManager.onReady.bind(this._reactionRoleManager))
         this._client.on('ready', async () => {
             await this.logger.info(`Welcome to PantherBot-Discord-JS! Logged in as ${this._client.user.tag} in ${this._client.guilds.cache.size} guild(s).`);
         })
     }
-
+    
     public run() {
         let token: string = this._credentials.token;
         if(token === "") {
             this.logger.logSync(LogLevel.ERROR, "No token provided, please put a valid token in the config file.");
             process.exit();
         }
-
+        
         //Connect to db
         this._databaseManager.connect().then(() => {
             this._configManager = new ConfigManager(this);
+            this._reactionRoleManager = new ReactionRoleManager(this);
+            this._client.on('messageReactionAdd', this._reactionRoleManager.onMessageReactionAdd.bind(this._reactionRoleManager));
+            this._client.on('messageReactionRemove', this._reactionRoleManager.onMessageReactionRemove.bind(this._reactionRoleManager));
+            this._client.on("ready", this._reactionRoleManager.onReady.bind(this._reactionRoleManager))
         }).catch((err) => {
             this.logger.logSync(LogLevel.ERROR, "Error with db", err);
         })
