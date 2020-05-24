@@ -27,8 +27,24 @@ export class CommandUtils {
         let parsedMember: GuildMember = undefined;
         let parsedUser: User = await CommandUtils.parseUser(potentialMember, guild.client);
 
-        if(parsedUser !== undefined) {
+        if(!parsedUser) {
+            parsedMember = await this.parseMemberNickname(potentialMember, guild);
+        }
+        else {
             parsedMember = guild.member(parsedUser);
+        }
+
+        return(parsedMember);
+    }
+
+    static async parseMemberNickname(potentialMember: string, guild: Guild): Promise<GuildMember> {
+        let parsedMember: GuildMember = undefined;
+
+        for(let member of guild.members.cache.array()) {
+            if(member.nickname && member.nickname.toLowerCase().startsWith(potentialMember.toLowerCase())) {
+                parsedMember = member;
+                break;
+            }
         }
 
         return(parsedMember);

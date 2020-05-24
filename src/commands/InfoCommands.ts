@@ -19,7 +19,7 @@ export class Whois extends Command {
 
         if(args.length > 0) {
             let parsedMember: GuildMember = await CommandUtils.parseMember(args.join(" "), message.guild);
-            if(parsedMember !== undefined) {
+            if(parsedMember) {
                 member = parsedMember;
             }
         }
