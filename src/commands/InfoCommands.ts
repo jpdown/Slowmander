@@ -6,6 +6,9 @@ import { PermissionsHelper } from '../utils/PermissionsHelper';
 import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client} from 'discord.js';
 import { ReactionPaginator } from '../utils/ReactionPaginator';
 
+import * as process from "process";
+import * as os from "os";
+
 export class Whois extends Command {
     constructor(bot: PantherBot) {
         super("whois", PermissionLevel.Everyone, "Gets information on a member", bot, {usage: "[member]", runsInDm: false});
@@ -156,5 +159,64 @@ export class Avatar extends Command {
         await message.channel.send(embed);
 
         return {sendHelp: false, command: this, message: message};
+    }
+}
+
+export class Stats extends Command {
+    constructor(bot: PantherBot) {
+        super("stats", PermissionLevel.Everyone, "Gets bot statistics", bot);
+    }
+
+    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        let embed: MessageEmbed = new MessageEmbed()
+            .setColor(await CommandUtils.getSelfColor(message.channel, bot))
+            .addField("RAM Usage", Math.floor(process.memoryUsage().rss / 1048576) + "MB", true)
+            .addField("Load",await this.getLoadString(), true)
+            .addField("Uptime", await this.getFormattedUptime(), true)
+            .addField("User Count", await this.getUserCount(message.client), true)
+            .addField("Guild Count", message.client.guilds.cache.size, true)
+            .addField("Channel Count", message.client.channels.cache.size, true)
+            .setAuthor(message.client.user.username + "#" + message.client.user.discriminator, message.client.user.displayAvatarURL({format: "png", dynamic: true, size: 4096}));
+        
+        await message.channel.send(embed);
+
+        return {sendHelp: false, command: this, message: message};
+    }
+
+    private async getFormattedUptime(): Promise<string> {
+        let uptime: number = process.uptime();
+        let days: number = Math.floor(uptime / 86400);
+        uptime = uptime - (days * 86400);
+
+        let hours: number = Math.floor(uptime / 3600);
+        uptime = uptime - (hours * 3600);
+
+        let minutes: number = Math.floor(uptime / 60);
+        uptime = uptime - minutes * 60;
+
+        let seconds: number = Math.floor(uptime);
+
+        return(`${days}d ${hours}h ${minutes}m ${seconds}s`);        
+    }
+
+    private async getUserCount(client: Client): Promise<number> {
+        let userCount: number = 0;
+
+        for(let guild of client.guilds.cache.array()) {
+            userCount += guild.memberCount;
+        }
+
+        return(userCount);
+    }
+
+    private async getLoadString(): Promise<string> {
+        let load: number[] = os.loadavg();
+        let loadString: string = "";
+
+        for(let num of load) {
+            loadString += num.toFixed(2) + ", ";
+        }
+
+        return(loadString.slice(0, loadString.length - 2));
     }
 }
