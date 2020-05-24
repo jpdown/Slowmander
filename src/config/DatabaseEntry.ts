@@ -36,7 +36,7 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
     }
 
     protected async checkDocument(id: string): Promise<boolean> {
-        return(await this.getDocument(id) !== undefined);
+        return(await this.getDocument(id) !== null);
     }
 
     protected async getDocument(id: string): Promise<T> {

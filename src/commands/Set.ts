@@ -155,7 +155,7 @@ class SetEventLogChannel extends Command {
         }
 
         //Set channel
-        let result: boolean = await bot.configs.guildConfig.setEventlogChannel(message.guild.id, channel.id);
+        let result: boolean = await bot.eventLogger.setEventlogChannel(message.guild.id, channel.id);
 
 
         if(result) {

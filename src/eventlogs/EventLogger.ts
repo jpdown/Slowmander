@@ -196,6 +196,13 @@ export class EventLogger {
         await channel.send(embed);
     }
 
+    public async setEventlogChannel(guildId: string, channelId: string) {
+        let result: boolean = await this.bot.configs.guildConfig.setEventlogChannel(guildId, channelId);
+        if(result) this.channelMap.set(guildId, channelId);
+
+        return(result)
+    }
+
     private async getLogChannel(guildId: string): Promise<TextChannel | NewsChannel> {
         let channelId: Snowflake;
 
@@ -214,6 +221,17 @@ export class EventLogger {
             }
         }
 
-        return(<TextChannel | NewsChannel> await this.bot.client.channels.fetch(channelId));
+        let channel: TextChannel | NewsChannel;
+
+        try {
+            if(channelId) {
+                channel = <TextChannel | NewsChannel> await this.bot.client.channels.fetch(channelId);
+            }
+        }
+        catch(err) {
+            await this.logger.error("Error getting eventlog channel from API", err);
+        }
+
+        return(channel);
     }
 }
