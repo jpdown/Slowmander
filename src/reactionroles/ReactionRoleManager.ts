@@ -1,15 +1,15 @@
-import { ReactionRoleConfig, ReactionRole } from "./ReactionRoleConfig";
+import { ReactionRoleObject } from "../config/ReactionRoleConfig";
 import { PantherBot } from "../Bot";
-import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Guild } from "discord.js";
-import { LogLevel } from "../Logger";
+import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Client } from "discord.js";
+import { Logger } from "../Logger";
 
 export class ReactionRoleManager {
-    private _reactionRoleConfig: ReactionRoleConfig;
     private bot: PantherBot;
+    private logger: Logger;
 
     constructor(bot: PantherBot) {
         this.bot = bot;
-        this._reactionRoleConfig = new ReactionRoleConfig(bot);
+        this.logger = Logger.getLogger(bot, this);
     }
 
     public async onMessageReactionAdd(reaction: MessageReaction, user: User) {
@@ -19,7 +19,7 @@ export class ReactionRoleManager {
             }
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, "ReactionRoleManager:onMessageReactionAdd Error fetching reaction.", err);
+            await this.logger.error("Error fetching reaction.", err);
         }
 
         //Ignore bots
@@ -33,14 +33,14 @@ export class ReactionRoleManager {
         }
 
         //Try to grab reaction role
-        let reactionRole: ReactionRole = await this._reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
+        let reactionRole: ReactionRoleObject = await this.bot.configs.reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
         if(reactionRole === undefined) {
             return;
         }
 
         //Add role to user
         let member: GuildMember = reaction.message.guild.member(user);
-        await this._reactionRoleConfig.addUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel)
+        await this.addUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel)
     }
 
     public async onMessageReactionRemove(reaction: MessageReaction, user: User) {
@@ -50,7 +50,7 @@ export class ReactionRoleManager {
             }
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, "ReactionRoleManager:onMessageReactionRemove Error fetching reaction.", err);
+            await this.logger.error("Error fetching reaction.", err);
         }
 
         //Ignore bots
@@ -64,42 +64,93 @@ export class ReactionRoleManager {
         }
 
         //Try to grab reaction role
-        let reactionRole: ReactionRole = await this._reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
+        let reactionRole: ReactionRoleObject = await this.bot.configs.reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
         if(reactionRole === undefined) {
             return;
         }
 
-        //Remove role to user
+        //Remove role from user
         let member: GuildMember = reaction.message.guild.member(user);
-        await this._reactionRoleConfig.removeUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel)
-    }
-
-    public get reactionRoleConfig(): ReactionRoleConfig {
-        return(this._reactionRoleConfig);
+        await this.removeUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel)
     }
 
     public async onReady() {
-        let reactionRoles: ReactionRole[] = await this._reactionRoleConfig.getAll();
+        let guildReactionRoles: Map<Snowflake, ReactionRoleObject[]> = await this.bot.configs.reactionRoleConfig.getAllReactionRoles();
         let currChannel: TextChannel | NewsChannel;
         let currMessage: Message;
+        let iterableReactionRoles: IterableIterator<ReactionRoleObject[]> = guildReactionRoles.values();
         
-        for(let currReactionRole of reactionRoles) {
-            try {
-                currChannel = <TextChannel | NewsChannel> this.bot.client.channels.resolve(currReactionRole.channelID);
-                currMessage = await currChannel.messages.fetch(currReactionRole.messageID);
+        for(let currGuild of iterableReactionRoles) {
+            for(let currReactionRole of currGuild) {
+                try {
+                    currChannel = <TextChannel | NewsChannel> this.bot.client.channels.resolve(currReactionRole.channelID);
+                    if(!currChannel) {
+                        continue;
+                    }
 
-                await this.checkUsers(currMessage, currReactionRole);
-            }
-            catch(err) {
-                await this.bot.logger.log(LogLevel.ERROR, "ReactionRoleManager:onReady Error checking reaction role status.", err);
+                    try {
+                        currMessage = await currChannel.messages.fetch(currReactionRole.messageID);
+                    }
+                    catch(err) {
+                        await currChannel.send(`Error checking status of ${currReactionRole.name}, does the message still exist?`);
+                        continue;
+                    }
+
+                    await this.checkUsers(currMessage, currReactionRole);
+                }
+                catch(err) {
+                    await this.logger.error("Error checking reaction role status.", err);
+                }
             }
         }
     }
 
-    private async checkUsers(message: Message, reactionRole: ReactionRole) {
-        let reaction: MessageReaction = message.reactions.resolve(reactionRole.emoteID);
+    public async addReactionRole(reactionRole: ReactionRoleObject, reactionMessage: Message): Promise<boolean> {
+        let dbResult: boolean = await this.bot.configs.reactionRoleConfig.addReactionRole(reactionRole);
+        if(!dbResult) return(false);
 
-        if(reaction === undefined) {
+        //React to message
+        try {
+            await reactionMessage.react(reactionRole.emoteID);
+            return(true);
+        }
+        catch(err) {
+            await this.logger.warning("Error reacting to message, missing perms?", err);
+            await this.bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
+            return(false);
+        }
+    }
+
+    public async removeReactionRole(guildId: Snowflake, name: string, client: Client): Promise<boolean> {
+        let removedReactionRole: ReactionRoleObject = await this.bot.configs.reactionRoleConfig.removeReactionRole(guildId, name);
+        if(!removedReactionRole) return(false);
+
+        //Remove our reaction
+        try {
+            let channel: TextChannel | NewsChannel = <TextChannel | NewsChannel> await client.channels.fetch(removedReactionRole.channelID)
+            let message: Message = await channel.messages.fetch(removedReactionRole.messageID);
+
+            let reaction: MessageReaction = message.reactions.cache.get(removedReactionRole.emoteID);
+            await reaction.users.remove(client.user);
+
+        }
+        catch(err) {
+            await this.logger.warning("Error removing reaction from message, missing perms?", err);
+        }
+        return(true);
+    }
+
+    private async checkUsers(message: Message, reactionRole: ReactionRoleObject) {
+        //Find our reaction
+        let reaction: MessageReaction;
+        for(let currReaction of message.reactions.cache.array()) {
+            if(currReaction.emoji.identifier === reactionRole.emoteID) {
+                reaction = currReaction;
+                break;
+            }
+        }
+
+        if(reaction === undefined || reaction === null) {
             return;
         }
 
@@ -121,17 +172,44 @@ export class ReactionRoleManager {
 
         //Iterate, updating role if necessary
         for(let member of guildMembers) {
+            //ignore bots
+            if(member.user.bot) continue;
+
             hasReacted = reactionUsers.has(member.user.id);
             hasRole = member.roles.cache.has(reactionRole.roleID);
             //Do we need to add role?
             if(hasReacted && !hasRole) {
-                await this._reactionRoleConfig.addUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel);
+                await this.addUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel);
             }
 
             //Do we need to remove role?
             else if(!hasReacted && hasRole) {
-                await this._reactionRoleConfig.removeUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel);
+                await this.removeUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel);
             }
+        }
+    }
+
+    private async addUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel) {
+        //Add role to user
+        try {
+            let role: Role = await channel.guild.roles.fetch(reactionRole.roleID);
+            await member.roles.add(role);
+        }
+        catch(err) {
+            await channel.send(`There was an error adding the role to ${member.toString()}.`);
+            await this.logger.error(`Error adding reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
+        }
+    }
+
+    private async removeUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel) {
+        //Remove role from user
+        try {
+            let role: Role = await channel.guild.roles.fetch(reactionRole.roleID);
+            await member.roles.remove(role);
+        }
+        catch(err) {
+            await channel.send(`There was an error removing the role from ${member.toString()}.`);
+            await this.logger.error(`Error removing reaction role ${reactionRole.name} from ${member.user.username}#${member.user.discriminator}`, err);
         }
     }
 }

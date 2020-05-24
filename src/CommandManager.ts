@@ -1,20 +1,24 @@
-import { Command, PermissionLevel, CommandResult } from "./commands/Command";
+import { Command, CommandResult } from "./commands/Command";
 import * as commands from "./commands";
 import { PantherBot } from "./Bot";
 
-import { Message, MessageEmbed } from "discord.js";
+import { Message, MessageEmbed, Snowflake } from "discord.js";
 import { CommandUtils } from "./utils/CommandUtils";
 import { PermissionsHelper } from "./utils/PermissionsHelper";
 import { CommandGroup } from "./commands/CommandGroup";
-import { LogLevel } from "./Logger";
+import { Logger } from "./Logger";
 
 export class CommandManager {
     private commandMap: Map<string, Command>;
+    private prefixMap: Map<Snowflake, string>;
     private bot: PantherBot;
+    private logger: Logger;
 
     constructor(bot: PantherBot) {
         this.bot = bot;
+        this.logger = Logger.getLogger(bot, this);
         this.commandMap = new Map<string, Command>();
+        this.prefixMap = new Map<Snowflake, string>();
         this.registerAll();
     }
 
@@ -26,11 +30,20 @@ export class CommandManager {
             }
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.WARNING, "CommandManager:parseCommand Error fetching message.", err);
+            await this.logger.warning("Error fetching message.", err);
             return;
         }
 
-        let prefix: string = this.bot.config.prefix;
+        let prefix: string;
+
+        if(message.guild) {
+            prefix = await this.getPrefix(message.guild.id);
+        }
+        else {
+            prefix = await this.getPrefix();
+        }
+
+        if(!prefix) return;
 
         //Ignore bot and system messages
         if(message.author.bot || message.system) {
@@ -51,7 +64,7 @@ export class CommandManager {
         }
 
         //Check perms/in DM and run
-        if(await PermissionsHelper.checkPermsAndDM(message, command, this.bot)) {
+        if(await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, this.bot)) {
             try {
                 let result: CommandResult = await command.run(this.bot, message, args);
                 if(result.sendHelp) {
@@ -59,7 +72,7 @@ export class CommandManager {
                 }
             }
             catch(err) {
-                await this.bot.logger.log(LogLevel.ERROR, `CommandManager:parseCommand Error running command "${command.fullName}".`, err);
+                await this.logger.error(`Error running command "${command.fullName}".`, err);
                 await message.channel.send((new MessageEmbed)
                     .setColor(0xFF0000)
                     .setTitle("❌ Error running command.")
@@ -77,7 +90,7 @@ export class CommandManager {
         }
 
         //Check perms/in DM and run
-        if(await PermissionsHelper.checkPermsAndDM(message, command, bot)) {
+        if(await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, bot)) {
             return await command.run(bot, message, args);
         }
 
@@ -90,6 +103,46 @@ export class CommandManager {
     
     public async getAllCommands(): Promise<Command[]> {
         return(Array.from(this.commandMap.values()));
+    }
+
+    public async getPrefix(guildId?: string): Promise<string> {
+        if(guildId) {
+            if(this.prefixMap.has(guildId)) {
+                return(this.prefixMap.get(guildId));
+            }
+            else {
+                try {
+                    let prefix: string = await this.bot.configs.guildConfig.getPrefix(guildId);
+                    if(prefix) {
+                        this.prefixMap.set(guildId, prefix);
+                        return(prefix);
+                    }
+                }
+                catch(err) {
+                    await this.logger.error("Error getting guild prefix", err);
+                }
+            }
+        }
+
+        try {
+            return(await this.bot.configs.botConfig.getDefaultPrefix());
+        }
+        catch(err) {
+            await this.logger.error("Error getting default prefix", err);
+            return(undefined);
+        }
+    }
+
+    public async setGuildPrefix(guildId: string, newPrefix: string): Promise<boolean> {
+        try {
+            await this.bot.configs.guildConfig.setPrefix(guildId, newPrefix);
+            this.prefixMap.set(guildId, newPrefix);
+            return(true);
+        }
+        catch(err) {
+            await this.logger.error("Error setting guild prefix.", err);
+            return(false);
+        }
     }
     
     private registerCommand(command: Command) {

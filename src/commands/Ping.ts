@@ -5,8 +5,8 @@ import {Message, MessageEmbed} from 'discord.js';
 import { CommandUtils } from '../utils/CommandUtils';
 
 export class Ping extends Command {
-    constructor() {
-        super("ping", PermissionLevel.Everyone, "Gets current bot ping to API", "", true);
+    constructor(bot: PantherBot) {
+        super("ping", PermissionLevel.Everyone, "Gets current bot ping to API", bot);
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

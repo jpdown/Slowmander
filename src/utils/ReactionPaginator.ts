@@ -1,6 +1,6 @@
 import { MessageReaction, Message, MessageEmbed, TextChannel, NewsChannel, DMChannel, User, CollectorFilter, ReactionCollector } from "discord.js";
 import { CommandUtils } from "./CommandUtils";
-import { PermissionLevel, Command } from "../commands/Command";
+import { Command } from "../commands/Command";
 import { PermissionsHelper } from "./PermissionsHelper";
 import { PantherBot } from "../Bot";
 
@@ -94,14 +94,15 @@ export class ReactionPaginator {
     }
 
     private async checkPerms(reaction: MessageReaction, user: User): Promise<boolean> {
-        let permLevel: PermissionLevel;
+        let hasPerms: boolean;
+
         if(reaction.message.guild) {
-            permLevel = await PermissionsHelper.getMemberPermLevel(reaction.message.guild.member(user), this.bot);
+            hasPerms = await PermissionsHelper.checkPermsAndDM(reaction.message.guild.member(user), this.command, this.bot);
         }
         else {
-            permLevel = await PermissionsHelper.getUserPermLevel(user, this.bot);
+            hasPerms = await PermissionsHelper.checkPermsAndDM(user, this.command, this.bot);
         }
 
-        return(permLevel >= this.command.permLevel);
+        return(hasPerms);
     }
 }

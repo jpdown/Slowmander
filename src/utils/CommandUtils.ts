@@ -1,4 +1,4 @@
-import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, Emoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake } from "discord.js";
+import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake } from "discord.js";
 import { PantherBot } from "../Bot";
 
 export class CommandUtils {
@@ -11,7 +11,7 @@ export class CommandUtils {
 
         //If no color or color is black, we want default color
         if(!color || color === 0) {
-            color = bot.config.defaultColor;
+            color = await bot.configs.botConfig.getDefaultColor();
         }
 
         return(color);
@@ -181,8 +181,8 @@ export class CommandUtils {
         return(snowflake);
     }
 
-    static async parseEmote(potentialEmote: string, client: Client): Promise<Emoji> {
-        let parsedEmote: Emoji = undefined;
+    static async parseEmote(potentialEmote: string, client: Client): Promise<GuildEmoji> {
+        let parsedEmote: GuildEmoji = undefined;
 
         try {
             let snowflake: Snowflake = await CommandUtils.parseEmoteID(potentialEmote);
@@ -198,8 +198,8 @@ export class CommandUtils {
         return(parsedEmote);
     }
 
-    static async parseEmoteByName(potentialEmote: string, client: Client): Promise<Emoji> {
-        let emoteCache: Emoji[] = client.emojis.cache.array();
+    static async parseEmoteByName(potentialEmote: string, client: Client): Promise<GuildEmoji> {
+        let emoteCache: GuildEmoji[] = client.emojis.cache.array();
 
         for(let currEmote of emoteCache) {
             if(currEmote.name.toLowerCase() === potentialEmote.toLowerCase()) {
