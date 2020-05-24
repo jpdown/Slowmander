@@ -82,7 +82,8 @@ export class Credentials {
             rethinkPort: this.credentialsObject.rethinkPort,
             rethinkUser: this.credentialsObject.rethinkUser,
             rethinkPass: this.credentialsObject.rethinkPass,
-            rethinkDb: this.credentialsObject.rethinkDb
+            rethinkDb: this.credentialsObject.rethinkDb,
+            rethinkCert: this.credentialsObject.rethinkCert
         })
     }
 
@@ -99,7 +100,8 @@ export class Credentials {
             rethinkPort: 28015,
             rethinkUser: "admin",
             rethinkPass: "",
-            rethinkDb: "pantherbot"
+            rethinkDb: "pantherbot",
+            rethinkCert: ""
         };
 
         this.saveConfig();
@@ -116,5 +118,6 @@ interface CredentialsObject {
     rethinkPort: number,
     rethinkUser: string,
     rethinkPass: string,
-    rethinkDb: string
+    rethinkDb: string,
+    rethinkCert: string,
 }
