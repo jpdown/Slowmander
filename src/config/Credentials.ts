@@ -4,7 +4,7 @@ import { LogLevel, Logger } from '../Logger';
 import { RethinkCredentials } from './DatabaseManager';
 
 export class Credentials {
-    readonly CREDENTIALS_PATH: string = "./data/config.json";
+    readonly CREDENTIALS_PATH: string = "./data/credentials.json";
 
     private credentialsObject: CredentialsObject;
     private bot: PantherBot;
