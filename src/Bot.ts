@@ -1,4 +1,4 @@
-import {Client, Message, Snowflake} from 'discord.js';
+import {Client, Snowflake} from 'discord.js';
 import {Credentials} from './config/Credentials';
 import { CommandManager } from './CommandManager';
 import { ReactionRoleManager } from './reactionroles/ReactionRoleManager';
@@ -16,12 +16,12 @@ export class PantherBot {
     private _commandManager: CommandManager;
     private _reactionRoleManager: ReactionRoleManager;
     private _helpManager: HelpManager;
-    private _logger: Logger;
+    private logger: Logger;
     private _eventLogger: EventLogger;
 
     constructor() {
         this._client = new Client({partials: ['MESSAGE', 'REACTION']});
-        this._logger = new Logger(this);
+        this.logger = Logger.getLogger(this,this);
         this._credentials = new Credentials(this);
         this._databaseManager = new DatabaseManager(this, this._credentials.rethinkCreds);
         this._commandManager = new CommandManager(this);
@@ -34,14 +34,14 @@ export class PantherBot {
         this._client.on('messageReactionRemove', this._reactionRoleManager.onMessageReactionRemove.bind(this._reactionRoleManager));
         this._client.on("ready", this._reactionRoleManager.onReady.bind(this._reactionRoleManager))
         this._client.on('ready', async () => {
-            await this._logger.log(LogLevel.INFO, `Welcome to PantherBot-Discord-JS! Logged in as ${this._client.user.tag} in ${this._client.guilds.cache.size} guild(s).`);
+            await this.logger.info(`Welcome to PantherBot-Discord-JS! Logged in as ${this._client.user.tag} in ${this._client.guilds.cache.size} guild(s).`);
         })
     }
 
     public run() {
         let token: string = this._credentials.token;
         if(token === "") {
-            this._logger.logSync(LogLevel.ERROR, "PantherBot:run No token provided, please put a valid token in the config file.");
+            this.logger.logSync(LogLevel.ERROR, "No token provided, please put a valid token in the config file.");
             process.exit();
         }
 
@@ -49,7 +49,7 @@ export class PantherBot {
         this._databaseManager.connect().then(() => {
             this._configManager = new ConfigManager(this);
         }).catch((err) => {
-            this._logger.logSync(LogLevel.ERROR, "Error with db", err);
+            this.logger.logSync(LogLevel.ERROR, "Error with db", err);
         })
 
         this._client.login(token);
@@ -93,10 +93,6 @@ export class PantherBot {
 
     public get client(): Client {
         return(this._client);
-    }
-
-    public get logger(): Logger {
-        return(this._logger);
     }
 }
 

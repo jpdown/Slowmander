@@ -1,7 +1,5 @@
-import r from "rethinkdb";
 import { PantherBot } from "../Bot";
-import { LogLevel } from "../Logger";
-import { Snowflake, Guild } from "discord.js";
+import { Snowflake } from "discord.js";
 import { DatabaseEntry } from "./DatabaseEntry";
 
 export class GuildConfig extends DatabaseEntry<GuildConfigObject> {

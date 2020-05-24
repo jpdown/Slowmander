@@ -5,14 +5,14 @@ import {Message, User, MessageEmbed } from 'discord.js';
 import fetch from "node-fetch";
 import querystring from "querystring";
 import { CommandUtils } from '../utils/CommandUtils';
-import { LogLevel } from '../Logger';
+import { Logger } from '../Logger';
 
 export class Cat extends Command {
     private readonly API: string = "https://api.thecatapi.com/v1/images/search";
     private apiToken: string;
 
-    constructor() {
-        super("cat", PermissionLevel.Everyone, "Gives a random cat image");
+    constructor(bot: PantherBot) {
+        super("cat", PermissionLevel.Everyone, "Gives a random cat image", bot);
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -51,8 +51,8 @@ export class Cat extends Command {
 export class Dog extends Command {
     private readonly API: string = "https://dog.ceo/api/breeds/image/random";
 
-    constructor() {
-        super("dog", PermissionLevel.Everyone, "Gives a random dog image");
+    constructor(bot: PantherBot) {
+        super("dog", PermissionLevel.Everyone, "Gives a random dog image", bot);
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -70,7 +70,7 @@ export class Dog extends Command {
             dogImage = dogJson.message;
         }
         catch(err) {
-            bot.logger.log(LogLevel.ERROR, "Dog:run Error getting dog image from API", err);
+            await this.logger.error("Error getting dog image from API", err);
         }
 
         if(dogImage !== undefined && dogImage !== "") {
@@ -96,8 +96,8 @@ export class Dog extends Command {
 export class DadJoke extends Command {
     private readonly API: string = "https://icanhazdadjoke.com/";
 
-    constructor() {
-        super("dadjoke", PermissionLevel.Everyone, "Gives a random dad joke");
+    constructor(bot: PantherBot) {
+        super("dadjoke", PermissionLevel.Everyone, "Gives a random dad joke", bot);
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -114,7 +114,7 @@ export class DadJoke extends Command {
             dadJokeMessage = await (await fetch(this.API, { method: "get", headers: headers })).text();
         }
         catch(err) {
-            bot.logger.log(LogLevel.ERROR, "DadJoke:run Error getting dad joke from API", err);
+            await this.logger.error("Error getting dad joke from API", err);
         }
 
         if(dadJokeMessage !== undefined && dadJokeMessage !== "") {
@@ -153,7 +153,7 @@ class CatAPIHelper {
             imageUrl = respJson[0].url;
         }
         catch(err) {
-            bot.logger.log(LogLevel.ERROR, "CatDogAPIHelper:getImage Error obtaining image from API " + api, err);
+            await new Logger(bot, CatAPIHelper.name).error("Error obtaining image from API " + api, err);
         }
 
         return(imageUrl);

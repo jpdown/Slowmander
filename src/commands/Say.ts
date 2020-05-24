@@ -1,13 +1,12 @@
 import {Command, PermissionLevel, CommandResult} from './Command';
 import { PantherBot } from '../Bot';
 
-import {Message, Channel, TextChannel, NewsChannel, DMChannel, Permissions} from 'discord.js';
+import {Message, TextChannel, NewsChannel, DMChannel, Permissions} from 'discord.js';
 import { CommandUtils } from '../utils/CommandUtils';
-import { LogLevel } from '../Logger';
 
 export class Say extends Command {
-    constructor() {
-        super("say", PermissionLevel.Admin, "Sends a message as the bot", {usage: "[channel/user]... <message>", requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+    constructor(bot: PantherBot) {
+        super("say", PermissionLevel.Admin, "Sends a message as the bot", bot, {usage: "[channel/user]... <message>", requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -23,7 +22,7 @@ export class Say extends Command {
         }
         catch(err) {
             //We probably just don't have perms, but log
-            await bot.logger.log(LogLevel.WARNING, "Say:run Error deleting message from say command, likely missing perms.", err);
+            await this.logger.warning("Error deleting message from say command, likely missing perms.", err);
         }
 
         let lastChannel: number = 0;

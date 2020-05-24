@@ -2,29 +2,29 @@ import { CommandGroup } from "./CommandGroup";
 import { Command, CommandResult } from "./Command";
 import { PermissionLevel } from "./Command";
 import { PantherBot } from "../Bot";
-import { ReactionRoleConfig, ReactionRoleObject } from "../config/ReactionRoleConfig";
+import { ReactionRoleObject } from "../config/ReactionRoleConfig";
 import { ReactionPaginator } from "../utils/ReactionPaginator"
 
 import { Message, Role, TextChannel, NewsChannel, Permissions, ReactionEmoji, Emoji, User, MessageReaction, Collection, ReactionCollector, GuildEmoji, Snowflake } from "discord.js";
 import { CommandUtils } from "../utils/CommandUtils";
 
 export class ReactionRoleManagement extends CommandGroup {
-    constructor() {
-        super("reactionrole", "Manages reaction roles", {runsInDm: false});
+    constructor(bot: PantherBot) {
+        super("reactionrole", "Manages reaction roles", bot, {runsInDm: false});
 
-        this.registerSubCommands();
+        this.registerSubCommands(bot);
     }
 
-    protected registerSubCommands(): void {
-        this.registerSubCommand(new AddReactionRole(this));
-        this.registerSubCommand(new RemoveReactionRole(this));
-        this.registerSubCommand(new ListReactionRoles(this));
+    protected registerSubCommands(bot: PantherBot): void {
+        this.registerSubCommand(new AddReactionRole(this, bot));
+        this.registerSubCommand(new RemoveReactionRole(this, bot));
+        this.registerSubCommand(new ListReactionRoles(this, bot));
     }
 }
 
 class AddReactionRole extends Command {
-    constructor(group: CommandGroup) {
-        super("add", PermissionLevel.Admin, "Adds a reaction role", {usage: "<message link> <role> <name>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("add", PermissionLevel.Admin, "Adds a reaction role", bot, {usage: "<message link> <role> <name>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -37,7 +37,7 @@ class AddReactionRole extends Command {
             return {sendHelp: false, command: this, message: message};
         }
 
-        if(await bot.reactionRoleManager.reactionRoleConfig.guildHasReactionRoleName(message.guild.id, reactionRoleParsedArgs.name)) {
+        if(await bot.configs.reactionRoleConfig.guildHasReactionRoleName(message.guild.id, reactionRoleParsedArgs.name)) {
             await this.sendMessage(`Adding reaction role failed. Reaction role ${reactionRoleParsedArgs.name} already exists.`, message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
@@ -68,7 +68,7 @@ class AddReactionRole extends Command {
             name: reactionRoleParsedArgs.name
         }
 
-        if(await bot.reactionRoleManager.reactionRoleConfig.guildHasReactionRoleEmote(reactionRoleObject.guildID, reactionRoleObject.emoteID, reactionRoleObject.messageID)) {
+        if(await bot.configs.reactionRoleConfig.guildHasReactionRoleEmote(reactionRoleObject.guildID, reactionRoleObject.emoteID, reactionRoleObject.messageID)) {
             await this.sendMessage(`Adding reaction role failed. Reaction role with emote ${await ReactionRoleHelper.makeEmoteFromId(reactionRoleObject.emoteID, message)} already exists.`, message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
@@ -137,8 +137,8 @@ class AddReactionRole extends Command {
 }
 
 class RemoveReactionRole extends Command {
-    constructor(group: CommandGroup) {
-        super("remove", PermissionLevel.Admin, "Removes a reaction role", {usage: "<name>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("remove", PermissionLevel.Admin, "Removes a reaction role", bot, {usage: "<name>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -148,7 +148,7 @@ class RemoveReactionRole extends Command {
 
         let name: string = args[0];
 
-        if(!await bot.reactionRoleManager.reactionRoleConfig.guildHasReactionRoleName(message.guild.id, name)) {
+        if(!await bot.configs.reactionRoleConfig.guildHasReactionRoleName(message.guild.id, name)) {
             await this.sendMessage(`Reaction role ${name} does not exist.`, message.channel, bot);
             return;
         }
@@ -166,13 +166,13 @@ class RemoveReactionRole extends Command {
 }
 
 class ListReactionRoles extends Command {
-    constructor(group: CommandGroup) {
-        super("list", PermissionLevel.Admin, "Gets list of reaction roles", {runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("list", PermissionLevel.Admin, "Gets list of reaction roles", bot, {runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         //Get reactionroles
-        let reactionRoles: ReactionRoleObject[] = await bot.reactionRoleManager.reactionRoleConfig.getGuildReactionRoles(message.guild.id);
+        let reactionRoles: ReactionRoleObject[] = await bot.configs.reactionRoleConfig.getGuildReactionRoles(message.guild.id);
 
         if(reactionRoles.length < 1) {
             await this.sendMessage("I have no current reaction roles.", message.channel, bot);

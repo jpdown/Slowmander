@@ -1,15 +1,16 @@
 import r from "rethinkdb";
 import { PantherBot } from "../Bot";
-import { Credentials } from "./Credentials";
-import { LogLevel } from "../Logger";
+import { Logger } from "../Logger";
 
 export class DatabaseManager {
     private _connection: r.Connection;
     private bot: PantherBot;
-    private creds: RethinkCredentials
+    private creds: RethinkCredentials;
+    private logger: Logger;
 
     constructor(bot: PantherBot, rethinkCreds: RethinkCredentials) {
         this.bot = bot;
+        this.logger = Logger.getLogger(bot, this);
         this.creds = rethinkCreds
     }
 
@@ -24,7 +25,7 @@ export class DatabaseManager {
             }
         }
         catch(err) {
-            this.bot.logger.logSync(LogLevel.ERROR, "DatabaseManager:connect Error connecting to rethinkdb", err);
+            await this.logger.error("Error connecting to rethinkdb", err);
             this._connection = undefined;
         }
         

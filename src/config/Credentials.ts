@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { PantherBot } from '../Bot';
-import { LogLevel } from '../Logger';
+import { LogLevel, Logger } from '../Logger';
 import { RethinkCredentials } from './DatabaseManager';
 
 export class Credentials {
@@ -8,10 +8,12 @@ export class Credentials {
 
     private credentialsObject: CredentialsObject;
     private bot: PantherBot;
+    private logger: Logger;
 
     constructor(bot: PantherBot) {
         this.credentialsObject = undefined;
         this.bot = bot;
+        this.logger = Logger.getLogger(bot, this);
         this.loadConfig();
     }
 
@@ -24,7 +26,7 @@ export class Credentials {
                 this.credentialsObject = <CredentialsObject>JSON.parse(jsonData);
             }
             catch(err) {
-                this.bot.logger.logSync(LogLevel.ERROR, "Config:loadConfig Error loading main config file.", err);
+                this.logger.logSync(LogLevel.ERROR, "Error loading main config file.", err);
                 this.credentialsObject = undefined;
             }
         }
@@ -42,7 +44,7 @@ export class Credentials {
             fs.writeFileSync(this.CREDENTIALS_PATH, jsonData);
         }
         catch(err) {
-            this.bot.logger.logSync(LogLevel.ERROR, "Config:saveConfig Error saving main config file.", err);
+            this.logger.logSync(LogLevel.ERROR, "Error saving main config file.", err);
         }
     }
 
@@ -102,7 +104,7 @@ export class Credentials {
 
         this.saveConfig();
 
-        this.bot.logger.logSync(LogLevel.INFO, "Config:generateConfig Default config generated.");
+        this.logger.logSync(LogLevel.INFO, "Default config generated.");
     }
 }
 

@@ -5,27 +5,26 @@ import { PantherBot } from "../Bot";
 
 import { Message, GuildMember, Role, TextChannel, Channel, Permissions } from "discord.js";
 import { CommandUtils } from "../utils/CommandUtils";
-import { LogLevel } from "../Logger";
 
 export class Set extends CommandGroup {
-    constructor() {
-        super("set", "Sets various bot parameters");
+    constructor(bot: PantherBot) {
+        super("set", "Sets various bot parameters", bot);
 
-        this.registerSubCommands();
+        this.registerSubCommands(bot);
     }
 
-    protected registerSubCommands(): void {
-        this.registerSubCommand(new SetNickname(this));
-        this.registerSubCommand(new SetGuildPrefix(this));
-        this.registerSubCommand(new SetModRole(this));
-        this.registerSubCommand(new SetAdminRole(this));
-        this.registerSubCommand(new SetEventLogChannel(this));
+    protected registerSubCommands(bot: PantherBot): void {
+        this.registerSubCommand(new SetNickname(this, bot));
+        this.registerSubCommand(new SetGuildPrefix(this, bot));
+        this.registerSubCommand(new SetModRole(this, bot));
+        this.registerSubCommand(new SetAdminRole(this, bot));
+        this.registerSubCommand(new SetEventLogChannel(this, bot));
     }
 }
 
 class SetNickname extends Command {
-    constructor(group: CommandGroup) {
-        super("nickname", PermissionLevel.Mod, "Sets bot or another member's nickname", {usage: "[member] <new nickname>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.MANAGE_NICKNAMES});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("nickname", PermissionLevel.Mod, "Sets bot or another member's nickname", bot, {usage: "[member] <new nickname>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.MANAGE_NICKNAMES});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -49,16 +48,16 @@ class SetNickname extends Command {
             await this.sendMessage(`Nickname for ${member.toString()} changed successfully.`, message.channel, bot);
         }
         catch(err) {
-            await this.sendMessage("Error changing nickname, missing perms? Check log for details.", message.channel, bot);
-            await bot.logger.log(LogLevel.ERROR, "SetNickname:run Error changing nickname, missing perms?", err);
+            await this.sendMessage("Error changing nickname, missing perms?", message.channel, bot);
+            await this.logger.error("Error changing nickname, missing perms?", err);
         }
         return {sendHelp: false, command: this, message: message};
     }
 }
 
 class SetGuildPrefix extends Command {
-    constructor(group: CommandGroup) {
-        super("prefix", PermissionLevel.Admin, "Sets prefix in guild", {usage: "<prefix>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("prefix", PermissionLevel.Admin, "Sets prefix in guild", bot, {usage: "<prefix>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -82,8 +81,8 @@ class SetGuildPrefix extends Command {
 }
 
 class SetModRole extends Command {
-    constructor(group: CommandGroup) {
-        super("modrole", PermissionLevel.Admin, "Sets bot's mod role", {usage: "<role>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("modrole", PermissionLevel.Admin, "Sets bot's mod role", bot, {usage: "<role>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -111,8 +110,8 @@ class SetModRole extends Command {
 }
 
 class SetAdminRole extends Command {
-    constructor(group: CommandGroup) {
-        super("adminrole", PermissionLevel.Admin, "Sets bot's admin role", {usage: "<role>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("adminrole", PermissionLevel.Admin, "Sets bot's admin role", bot, {usage: "<role>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -140,8 +139,8 @@ class SetAdminRole extends Command {
 }
 
 class SetEventLogChannel extends Command {
-    constructor(group: CommandGroup) {
-        super("eventlog", PermissionLevel.Admin, "Sets bot eventlog channel", {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("eventlog", PermissionLevel.Admin, "Sets bot eventlog channel", bot, {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

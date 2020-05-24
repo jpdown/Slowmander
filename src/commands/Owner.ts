@@ -3,32 +3,31 @@ import { Command, CommandResult } from "./Command";
 import { PermissionLevel } from "./Command";
 import { PantherBot } from "../Bot";
 
-import { Message, User, GuildMember, Role, ActivityOptions, WebhookClient, ColorResolvable, TextChannel, Channel } from "discord.js";
+import { Message, User, ActivityOptions, WebhookClient } from "discord.js";
 import { CommandUtils } from "../utils/CommandUtils";
-import { LogLevel } from "../Logger";
 
 export class Owner extends CommandGroup {
-    constructor() {
-        super("owner", "Owner commands (you know this already)");
+    constructor(bot: PantherBot) {
+        super("owner", "Owner commands (you know this already)", bot);
 
-        this.registerSubCommands();
+        this.registerSubCommands(bot);
     }
 
-    protected registerSubCommands(): void {
-        this.registerSubCommand(new SetUsername(this));
-        this.registerSubCommand(new SetAvatar(this));
-        this.registerSubCommand(new AddOwner(this));
-        this.registerSubCommand(new RemoveOwner(this));
-        this.registerSubCommand(new SetDefaultPrefix(this));
-        this.registerSubCommand(new SetStatus(this));
-        this.registerSubCommand(new SetActivity(this));
-        this.registerSubCommand(new SetErrorLogWebhook(this));
+    protected registerSubCommands(bot: PantherBot): void {
+        this.registerSubCommand(new SetUsername(this, bot));
+        this.registerSubCommand(new SetAvatar(this, bot));
+        this.registerSubCommand(new AddOwner(this, bot));
+        this.registerSubCommand(new RemoveOwner(this, bot));
+        this.registerSubCommand(new SetDefaultPrefix(this, bot));
+        this.registerSubCommand(new SetStatus(this, bot));
+        this.registerSubCommand(new SetActivity(this, bot));
+        this.registerSubCommand(new SetErrorLogWebhook(this, bot));
     }
 }
 
 class SetUsername extends Command {
-    constructor(group: CommandGroup) {
-        super("name", PermissionLevel.Owner, "Sets bot username.", {usage: "<username>", group: group, longDesc: "Minimum username length is 2 characters."});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("name", PermissionLevel.Owner, "Sets bot username.", bot, {usage: "<username>", group: group, longDesc: "Minimum username length is 2 characters."});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -44,7 +43,7 @@ class SetUsername extends Command {
         }
         catch(err) {
             await this.sendMessage("Error changing username, check log for details.", message.channel, bot);
-            await bot.logger.log(LogLevel.ERROR, "SetUsername:run Error changing username.", err);
+            await this.logger.error("Error changing username.", err);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -52,8 +51,8 @@ class SetUsername extends Command {
 }
 
 class SetAvatar extends Command {
-    constructor(group: CommandGroup) {
-        super("avatar", PermissionLevel.Owner, "Sets bot avatar", {usage: "<image url>", group: group});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("avatar", PermissionLevel.Owner, "Sets bot avatar", bot, {usage: "<image url>", group: group});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -66,15 +65,15 @@ class SetAvatar extends Command {
         }
         catch(err) {
             await this.sendMessage("Error changing avatar, check log for details.", message.channel, bot);
-            await bot.logger.log(LogLevel.ERROR, "SetAvatar:run Error changing avatar.", err);
+            await this.logger.error("Error changing avatar.", err);
         }
         return {sendHelp: false, command: this, message: message};
     }
 }
 
 class AddOwner extends Command {
-    constructor(group: CommandGroup) {
-        super("addowner", PermissionLevel.Owner, "Adds a bot owner", {usage: "<owner>", group: group});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("addowner", PermissionLevel.Owner, "Adds a bot owner", bot, {usage: "<owner>", group: group});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -100,8 +99,8 @@ class AddOwner extends Command {
 }
 
 class RemoveOwner extends Command {
-    constructor(group: CommandGroup) {
-        super("removeowner", PermissionLevel.Owner, "Removes a bot owner", {usage: "<owner>", group: group});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("removeowner", PermissionLevel.Owner, "Removes a bot owner", bot, {usage: "<owner>", group: group});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -127,8 +126,8 @@ class RemoveOwner extends Command {
 }
 
 class SetDefaultPrefix extends Command {
-    constructor(group: CommandGroup) {
-        super("prefix", PermissionLevel.Owner, "Sets bot default prefix", {usage: "<prefix>", group: group});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("prefix", PermissionLevel.Owner, "Sets bot default prefix", bot, {usage: "<prefix>", group: group});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -152,8 +151,8 @@ class SetDefaultPrefix extends Command {
 }
 
 class SetStatus extends Command {
-    constructor(group: CommandGroup) {
-        super("status", PermissionLevel.Owner, "Sets bot status", {usage: "<online, away/idle, dnd, invis/offline>", group: group});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("status", PermissionLevel.Owner, "Sets bot status", bot, {usage: "<online, away/idle, dnd, invis/offline>", group: group});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -189,8 +188,8 @@ class SetStatus extends Command {
 class SetActivity extends Command {
     private readonly STREAMING_URL: string = "https://twitch.tv/jpdown";
 
-    constructor(group: CommandGroup) {
-        super("activity", PermissionLevel.Owner, "Sets bot activity", {usage: "<playing, streaming, listening, watching, clear> <activity string>", group: group});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("activity", PermissionLevel.Owner, "Sets bot activity", bot, {usage: "<playing, streaming, listening, watching, clear> <activity string>", group: group});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -231,8 +230,8 @@ class SetActivity extends Command {
 }
 
 class SetErrorLogWebhook extends Command {
-    constructor(group: CommandGroup) {
-        super("errorwebhook", PermissionLevel.Owner, "Sets bot error log webhook", {usage: "<webhook url>", group: group});
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("errorwebhook", PermissionLevel.Owner, "Sets bot error log webhook", bot, {usage: "<webhook url>", group: group});
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

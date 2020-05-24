@@ -1,7 +1,6 @@
-import { Message, Emoji, Role, User, GuildMember, TextChannel, Client, NewsChannel, Snowflake, GuildEmoji, ReactionEmoji } from 'discord.js';
+import { Message, Snowflake, GuildEmoji, ReactionEmoji } from 'discord.js';
 
 import { PantherBot } from "../Bot";
-import { LogLevel } from '../Logger';
 import { DatabaseEntry, DatabaseObject } from './DatabaseEntry';
 
 export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {

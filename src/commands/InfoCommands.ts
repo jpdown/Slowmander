@@ -3,12 +3,12 @@ import { PantherBot } from '../Bot';
 import { CommandUtils } from '..//utils/CommandUtils';
 import { PermissionsHelper } from '../utils/PermissionsHelper';
 
-import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions} from 'discord.js';
+import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client} from 'discord.js';
 import { ReactionPaginator } from '../utils/ReactionPaginator';
 
 export class Whois extends Command {
-    constructor() {
-        super("whois", PermissionLevel.Everyone, "Gets information on a member", {usage: "[member]", runsInDm: false});
+    constructor(bot: PantherBot) {
+        super("whois", PermissionLevel.Everyone, "Gets information on a member", bot, {usage: "[member]", runsInDm: false});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -67,8 +67,8 @@ export class Whois extends Command {
 }
 
 export class Roles extends Command {
-    constructor() {
-        super("roles", PermissionLevel.Mod, "Gets list of roles", {runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES});
+    constructor(bot: PantherBot) {
+        super("roles", PermissionLevel.Mod, "Gets list of roles", bot, {runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -95,8 +95,8 @@ export class Roles extends Command {
 }
 
 export class Members extends Command {
-    constructor() {
-        super("members", PermissionLevel.Mod, "Gets list of members for given role", {usage: "<role>", runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES});
+    constructor(bot: PantherBot) {
+        super("members", PermissionLevel.Mod, "Gets list of members for given role", bot, {usage: "<role>", runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
@@ -130,8 +130,8 @@ export class Members extends Command {
 }
 
 export class Avatar extends Command {
-    constructor() {
-        super("avatar", PermissionLevel.Everyone, "Gets avatar for given user", {usage: "<user>"});
+    constructor(bot: PantherBot) {
+        super("avatar", PermissionLevel.Everyone, "Gets avatar for given user", bot, {usage: "<user>"});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

@@ -1,16 +1,15 @@
-import { ReactionRoleConfig, ReactionRoleObject } from "../config/ReactionRoleConfig";
+import { ReactionRoleObject } from "../config/ReactionRoleConfig";
 import { PantherBot } from "../Bot";
-import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Guild, Client, ReactionEmoji } from "discord.js";
-import { LogLevel } from "../Logger";
-import { ReactionRoleParsedArgs } from "../commands";
+import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Client } from "discord.js";
+import { Logger } from "../Logger";
 
 export class ReactionRoleManager {
-    private _reactionRoleConfig: ReactionRoleConfig;
     private bot: PantherBot;
+    private logger: Logger;
 
     constructor(bot: PantherBot) {
         this.bot = bot;
-        this._reactionRoleConfig = new ReactionRoleConfig(bot);
+        this.logger = Logger.getLogger(bot, this);
     }
 
     public async onMessageReactionAdd(reaction: MessageReaction, user: User) {
@@ -20,7 +19,7 @@ export class ReactionRoleManager {
             }
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, "ReactionRoleManager:onMessageReactionAdd Error fetching reaction.", err);
+            await this.logger.error("Error fetching reaction.", err);
         }
 
         //Ignore bots
@@ -34,7 +33,7 @@ export class ReactionRoleManager {
         }
 
         //Try to grab reaction role
-        let reactionRole: ReactionRoleObject = await this._reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
+        let reactionRole: ReactionRoleObject = await this.bot.configs.reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
         if(reactionRole === undefined) {
             return;
         }
@@ -51,7 +50,7 @@ export class ReactionRoleManager {
             }
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, "ReactionRoleManager:onMessageReactionRemove Error fetching reaction.", err);
+            await this.logger.error("Error fetching reaction.", err);
         }
 
         //Ignore bots
@@ -65,7 +64,7 @@ export class ReactionRoleManager {
         }
 
         //Try to grab reaction role
-        let reactionRole: ReactionRoleObject = await this._reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
+        let reactionRole: ReactionRoleObject = await this.bot.configs.reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
         if(reactionRole === undefined) {
             return;
         }
@@ -76,7 +75,7 @@ export class ReactionRoleManager {
     }
 
     public async onReady() {
-        let guildReactionRoles: Map<Snowflake, ReactionRoleObject[]> = await this._reactionRoleConfig.getAllReactionRoles();
+        let guildReactionRoles: Map<Snowflake, ReactionRoleObject[]> = await this.bot.configs.reactionRoleConfig.getAllReactionRoles();
         let currChannel: TextChannel | NewsChannel;
         let currMessage: Message;
         let iterableReactionRoles: IterableIterator<ReactionRoleObject[]> = guildReactionRoles.values();
@@ -100,14 +99,14 @@ export class ReactionRoleManager {
                     await this.checkUsers(currMessage, currReactionRole);
                 }
                 catch(err) {
-                    await this.bot.logger.log(LogLevel.ERROR, "ReactionRoleManager:onReady Error checking reaction role status.", err);
+                    await this.logger.error("Error checking reaction role status.", err);
                 }
             }
         }
     }
 
     public async addReactionRole(reactionRole: ReactionRoleObject, reactionMessage: Message): Promise<boolean> {
-        let dbResult: boolean = await this._reactionRoleConfig.addReactionRole(reactionRole);
+        let dbResult: boolean = await this.bot.configs.reactionRoleConfig.addReactionRole(reactionRole);
         if(!dbResult) return(false);
 
         //React to message
@@ -116,14 +115,14 @@ export class ReactionRoleManager {
             return(true);
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.WARNING, "ReactionRoleManager:addReactionRole Error reacting to message, missing perms?", err);
-            await this._reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
+            await this.logger.warning("Error reacting to message, missing perms?", err);
+            await this.bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
             return(false);
         }
     }
 
     public async removeReactionRole(guildId: Snowflake, name: string, client: Client): Promise<boolean> {
-        let removedReactionRole: ReactionRoleObject = await this._reactionRoleConfig.removeReactionRole(guildId, name);
+        let removedReactionRole: ReactionRoleObject = await this.bot.configs.reactionRoleConfig.removeReactionRole(guildId, name);
         if(!removedReactionRole) return(false);
 
         //Remove our reaction
@@ -136,13 +135,9 @@ export class ReactionRoleManager {
 
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.WARNING, "ReactionRoleManager:removeReactionRole Error removing reaction from message, missing perms?", err);
+            await this.logger.warning("Error removing reaction from message, missing perms?", err);
         }
         return(true);
-    }
-
-    public get reactionRoleConfig(): ReactionRoleConfig {
-        return(this._reactionRoleConfig);
     }
 
     private async checkUsers(message: Message, reactionRole: ReactionRoleObject) {
@@ -202,7 +197,7 @@ export class ReactionRoleManager {
         }
         catch(err) {
             await channel.send(`There was an error adding the role to ${member.toString()}.`);
-            await this.bot.logger.log(LogLevel.ERROR, `ReactionRoleManager:addUser Error adding reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
+            await this.logger.error(`Error adding reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
         }
     }
 
@@ -214,7 +209,7 @@ export class ReactionRoleManager {
         }
         catch(err) {
             await channel.send(`There was an error removing the role from ${member.toString()}.`);
-            await this.bot.logger.log(LogLevel.ERROR, `ReactionRoleManager:removeUser Error removing reaction role ${reactionRole.name} from ${member.user.username}#${member.user.discriminator}`, err);
+            await this.logger.error(`Error removing reaction role ${reactionRole.name} from ${member.user.username}#${member.user.discriminator}`, err);
         }
     }
 }

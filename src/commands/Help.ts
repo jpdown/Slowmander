@@ -5,7 +5,7 @@ import {Message} from 'discord.js';
 
 export class Help extends Command {    
     constructor(bot: PantherBot) {
-        super("help", PermissionLevel.Everyone, "You're using it!", {usage: "[command]"});
+        super("help", PermissionLevel.Everyone, "You're using it!", bot, {usage: "[command]"});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {

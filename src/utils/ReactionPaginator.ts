@@ -1,6 +1,6 @@
 import { MessageReaction, Message, MessageEmbed, TextChannel, NewsChannel, DMChannel, User, CollectorFilter, ReactionCollector } from "discord.js";
 import { CommandUtils } from "./CommandUtils";
-import { PermissionLevel, Command } from "../commands/Command";
+import { Command } from "../commands/Command";
 import { PermissionsHelper } from "./PermissionsHelper";
 import { PantherBot } from "../Bot";
 

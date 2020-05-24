@@ -6,12 +6,12 @@ import { Message, PermissionResolvable, Permissions } from "discord.js";
 export abstract class CommandGroup extends Command {
     protected _subCommands: Map<string, Command>;
 
-    constructor(name: string, desc: string, params?: CommandParameters) {
+    constructor(name: string, desc: string, bot: PantherBot, params?: CommandParameters) {
         if(!params) {
             params = <CommandParameters>{};
         }
         params.usage = "<subcommand>";
-        super(name, PermissionLevel.Owner, desc, params);
+        super(name, PermissionLevel.Owner, desc, bot, params);
         this._subCommands = new Map<string, Command>();
     }
 
@@ -57,5 +57,5 @@ export abstract class CommandGroup extends Command {
         this._subCommands.set(command.name, command);
     }
 
-    protected abstract registerSubCommands(): void;
+    protected abstract registerSubCommands(bot: PantherBot): void;
 }

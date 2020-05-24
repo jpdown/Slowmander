@@ -1,13 +1,15 @@
 import { PantherBot } from "../Bot";
-import { GuildMember, Message, Collection, Snowflake, Guild, User, Client, TextChannel, Channel, MessageEmbed, NewsChannel } from "discord.js";
-import { LogLevel } from "../Logger";
+import { GuildMember, Message, Collection, Snowflake, Guild, User, Client, TextChannel, MessageEmbed, NewsChannel } from "discord.js";
+import { Logger } from "../Logger";
 
 export class EventLogger {
     private bot: PantherBot;
+    private logger: Logger;
     private channelMap: Map<Snowflake, string>;
 
     constructor(bot: PantherBot) {
         this.bot = bot;
+        this.logger = Logger.getLogger(bot, this);
         this.channelMap = new Map<Snowflake, string>();
 
         //Register events
@@ -208,7 +210,7 @@ export class EventLogger {
                 }
             }
             catch(err) {
-                await this.bot.logger.log(LogLevel.ERROR, "Error getting eventlog channel", err);
+                await this.logger.error("Error getting eventlog channel", err);
             }
         }
 

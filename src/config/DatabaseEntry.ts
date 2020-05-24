@@ -1,17 +1,19 @@
 import { PantherBot } from "../Bot";
-import { LogLevel } from "../Logger";
+import { Logger } from "../Logger";
 
-import r, { Row } from "rethinkdb";
+import r from "rethinkdb";
 
 export abstract class DatabaseEntry<T extends DatabaseObject> {
     protected readonly TABLE: string;
     protected bot: PantherBot;
+    protected logger: Logger;
     protected defaultEntry: DatabaseObject;
 
     constructor(table: string, defaultEntry: DatabaseObject, bot: PantherBot) {
         this.TABLE = table;
         this.defaultEntry = defaultEntry;
         this.bot = bot;
+        this.logger = Logger.getLogger(bot, this);
     }
 
     protected async checkTable(): Promise<boolean> {
@@ -21,7 +23,7 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
             tableList = await r.db(this.bot.databaseManager.db).tableList().run(await this.bot.databaseManager.getConnection());
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, "Error getting table list.", err);
+            await this.logger.error("Error getting table list.", err);
             return(false);
         }
 
@@ -46,7 +48,7 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
             dbObj = <T> await r.table(this.TABLE).get(id).run(await this.bot.databaseManager.getConnection());
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:getDocument Error getting from database.`, err);
+            await this.logger.error("Error getting from database.", err);
         }
 
         return(dbObj);
@@ -63,7 +65,7 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
             if(resultArray.length > 0) dbObj = resultArray[0];
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:getFirstDocument Error getting from database.`, err);
+            await this.logger.error("Error getting from database.", err);
         }
 
         return(dbObj);
@@ -82,7 +84,7 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
             }
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:getAllDocuments Error getting from database.`, err);
+            await this.logger.error("Error getting from database.", err);
         }
 
         return(resultArray);
@@ -94,14 +96,14 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
         try {
             let result: r.WriteResult = await r.table(this.TABLE).get(id).update(object).run(await this.bot.databaseManager.getConnection());
             if(result.errors > 0) {
-                await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:updateDocument Error updating document. Table: ${this.TABLE}, ID: ${id}, Updates: ${object}. First error: ${result.first_error}`);
+                await this.logger.error(`Error updating document. Table: ${this.TABLE}, ID: ${id}, Updates: ${object}. First error: ${result.first_error}`);
                 return(false);
             }
 
             return(true);
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:updateDocument Error updating document. Table: ${this.TABLE}, ID: ${id}, Updates: ${object}`, err);
+            await this.logger.error(`Error updating document. Table: ${this.TABLE}, ID: ${id}, Updates: ${object}`, err);
             return(false)
         }
     }
@@ -112,14 +114,14 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
         try {
             let result: r.WriteResult = await r.table(this.TABLE).limit(1).update(object).run(await this.bot.databaseManager.getConnection());
             if(result.errors > 0) {
-                await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:updateFirstDocument Error updating document. Table: ${this.TABLE}, Updates: ${object}. First error: ${result.first_error}`);
+                await this.logger.error(`Error updating document. Table: ${this.TABLE}, Updates: ${object}. First error: ${result.first_error}`);
                 return(false);
             }
 
             return(true);
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:updateFirstDocument Error updating document. Table: ${this.TABLE}, Updates: ${object}`, err);
+            await this.logger.error(`Error updating document. Table: ${this.TABLE}, Updates: ${object}`, err);
             return(false)
         }
     }
@@ -133,14 +135,14 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
             }
             let result: r.WriteResult = await r.table(this.TABLE).insert(object).run(await this.bot.databaseManager.getConnection());
             if(result.errors > 0) {
-                await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:insertDocument Error inserting document. Table: ${this.TABLE}, ID: ${id}, Document: ${object}. First error: ${result.first_error}`);
+                await this.logger.error(`Error inserting document. Table: ${this.TABLE}, ID: ${id}, Document: ${object}. First error: ${result.first_error}`);
                 return(false);
             }
 
             return(true);
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:insertDocument Error inserting document. Table: ${this.TABLE}, ID: ${id}, Document: ${object}`, err);
+            await this.logger.error(`Error inserting document. Table: ${this.TABLE}, ID: ${id}, Document: ${object}`, err);
             return(false)
         }
     }
@@ -160,14 +162,14 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
         try {
             let result: r.WriteResult = await r.table(this.TABLE).filter(object).delete().run(await this.bot.databaseManager.getConnection());
             if(result.errors > 0) {
-                await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:removeMatchingDocuments Error removing documents. Table: ${this.TABLE}, Filter: ${object}. First error: ${result.first_error}`);
+                await this.logger.error(`Error removing documents. Table: ${this.TABLE}, Filter: ${object}. First error: ${result.first_error}`);
                 return(false);
             }
 
             return(true);
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:removeMatchingDocuments Error removing documents. Table: ${this.TABLE}, Filter: ${object}.`, err);
+            await this.logger.error(`Error removing documents. Table: ${this.TABLE}, Filter: ${object}.`, err);
             return(false);
         }
     }
@@ -182,7 +184,7 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
             resultsArr = await cursor.toArray();
         }
         catch(err) {
-            await this.bot.logger.log(LogLevel.ERROR, `${this.constructor.name}:getAllMatches Error getting matching documents. Table: ${this.TABLE}, Row: ${row}, Value: ${value}`, err);
+            await this.logger.error(`Error getting matching documents. Table: ${this.TABLE}, Row: ${row}, Value: ${value}`, err);
             return(undefined);
         }
 
@@ -192,17 +194,17 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
     private async generateTable(): Promise<boolean> {
         try {
             await r.db(this.bot.databaseManager.db).tableCreate(this.TABLE).run(await this.bot.databaseManager.getConnection())
-            await this.bot.logger.log(LogLevel.INFO, `Table ${this.TABLE} created successfully.`);
+            await this.logger.info(`Table ${this.TABLE} created successfully.`);
 
             if(this.defaultEntry) {
                 await r.table(this.TABLE).insert(this.defaultEntry).run(await this.bot.databaseManager.getConnection()) 
-                await this.bot.logger.log(LogLevel.INFO, `Default data put in ${this.TABLE} successfully.`);
+                await this.logger.info(`Default data put in ${this.TABLE} successfully.`);
             }
 
             return(true);
         }
         catch(err) {
-            this.bot.logger.logSync(LogLevel.ERROR, "BotConfig:generateTable Error creating table.", err);
+            await this.logger.error("Error creating table.", err);
             return(false);
         }
     }

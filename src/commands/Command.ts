@@ -2,6 +2,7 @@ import {PantherBot} from '../Bot';
 import {Message, TextChannel, DMChannel, NewsChannel, MessageEmbed, Guild, MessageOptions, PermissionResolvable} from 'discord.js';
 import {CommandUtils} from '../utils/CommandUtils';
 import { CommandGroup } from './CommandGroup';
+import { Logger } from '../Logger';
 
 export enum PermissionLevel {
     Everyone = 0,
@@ -20,8 +21,9 @@ export abstract class Command {
     protected _usage: string;
     protected _runsInDm: boolean;
     protected _group: CommandGroup;
+    protected logger: Logger;
 
-    constructor(name: string, permLevel: PermissionLevel, desc: string, params?: CommandParameters) {
+    constructor(name: string, permLevel: PermissionLevel, desc: string, bot: PantherBot, params?: CommandParameters) {
         this._name = name;
         this._permLevel = permLevel;
         this._desc = desc;
@@ -33,6 +35,8 @@ export abstract class Command {
         this._usage = params.usage ? params.usage : "";
         this._runsInDm = params.runsInDm ? params.runsInDm : true;
         this._group = params.group;
+
+        this.logger = Logger.getLogger(bot, this);
     }
 
     async abstract run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult>;
