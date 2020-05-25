@@ -112,13 +112,13 @@ export class EventLogger {
     }
 
     public async onMessageDelete(message: Message) {
-        if(!message.guild) {
+        if(!message.guild || message.author.bot) {
             return;
         }
 
         let channel: TextChannel | NewsChannel = await this.getLogChannel(message.guild.id);
 
-        if(!channel || message.author.bot) {
+        if(!channel) {
             return;
         }
 
