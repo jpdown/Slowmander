@@ -148,7 +148,6 @@ class CatAPIHelper {
 
         try {
             let newUrl: string = api + "?" + querystring.stringify(params);
-            console.log(newUrl);
             let respJson: CatAPIResp[] = await (await fetch(newUrl, { method: "get", headers: headers })).json();
             imageUrl = respJson[0].url;
         }
