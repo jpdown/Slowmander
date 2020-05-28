@@ -49,9 +49,14 @@ export class PermissionsHelper {
     }
 
     public static async getString(perms: Permissions): Promise<string> {
-        let permsStrings = perms.toArray();
-        if(permsStrings.includes("ADMINISTRATOR")) {
-            permsStrings = ["ADMINISTRATOR"];
+        let permsStrings: string[] = [];
+
+        if(perms.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            permsStrings.push("ADMINISTRATOR");
+            perms = perms.remove(Permissions.FLAGS.ADMINISTRATOR)
+        }
+        for(let perm of perms.toArray()) {
+            permsStrings.push(perm.toString());
         }
 
         return(permsStrings.join(", "));
