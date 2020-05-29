@@ -168,3 +168,34 @@ class SetEventLogChannel extends Command {
         return {sendHelp: false, command: this, message: message};
     }
 }
+
+class SetModlogChannel extends Command {
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("modlog", PermissionLevel.Admin, "Sets bot modlog channel", bot, {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+    }
+
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        if(args.length < 1) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        let channel: Channel = await CommandUtils.parseChannel(args.join(" "), message.client);
+
+        if(channel === undefined || !(channel as TextChannel)) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        //Set channel
+        // let result: boolean = await bot.eventLogger.setEventlogChannel(message.guild.id, channel.id);
+
+
+        // if(result) {
+        //     await this.sendMessage(`Modlog channel set to ${channel.toString()} for guild ${message.guild.name} successfully.`, message.channel, bot);
+        // }
+        // else {
+        //     await this.sendMessage(`Modlog channel was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+        // }
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}

@@ -7,6 +7,7 @@ import { Logger, LogLevel } from './Logger';
 import { EventLogger } from './eventlogs/EventLogger';
 import { DatabaseManager } from './config/DatabaseManager';
 import { ConfigManager } from './config/ConfigManager';
+import { ModlogManager } from './modlogs/ModlogManager';
 
 export class PantherBot {
     private _client: Client;
@@ -18,6 +19,7 @@ export class PantherBot {
     private _helpManager: HelpManager;
     private logger: Logger;
     private _eventLogger: EventLogger;
+    private _modlogManager: ModlogManager;
 
     constructor() {
         this._client = new Client({partials: ['MESSAGE', 'REACTION']});
@@ -27,6 +29,7 @@ export class PantherBot {
         this._commandManager = new CommandManager(this);
         this._helpManager = new HelpManager;
         this._eventLogger = new EventLogger(this);
+        this._modlogManager = new ModlogManager(this);
         
         this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
         this._client.on('ready', async () => {

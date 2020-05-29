@@ -38,6 +38,20 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
         return(await this.updateOrInsertDocument(guildId, {eventlogChannel: newChannel}));
     }
 
+    public async getModlogChannel(guildId: Snowflake): Promise<string> {
+        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+        if(gc) {
+            return(gc.modlogChannel);
+        }
+
+        return(undefined);
+    }
+
+    public async setModlogChannel(guildId: Snowflake, newChannel: string): Promise<boolean> {
+        return(await this.updateOrInsertDocument(guildId, {modlogChannel: newChannel}));
+    }
+
     public async getModRole(guildId: Snowflake): Promise<string> {
         let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
 
@@ -76,6 +90,7 @@ interface GuildConfigObject {
     id?: string,
     prefix?: string,
     eventlogChannel?: string,
+    modlogChannel?: string,
     modRole?: string,
     adminRole?: string
 }
