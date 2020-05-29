@@ -131,8 +131,9 @@ export class ReactionRoleManager {
             let message: Message = await channel.messages.fetch(removedReactionRole.messageID);
 
             let reaction: MessageReaction = message.reactions.cache.get(removedReactionRole.emoteID);
-            await reaction.users.remove(client.user);
-
+            if(reaction) {
+                await reaction.users.remove(client.user);
+            }
         }
         catch(err) {
             await this.logger.warning("Error removing reaction from message, missing perms?", err);

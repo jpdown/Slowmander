@@ -146,7 +146,7 @@ class RemoveReactionRole extends Command {
 
         if(!await bot.configs.reactionRoleConfig.guildHasReactionRoleName(message.guild.id, name)) {
             await this.sendMessage(`Reaction role ${name} does not exist.`, message.channel, bot);
-            return;
+            return {sendHelp: false, command: this, message: message};
         }
 
         let success: boolean = await bot.reactionRoleManager.removeReactionRole(message.guild.id, name, message.client);
