@@ -53,6 +53,18 @@ export class CommandUtils {
     static async parseUser(potentialUser: string, client: Client): Promise<User> {
         let parsedUser: User = undefined;
 
+        parsedUser = await CommandUtils.parseUserPingOnly(potentialUser, client);
+
+        if(!parsedUser) {
+            parsedUser = await CommandUtils.parseUserByName(potentialUser, client);
+        }
+
+        return(parsedUser);
+    }
+
+    static async parseUserPingOnly(potentialUser: string, client: Client): Promise<User> {
+        let parsedUser: User = undefined;
+
         try {
             let snowflake: Snowflake = await CommandUtils.parseUserID(potentialUser);
             if(snowflake) {
@@ -60,10 +72,6 @@ export class CommandUtils {
             }
         }
         catch(err) {}
-
-        if(!parsedUser) {
-            parsedUser = await CommandUtils.parseUserByName(potentialUser, client);
-        }
 
         return(parsedUser);
     }
@@ -176,7 +184,7 @@ export class CommandUtils {
         catch(err) {}
         
         if(!parsedChannel) {
-            let parsedUser: User = await CommandUtils.parseUser(potentialChannel, client);
+            let parsedUser: User = await CommandUtils.parseUserPingOnly(potentialChannel, client);
             if(parsedUser !== undefined) {
                 parsedChannel = await parsedUser.createDM();
             }
