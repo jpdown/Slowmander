@@ -112,7 +112,7 @@ export class EventLogger {
     }
 
     public async onMessageDelete(message: Message) {
-        if(!message.guild || message.author.bot) {
+        if(message.partial || !message.guild || message.author.bot) {
             return;
         }
 
