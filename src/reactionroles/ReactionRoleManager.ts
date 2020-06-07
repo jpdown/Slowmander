@@ -85,6 +85,8 @@ export class ReactionRoleManager {
                 try {
                     currChannel = <TextChannel | NewsChannel> this.bot.client.channels.resolve(currReactionRole.channelID);
                     if(!currChannel) {
+                        //Broken, remove
+                        await this.bot.configs.reactionRoleConfig.removeReactionRole(currReactionRole.guildID, currReactionRole.name);
                         continue;
                     }
 
@@ -92,7 +94,7 @@ export class ReactionRoleManager {
                         currMessage = await currChannel.messages.fetch(currReactionRole.messageID);
                     }
                     catch(err) {
-                        await currChannel.send(`Error checking status of ${currReactionRole.name}, does the message still exist?`);
+                        await currChannel.send(`Error checking status of reaction role "${currReactionRole.name}", does the message still exist?`);
                         continue;
                     }
 
