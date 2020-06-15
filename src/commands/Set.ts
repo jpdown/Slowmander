@@ -41,6 +41,11 @@ class SetNickname extends Command {
             member = message.guild.me;
         }
 
+        //Check if we can change nickname
+        if(!await this.checkPerms(member, message, bot)) {
+            return {sendHelp: false, command: this, message: message};
+        }
+
         newNickname = args.join(" ");
 
         try {
@@ -52,6 +57,27 @@ class SetNickname extends Command {
             await this.logger.error("Error changing nickname, missing perms?", err);
         }
         return {sendHelp: false, command: this, message: message};
+    }
+
+    private async checkPerms(member: GuildMember, message: Message, bot: PantherBot): Promise<boolean> {
+        if(member.id === member.client.user.id && !member.hasPermission(Permissions.FLAGS.CHANGE_NICKNAME)) {
+            await this.sendMessage("Setting nickname failed: I'm missing permission to change my own nickname.", message.channel, bot);
+            return(false);
+        }
+        else if(member.id !== member.client.user.id && !message.guild.me.hasPermission(Permissions.FLAGS.MANAGE_NICKNAMES)) {
+            await this.sendMessage("Setting nickname failed: I'm missing permission to change other nicknames.", message.channel, bot);
+            return(false);
+        }
+        else if(member.id !== member.client.user.id && message.guild.me.roles.highest.comparePositionTo(member.roles.highest) <= 0) {
+            await this.sendMessage("Setting nickname failed: My top role is below the member's top role.", message.channel, bot);
+            return(false);
+        }
+        else if(member.id !== member.client.user.id && member.id === member.guild.ownerID) {
+            await this.sendMessage("Setting nickname failed: I cannot change the nickname of the server owner.", message.channel, bot);
+            return(false);
+        }
+
+        return(true);
     }
 }
 
