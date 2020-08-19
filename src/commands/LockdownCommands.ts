@@ -283,7 +283,7 @@ class LockdownHelper {
             reason += "lockdown"
         }
         else {
-            grantedPerms = new Permissions(this.PERMISSION);
+            neutralPerms = new Permissions(this.PERMISSION);
             reason += "unlock"
         }
 
@@ -308,7 +308,7 @@ class LockdownHelper {
         for(let channel of channels) {
             try {
                 if(await CommandUtils.updateChannelPerms(channel, roles, [], grantedPerms, revokedPerms, neutralPerms, reason)) {
-                    await CommandUtils.updateChannelPerms(channel, modAndAdminRoles, [channel.client.user], new Permissions(this.PERMISSION), neutralPerms, neutralPerms, reason);
+                    await CommandUtils.updateChannelPerms(channel, modAndAdminRoles, [channel.client.user], new Permissions(this.PERMISSION), grantedPerms, grantedPerms, reason);
                     await this.trySendMessage(channel, lock, bot);
                 }
                 else {
