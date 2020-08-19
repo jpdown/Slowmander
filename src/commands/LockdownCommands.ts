@@ -2,7 +2,7 @@ import {Command, PermissionLevel, CommandResult} from './Command';
 import {CommandGroup} from './CommandGroup'
 import { PantherBot } from '../Bot';
 
-import {Message, MessageEmbed, Permissions, CategoryChannel, GuildChannel, Role, User, TextChannel, NewsChannel, Guild} from 'discord.js';
+import {Message, MessageEmbed, Permissions, CategoryChannel, GuildChannel, Role, User, TextChannel, NewsChannel, Guild, Snowflake} from 'discord.js';
 import { CommandUtils } from '../utils/CommandUtils';
 import { LockdownConfigObject } from '../config/LockdownConfig';
 import { ReactionPaginator } from '../utils/ReactionPaginator';
@@ -287,11 +287,28 @@ class LockdownHelper {
             reason += "unlock"
         }
 
+        //Get mod and admin role (if applicable)
+        let guild: Guild = channels[0].guild;
+        let modAndAdminRoles: Role[] = [];
+        let modRoleId: Snowflake = await bot.configs.guildConfig.getModRole(guild.id);
+        if(modRoleId) {
+            let modRole: Role = guild.roles.resolve(modRoleId);
+            if(modRole) { 
+                modAndAdminRoles.push(modRole);
+            }
+        }
+        let adminRoleId: Snowflake = await bot.configs.guildConfig.getAdminRole(guild.id);
+        if(adminRoleId) {
+            let adminRole: Role = guild.roles.resolve(adminRoleId);
+            if(adminRole) { 
+                modAndAdminRoles.push(adminRole);
+            }
+        }
+
         for(let channel of channels) {
             try {
-                console.log(channel.name);
                 if(await CommandUtils.updateChannelPerms(channel, roles, [], grantedPerms, revokedPerms, neutralPerms, reason)) {
-                    await CommandUtils.updateChannelPerms(channel, [], [channel.client.user], new Permissions(this.PERMISSION), neutralPerms, neutralPerms, reason);
+                    await CommandUtils.updateChannelPerms(channel, modAndAdminRoles, [channel.client.user], new Permissions(this.PERMISSION), neutralPerms, neutralPerms, reason);
                     await this.trySendMessage(channel, lock, bot);
                 }
                 else {
