@@ -5,6 +5,7 @@ import { CommandGroup } from './CommandGroup';
 import { Logger } from '../Logger';
 
 export enum PermissionLevel {
+    Disabled = -1,
     Everyone = 0,
     VIP = 1,
     Mod = 2,
