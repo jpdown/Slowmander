@@ -66,5 +66,6 @@ export interface LockdownConfigObject extends DatabaseObject {
     guildID: string,
     channelIDs: string[],
     roleIDs: string[],
+    grant: boolean,
     name: string
 }
