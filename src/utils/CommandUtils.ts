@@ -1,4 +1,4 @@
-import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake } from "discord.js";
+import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, PermissionOverwriteOption } from "discord.js";
 import { PantherBot } from "../Bot";
 
 export class CommandUtils {
@@ -126,10 +126,15 @@ export class CommandUtils {
         let parsedRole: Role = undefined;
         let roleCache: Collection<Snowflake, Role> = guild.roles.cache;
 
-        for(let role of roleCache.values()) {
-            if(role.name.toLowerCase() === potentialRole.toLowerCase()) {
-                parsedRole = role;
-                break;
+        if(potentialRole === "everyone") {
+            parsedRole = guild.roles.everyone;
+        }
+        else {
+            for(let role of roleCache.values()) {
+                if(role.name.toLowerCase() === potentialRole.toLowerCase()) {
+                    parsedRole = role;
+                    break;
+                }
             }
         }
 
@@ -248,7 +253,6 @@ export class CommandUtils {
     }
 
     static async parseWebhookUrl(potentialWebhook: string): Promise<WebhookClient> {
-        "https://canary.discordapp.com/api/webhooks/406775579363377152/I3GxI-NKGLf1Zsjj5swsV0i_1krj0Dx1zXKT0znwHe_dltiJ2TR1hu4BwO8q5WUPWPhq"
         let webhook: WebhookClient = undefined;
         let splitUrl: string[] = potentialWebhook.split("/");
 
@@ -275,5 +279,49 @@ export class CommandUtils {
 
         //We good
         return(true);
+    }
+
+    static async updateChannelPerms(channel: GuildChannel, roles: Role[], users: User[], grantedPerms: Permissions, revokedPerms: Permissions, neutralPerms: Permissions, reason?: string): Promise<boolean> {
+        //Check if we have permissions to edit channel
+        if(!channel.permissionsFor(channel.client.user).has(Permissions.FLAGS.MANAGE_CHANNELS)) {
+            return(false);
+        }
+
+        //Remove ADMINISTRATOR (channels don't have ADMINISTRATOR)
+        if(grantedPerms.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            grantedPerms.remove(Permissions.FLAGS.ADMINISTRATOR);
+        }
+        if(revokedPerms.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            revokedPerms.remove(Permissions.FLAGS.ADMINISTRATOR);
+        }
+        if(neutralPerms.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            neutralPerms.remove(Permissions.FLAGS.ADMINISTRATOR);
+        }
+
+        //Make overwrite options object
+        let overwriteOptions: PermissionOverwriteOption = {}
+        for(let perm of grantedPerms.toArray()) {
+            overwriteOptions[perm] = true;
+        }
+        for(let perm of revokedPerms.toArray()) {
+            overwriteOptions[perm] = false;
+        }
+        for(let perm of neutralPerms.toArray()) {
+            overwriteOptions[perm] = null;
+        }
+
+        //Try to update permissions
+        try {
+            for(let role of roles) {
+                await channel.updateOverwrite(role, overwriteOptions, reason);
+            }
+            for(let user of users) {
+                await channel.updateOverwrite(user, overwriteOptions, reason);
+            }
+            return(true);
+        }
+        catch(err) {
+            throw(err);
+        }
     }
 }
