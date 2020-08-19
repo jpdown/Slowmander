@@ -122,11 +122,11 @@ class ManageLockdownInfo extends Command {
 
 class ManageLockdownSet extends Command {
     constructor(group: CommandGroup, bot: PantherBot) {
-        super("set", PermissionLevel.Mod, "Sets lockdown preset channels and roles", bot, {usage: "<preset> <channel,...> <role,...>", requiredPerm: Permissions.FLAGS.MANAGE_CHANNELS, runsInDm: false, group: group});
+        super("set", PermissionLevel.Mod, "Sets lockdown preset channels and roles", bot, {usage: "<preset> <channel,...> <role,...> <grant/neutral>", requiredPerm: Permissions.FLAGS.MANAGE_CHANNELS, runsInDm: false, group: group});
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        if(args.length < 3) {
+        if(args.length < 4) {
             return {sendHelp: true, command: this, message: message};
         }
 
@@ -144,11 +144,18 @@ class ManageLockdownSet extends Command {
             return {sendHelp: false, command: this, message: message};
         }
 
+        //Parse grant/neutral
+        let grant: boolean = false;
+        if(args[3] === "grant") {
+            grant = true;
+        }
+
         //Make LockdownConfig
         let lockdownConfig: LockdownConfigObject = {
             guildID: message.guild.id,
             channelIDs: channelResult.parsedIDs,
             roleIDs: rolesResult.parsedIDs,
+            grant: grant,
             name: args[0]
         };
 
@@ -261,7 +268,7 @@ class LockdownHelper {
         }
 
         //Try to lockdown server
-        let result: boolean = await LockdownHelper.updateChannelPerms(channels, roles, lock, message.author, preset, bot);
+        let result: boolean = await LockdownHelper.updateChannelPerms(channels, roles, lock, lockdownConfig.grant, message.author, preset, bot);
         if(!result) {
             await command.sendMessage(`Missing permissions to ${lock ? "lock" : "unlock"} server.`, message.channel, bot);
         }
@@ -272,18 +279,24 @@ class LockdownHelper {
         return true;
     }
 
-    static async updateChannelPerms(channels: GuildChannel[], roles: Role[], lock: boolean, executor: User, preset: string, bot: PantherBot): Promise<boolean> {
+    static async updateChannelPerms(channels: GuildChannel[], roles: Role[], lock: boolean, grant: boolean, executor: User, preset: string, bot: PantherBot): Promise<boolean> {
         let reason: string = `${executor.username}#${executor.discriminator} performed ${preset} `;
 
-        let neutralPerms: Permissions = new Permissions(0);
-        let grantedPerms: Permissions = new Permissions(0);
-        let revokedPerms: Permissions = new Permissions(0);
+        let zeroPerms: Permissions = new Permissions(0);
+        let neutralPerms: Permissions = zeroPerms;
+        let grantedPerms: Permissions = zeroPerms;
+        let revokedPerms: Permissions = zeroPerms;
         if(lock) {
             revokedPerms = new Permissions(this.PERMISSION);
             reason += "lockdown"
         }
         else {
-            neutralPerms = new Permissions(this.PERMISSION);
+            if(grant) {
+                grantedPerms = new Permissions(this.PERMISSION);
+            }
+            else {
+                neutralPerms = new Permissions(this.PERMISSION);
+            }
             reason += "unlock"
         }
 
@@ -308,7 +321,7 @@ class LockdownHelper {
         for(let channel of channels) {
             try {
                 if(await CommandUtils.updateChannelPerms(channel, roles, [], grantedPerms, revokedPerms, neutralPerms, reason)) {
-                    await CommandUtils.updateChannelPerms(channel, modAndAdminRoles, [channel.client.user], new Permissions(this.PERMISSION), grantedPerms, grantedPerms, reason);
+                    await CommandUtils.updateChannelPerms(channel, modAndAdminRoles, [channel.client.user], new Permissions(this.PERMISSION), zeroPerms, zeroPerms, reason);
                     await this.trySendMessage(channel, lock, bot);
                 }
                 else {
