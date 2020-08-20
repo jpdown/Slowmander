@@ -43,6 +43,9 @@ export class PermissionsHelper {
         else if(roleList.has(await bot.configs.guildConfig.getModRole(member.guild.id))) {
             return(PermissionLevel.Mod)
         }
+        else if(roleList.has(await bot.configs.guildConfig.getVipRole(member.guild.id))) {
+            return(PermissionLevel.VIP)
+        }
         else if(member.guild.id != "326543379955580929") { //Shitty disable commands in acai's discord
             return(PermissionLevel.Everyone);
         }

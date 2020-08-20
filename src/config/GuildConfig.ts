@@ -38,6 +38,20 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
         return(await this.updateOrInsertDocument(guildId, {eventlogChannel: newChannel}));
     }
 
+    public async getVipRole(guildId: Snowflake): Promise<string> {
+        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+        if(gc) {
+            return(gc.vipRole);
+        }
+
+        return(undefined);
+    }
+
+    public async setVipRole(guildId: Snowflake, newVipRole: string): Promise<boolean> {
+        return(await this.updateOrInsertDocument(guildId, {vipRole: newVipRole}));
+    }
+
     public async getModRole(guildId: Snowflake): Promise<string> {
         let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
 
@@ -76,6 +90,7 @@ interface GuildConfigObject {
     id?: string,
     prefix?: string,
     eventlogChannel?: string,
+    vipRole?: string,
     modRole?: string,
     adminRole?: string
 }
