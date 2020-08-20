@@ -16,6 +16,7 @@ export class Set extends CommandGroup {
     protected registerSubCommands(bot: PantherBot): void {
         this.registerSubCommand(new SetNickname(this, bot));
         this.registerSubCommand(new SetGuildPrefix(this, bot));
+        this.registerSubCommand(new SetVipRole(this, bot));
         this.registerSubCommand(new SetModRole(this, bot));
         this.registerSubCommand(new SetAdminRole(this, bot));
         this.registerSubCommand(new SetEventLogChannel(this, bot));
@@ -100,6 +101,35 @@ class SetGuildPrefix extends Command {
         }
         else {
             await this.sendMessage(`Prefix was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+        }
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
+class SetVipRole extends Command {
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("viprole", PermissionLevel.Admin, "Sets bot's vip role", bot, {usage: "<role>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+    }
+
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        if(args.length < 1) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
+
+        if(role === undefined) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        let result: boolean = await bot.configs.guildConfig.setVipRole(message.guild.id, role.id);
+
+        if(result) {
+            await this.sendMessage(`VIP role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
+        }
+        else {
+            await this.sendMessage(`VIP role was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
