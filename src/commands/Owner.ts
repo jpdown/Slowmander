@@ -40,10 +40,10 @@ class SetUsername extends Command {
 
         try {
             await message.client.user.setUsername(newUsername);
-            await this.sendMessage("Username changed successfully.", message.channel, bot);
+            await CommandUtils.sendMessage("Username changed successfully.", message.channel, bot);
         }
         catch(err) {
-            await this.sendMessage("Error changing username, check log for details.", message.channel, bot);
+            await CommandUtils.sendMessage("Error changing username, check log for details.", message.channel, bot);
             await this.logger.error("Error changing username.", err);
         }
 
@@ -62,10 +62,10 @@ class SetAvatar extends Command {
         }
         try {
             await message.client.user.setAvatar(args[0]);
-            await this.sendMessage("Avatar changed successfully.", message.channel, bot);
+            await CommandUtils.sendMessage("Avatar changed successfully.", message.channel, bot);
         }
         catch(err) {
-            await this.sendMessage("Error changing avatar, check log for details.", message.channel, bot);
+            await CommandUtils.sendMessage("Error changing avatar, check log for details.", message.channel, bot);
             await this.logger.error("Error changing avatar.", err);
         }
         return {sendHelp: false, command: this, message: message};
@@ -89,10 +89,10 @@ class AddOwner extends Command {
         }
 
         if(await bot.addOwner(user.id)) {
-            await this.sendMessage(`Owner ${user.toString()} added successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Owner ${user.toString()} added successfully.`, message.channel, bot);
         }
         else {
-            await this.sendMessage(`User ${user.toString()} is already an owner.`, message.channel, bot);
+            await CommandUtils.sendMessage(`User ${user.toString()} is already an owner.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -116,10 +116,10 @@ class RemoveOwner extends Command {
         }
 
         if(await bot.removeOwner(user.id)) {
-            await this.sendMessage(`Owner ${user.toString()} removed successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Owner ${user.toString()} removed successfully.`, message.channel, bot);
         }
         else {
-            await this.sendMessage(`User ${user.toString()} is not an owner.`, message.channel, bot);
+            await CommandUtils.sendMessage(`User ${user.toString()} is not an owner.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -141,10 +141,10 @@ class SetDefaultPrefix extends Command {
         let result: boolean = await bot.configs.botConfig.setDefaultPrefix(prefix);
 
         if(result) {
-            await this.sendMessage(`Default prefix set to ${prefix} successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Default prefix set to ${prefix} successfully.`, message.channel, bot);
         }
         else {
-            await this.sendMessage("Default prefix was unable to be set.", message.channel, bot);
+            await CommandUtils.sendMessage("Default prefix was unable to be set.", message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -181,7 +181,7 @@ class SetStatus extends Command {
                 return {sendHelp: true, command: this, message: message};
         }
 
-        await this.sendMessage("Status updated successfully.", message.channel, bot);
+        await CommandUtils.sendMessage("Status updated successfully.", message.channel, bot);
         return {sendHelp: false, command: this, message: message};
     }
 }
@@ -224,7 +224,7 @@ class SetActivity extends Command {
         }
 
         await message.client.user.setActivity(activityString, activityOptions);
-        await this.sendMessage("Activity updated successfully.", message.channel, bot);
+        await CommandUtils.sendMessage("Activity updated successfully.", message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
     }
@@ -249,10 +249,10 @@ class SetErrorLogWebhook extends Command {
         let result: boolean = await bot.configs.botConfig.setErrorWebhook(webhook);
 
         if(result) {
-            await this.sendMessage("Log webhook set successfully.", message.channel, bot);
+            await CommandUtils.sendMessage("Log webhook set successfully.", message.channel, bot);
         }
         else {
-            await this.sendMessage("Log webhook was unable to be set.", message.channel, bot);
+            await CommandUtils.sendMessage("Log webhook was unable to be set.", message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -269,7 +269,7 @@ class GetInviteLink extends Command {
             "ATTACH_FILES", "CONNECT", "MANAGE_MESSAGES", "MANAGE_NICKNAMES", "MANAGE_ROLES", "MANAGE_WEBHOOKS", "READ_MESSAGE_HISTORY",
             "SEND_MESSAGES", "USE_EXTERNAL_EMOJIS", "SPEAK", "VIEW_CHANNEL"]);
         
-        await this.sendMessage(`[Invite Link](${invite})`, message.channel, bot);
+        await CommandUtils.sendMessage(`[Invite Link](${invite})`, message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
     }

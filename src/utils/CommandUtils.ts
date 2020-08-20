@@ -1,4 +1,4 @@
-import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, PermissionOverwriteOption } from "discord.js";
+import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, PermissionOverwriteOption, Message, MessageReaction, ReactionEmoji, MessageEmbed, MessageOptions } from "discord.js";
 import { PantherBot } from "../Bot";
 
 export class CommandUtils {
@@ -323,5 +323,41 @@ export class CommandUtils {
         catch(err) {
             throw(err);
         }
+    }
+
+    static async getEmote(message: Message, bot: PantherBot): Promise<ReactionEmoji | GuildEmoji> {
+        //Ask for emote
+        let sentMessage: Message = await CommandUtils.sendMessage("Please react on this message with the emote you would like to use.", message.channel, bot);
+        let reactions: Collection<string, MessageReaction> = await sentMessage.awaitReactions((reaction, user) => user.id === message.author.id, {time:60000, max: 1});
+
+        //Check if unicode or if we have the custom emote
+        if(reactions.size < 1) {
+            await CommandUtils.sendMessage("No reaction given, cancelling.", message.channel, bot);
+            return undefined;
+        }
+
+        let emote: ReactionEmoji | GuildEmoji = reactions.first().emoji;
+        if(emote.id && emote instanceof ReactionEmoji) {
+            await CommandUtils.sendMessage("I do not have access to the emote given, cancelling.", message.channel, bot);
+        }
+
+        return(emote);
+    }
+
+    static async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel, bot: PantherBot, messageOptions?: MessageOptions): Promise<Message> {
+        let messageSent: Message;
+
+        let embed: MessageEmbed = new MessageEmbed()
+            .setColor(await CommandUtils.getSelfColor(channel, bot))
+            .setDescription(message);
+
+        if(messageOptions !== undefined) {
+            messageSent = await channel.send(embed, messageOptions);
+        }
+        else {
+            messageSent = await channel.send(embed);
+        }
+
+        return(messageSent);
     }
 }
