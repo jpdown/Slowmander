@@ -1,6 +1,6 @@
 import { PantherBot } from "../Bot";
 import { Snowflake } from "discord.js";
-import { DatabaseEntry } from "./DatabaseEntry";
+import { DatabaseEntry, DatabaseObject } from "./DatabaseEntry";
 
 export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
     private static readonly TABLE: string = "GuildConfig";
@@ -72,7 +72,7 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
 }
 
 
-interface GuildConfigObject {
+interface GuildConfigObject extends DatabaseObject {
     id?: string,
     prefix?: string,
     eventlogChannel?: string,
