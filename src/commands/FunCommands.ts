@@ -18,13 +18,13 @@ export class Cat extends Command {
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         if(!this.apiToken) {
             if(bot.catApiToken === "") {
-                this.sendMessage("I don't have an API token.", message.channel, bot);
+                CommandUtils.sendMessage("I don't have an API token.", message.channel, bot);
                 return;
             }
             this.apiToken = bot.catApiToken;
         }
 
-        let sentMessage: Message = await this.sendMessage("Looking for a cat...", message.channel, bot);
+        let sentMessage: Message = await CommandUtils.sendMessage("Looking for a cat...", message.channel, bot);
         let catUrl: string = await CatAPIHelper.getImage(message.author, bot, this.API, this.apiToken);
         let embed: MessageEmbed;
 
@@ -56,7 +56,7 @@ export class Dog extends Command {
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        let sentMessage: Message = await this.sendMessage("Looking for a dog...", message.channel, bot);
+        let sentMessage: Message = await CommandUtils.sendMessage("Looking for a dog...", message.channel, bot);
         let dogJson: DogAPIResp;
         let dogImage: string;
         let embed: MessageEmbed;
@@ -101,7 +101,7 @@ export class DadJoke extends Command {
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        let sentMessage: Message = await this.sendMessage("Looking for a dad joke...", message.channel, bot);
+        let sentMessage: Message = await CommandUtils.sendMessage("Looking for a dad joke...", message.channel, bot);
         let dadJokeMessage: string = "";
         let embed: MessageEmbed;
 
