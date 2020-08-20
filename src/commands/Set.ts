@@ -126,10 +126,10 @@ class SetVipRole extends Command {
         let result: boolean = await bot.configs.guildConfig.setVipRole(message.guild.id, role.id);
 
         if(result) {
-            await this.sendMessage(`VIP role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`VIP role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
         }
         else {
-            await this.sendMessage(`VIP role was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+            await CommandUtils.sendMessage(`VIP role was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
