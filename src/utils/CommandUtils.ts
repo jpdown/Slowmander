@@ -339,6 +339,7 @@ export class CommandUtils {
         let emote: ReactionEmoji | GuildEmoji = reactions.first().emoji;
         if(emote.id && emote instanceof ReactionEmoji) {
             await CommandUtils.sendMessage("I do not have access to the emote given, cancelling.", message.channel, bot);
+            emote = undefined;
         }
 
         return(emote);
