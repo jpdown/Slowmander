@@ -3,12 +3,14 @@ import { PantherBot } from "../Bot";
 import { GuildConfig } from "./GuildConfig";
 import { ReactionRoleConfig } from "./ReactionRoleConfig";
 import { LockdownConfigObject, LockdownConfig } from "./LockdownConfig";
+import { VerificationConfig } from "./VerificationConfig";
 
 export class ConfigManager {
     private _botConfig: BotConfig;
     private _guildConfig: GuildConfig;
     private _reactionRoleConfig: ReactionRoleConfig
     private _lockdownConfig: LockdownConfig;
+    private _verificationConfig: VerificationConfig;
     private _bot: PantherBot;
 
     constructor(bot: PantherBot) {
@@ -17,6 +19,7 @@ export class ConfigManager {
         this._guildConfig = new GuildConfig(bot);
         this._reactionRoleConfig = new ReactionRoleConfig(bot);
         this._lockdownConfig = new LockdownConfig(bot);
+        this._verificationConfig = new VerificationConfig(bot);
     }
 
     public get botConfig() {
@@ -33,5 +36,9 @@ export class ConfigManager {
 
     public get lockdownConfig() {
         return(this._lockdownConfig);
+    }
+
+    public get verificationConfig() {
+        return(this._verificationConfig);
     }
 }
