@@ -80,6 +80,20 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
         return(await this.updateOrInsertDocument(guildId, {adminRole: newAdminRole}));
     }
 
+    public async getVerificationEnabled(guildId: Snowflake): Promise<boolean> {
+        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+        if(gc) {
+            return(gc.verificationEnabled);
+        }
+
+        return(undefined);
+    }
+
+    public async setVerificationEnabled(guildId: Snowflake, newVerificationEnabled: boolean): Promise<boolean> {
+        return(await this.updateOrInsertDocument(guildId, {verificationEnabled: newVerificationEnabled}));
+    }
+
     private async getGuildConfigObject(guildId: string): Promise<GuildConfigObject> {
         return(<GuildConfigObject> await this.getDocument(guildId));
     }
@@ -92,5 +106,6 @@ interface GuildConfigObject extends DatabaseObject {
     eventlogChannel?: string,
     vipRole?: string,
     modRole?: string,
-    adminRole?: string
+    adminRole?: string,
+    verificationEnabled?: boolean
 }
