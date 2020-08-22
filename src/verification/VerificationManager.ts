@@ -65,6 +65,11 @@ export class VerificationManager {
             return;
         }
 
+        //Verify correct message
+        if(reaction.message.id != verificationConfig.messageID) {
+            return;
+        }
+
         //Check if emote matches
         if(reaction.emoji.identifier === verificationConfig.emoteID) {
             //Try to remove role from user
