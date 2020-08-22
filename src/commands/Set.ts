@@ -20,6 +20,7 @@ export class Set extends CommandGroup {
         this.registerSubCommand(new SetModRole(this, bot));
         this.registerSubCommand(new SetAdminRole(this, bot));
         this.registerSubCommand(new SetEventLogChannel(this, bot));
+        this.registerSubCommand(new SetModErrorLogChannel(this, bot));
     }
 }
 
@@ -219,6 +220,37 @@ class SetEventLogChannel extends Command {
         }
         else {
             await CommandUtils.sendMessage(`Eventlog channel was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+        }
+
+        return {sendHelp: false, command: this, message: message};
+    }
+}
+
+class SetModErrorLogChannel extends Command {
+    constructor(group: CommandGroup, bot: PantherBot) {
+        super("moderror", PermissionLevel.Admin, "Sets mod error log channel", bot, {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
+    }
+
+    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+        if(args.length < 1) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        let channel: Channel = await CommandUtils.parseChannel(args.join(" "), message.client);
+
+        if(channel === undefined || !(channel as TextChannel)) {
+            return {sendHelp: true, command: this, message: message};
+        }
+
+        //Set channel
+        let result: boolean = await bot.configs.guildConfig.setModErrorChannel(message.guild.id, channel.id);
+
+
+        if(result) {
+            await this.sendMessage(`Mod error log channel set to ${channel.toString()} for guild ${message.guild.name} successfully.`, message.channel, bot);
+        }
+        else {
+            await this.sendMessage(`Mod error log channel was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
