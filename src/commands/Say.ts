@@ -46,7 +46,7 @@ export class Say extends Command {
 
         //Send message(s)
         for(let channel of channelList) {
-            await this.sendMessage(messageToSend, channel, bot);
+            await CommandUtils.sendMessage(messageToSend, channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
