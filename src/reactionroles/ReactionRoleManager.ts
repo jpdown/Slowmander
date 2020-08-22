@@ -172,7 +172,7 @@ export class ReactionRoleManager {
             else {
                 //Broken reaction role, remove
                 await this.bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
-                await ModErrorLog.log(`The role for reaction role ${reactionRole.name} has been deleted.`, role.guild, this.bot);
+                await ModErrorLog.log(`The role for reaction role ${reactionRole.name} has been deleted.`, member.guild, this.bot);
                 return(false);
             }
         }
@@ -195,7 +195,7 @@ export class ReactionRoleManager {
             else {
                 //Broken reaction role, remove
                 await this.bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
-                await ModErrorLog.log(`The role for reaction role ${reactionRole.name} has been deleted.`, role.guild, this.bot);
+                await ModErrorLog.log(`The role for reaction role ${reactionRole.name} has been deleted.`, member.guild, this.bot);
                 return(false);
             }
         }
