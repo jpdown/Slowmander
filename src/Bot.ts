@@ -7,6 +7,7 @@ import { Logger, LogLevel } from './Logger';
 import { EventLogger } from './eventlogs/EventLogger';
 import { DatabaseManager } from './config/DatabaseManager';
 import { ConfigManager } from './config/ConfigManager';
+import { VerificationManager } from './verification/VerificationManager';
 
 export class PantherBot {
     private _client: Client;
@@ -16,6 +17,7 @@ export class PantherBot {
     private _commandManager: CommandManager;
     private _reactionRoleManager: ReactionRoleManager;
     private _helpManager: HelpManager;
+    private _verificationManager: VerificationManager;
     private logger: Logger;
     private _eventLogger: EventLogger;
 
