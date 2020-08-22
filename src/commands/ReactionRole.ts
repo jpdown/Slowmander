@@ -62,7 +62,7 @@ class AddReactionRole extends Command {
         }
 
         if(await bot.configs.reactionRoleConfig.guildHasReactionRoleEmote(reactionRoleObject.guildID, reactionRoleObject.emoteID, reactionRoleObject.messageID)) {
-            await CommandUtils.sendMessage(`Adding reaction role failed. Reaction role with emote ${await ReactionRoleHelper.makeEmoteFromId(reactionRoleObject.emoteID, message)} already exists.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Adding reaction role failed. Reaction role with emote ${await CommandUtils.makeEmoteFromId(reactionRoleObject.emoteID, message)} already exists.`, message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
