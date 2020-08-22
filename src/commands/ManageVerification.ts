@@ -143,10 +143,13 @@ class VerificationStatus extends Command {
         let embed: MessageEmbed = new MessageEmbed()
             .addField("Status", await bot.configs.guildConfig.getVerificationEnabled(message.guild.id) ? "Enabled" : "Disabled", true)
             .addField("Channel", `<#${verificationConfig.channelID}>`, true)
-            .addField("Emote", message.client.emojis.resolve(verificationConfig.emoteID).toString(), true)
+            .addField("Emote", await CommandUtils.makeEmoteFromId(verificationConfig.emoteID, message), true)
+            .addField("Role", `<@&${verificationConfig.roleID}>`, true)
             .setTitle("Verification Status in " + message.guild.name)
             .setColor(await CommandUtils.getSelfColor(message.channel, bot));
         
         await message.channel.send(embed);
+
+        return {sendHelp: false, command: this, message: message};
     }
 }
