@@ -247,10 +247,10 @@ class SetModErrorLogChannel extends Command {
 
 
         if(result) {
-            await this.sendMessage(`Mod error log channel set to ${channel.toString()} for guild ${message.guild.name} successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Mod error log channel set to ${channel.toString()} for guild ${message.guild.name} successfully.`, message.channel, bot);
         }
         else {
-            await this.sendMessage(`Mod error log channel was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Mod error log channel was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
