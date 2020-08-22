@@ -14,10 +14,10 @@ export class Lockdown extends Command {
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         try {
-            await LockdownHelper.lockUnlock(bot, message, args, this, true);
+            await LockdownHelper.lockUnlock(bot, message, args, true);
         }
         catch(err) {
-            await this.sendMessage("Error locking server.", message.channel, bot);
+            await CommandUtils.sendMessage("Error locking server.", message.channel, bot);
             await this.logger.error(`Error locking guild ${message.guild.name}`, err);
         }
 
@@ -32,10 +32,10 @@ export class Unlock extends Command {
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         try {
-            await LockdownHelper.lockUnlock(bot, message, args, this, false);
+            await LockdownHelper.lockUnlock(bot, message, args, false);
         }
         catch(err) {
-            await this.sendMessage("Error unlocking server.", message.channel, bot);
+            await CommandUtils.sendMessage("Error unlocking server.", message.channel, bot);
             await this.logger.error(`Error unlocking guild ${message.guild.name}`, err);
         }
 
@@ -67,7 +67,7 @@ class ManageLockdownList extends Command {
         let lockdownPresets: LockdownConfigObject[] = await bot.configs.lockdownConfig.getAllLockdownPresets(message.guild.id);
 
         if(lockdownPresets.length < 1) {
-            await this.sendMessage("No presets found.", message.channel, bot);
+            await CommandUtils.sendMessage("No presets found.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
@@ -133,14 +133,14 @@ class ManageLockdownSet extends Command {
         //Parse channels
         let channelResult: {result: boolean, parsedIDs: string[]} = await this.parseChannels(args[1], message.guild);
         if(!channelResult.result) {
-            await this.sendMessage("One or more of the channels given was incorrect.", message.channel, bot);
+            await CommandUtils.sendMessage("One or more of the channels given was incorrect.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
         //Parse roles
         let rolesResult: {result: boolean, parsedIDs: string[]} = await this.parseRoles(args[2], message.guild);
         if(!rolesResult.result) {
-            await this.sendMessage("One or more of the roles given was incorrect.", message.channel, bot);
+            await CommandUtils.sendMessage("One or more of the roles given was incorrect.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
@@ -161,10 +161,10 @@ class ManageLockdownSet extends Command {
 
         //Try to save
         if(!await bot.configs.lockdownConfig.setLockdownPreset(lockdownConfig)) {
-            await this.sendMessage("Error saving lockdown preset.", message.channel, bot);
+            await CommandUtils.sendMessage("Error saving lockdown preset.", message.channel, bot);
         }
         else {
-            await this.sendMessage("Lockdown preset saved successfully.", message.channel, bot);
+            await CommandUtils.sendMessage("Lockdown preset saved successfully.", message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -221,10 +221,10 @@ class ManageLockdownRemove extends Command {
 
         //Try to delete
         if(await bot.configs.lockdownConfig.removeLockdownPreset(message.guild.id, args[0])) {
-            await this.sendMessage(`Lockdown preset ${args[0]} removed successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Lockdown preset ${args[0]} removed successfully.`, message.channel, bot);
         }
         else {
-            await this.sendMessage(`Error removing lockdown preset ${args[0]}, does it exist?`, message.channel, bot);
+            await CommandUtils.sendMessage(`Error removing lockdown preset ${args[0]}, does it exist?`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -236,7 +236,7 @@ class LockdownHelper {
     static readonly LOCK_MESSAGE = "🔒 Channel has been locked down."
     static readonly UNLOCK_MESSAGE = "🔓 Channel has been unlocked."
 
-    static async lockUnlock(bot: PantherBot, message: Message, args: string[], command: Command, lock: boolean): Promise<boolean> {
+    static async lockUnlock(bot: PantherBot, message: Message, args: string[], lock: boolean): Promise<boolean> {
         let preset: string = "default";
 
         if(args.length > 0) {
@@ -246,7 +246,7 @@ class LockdownHelper {
         //Try to get config
         let lockdownConfig: LockdownConfigObject = await bot.configs.lockdownConfig.getLockdownPreset(message.guild.id, preset);
         if(!lockdownConfig) {
-            await command.sendMessage(`No lockdown config found, please make one with \`${await bot.commandManager.getPrefix(message.guild.id)}managelockdown\`. The default preset is \`default\`.`, message.channel, bot);
+            await CommandUtils.sendMessage(`No lockdown config found, please make one with \`${await bot.commandManager.getPrefix(message.guild.id)}managelockdown\`. The default preset is \`default\`.`, message.channel, bot);
             return false;
         }
 
@@ -270,10 +270,10 @@ class LockdownHelper {
         //Try to lockdown server
         let result: boolean = await LockdownHelper.updateChannelPerms(channels, roles, lock, lockdownConfig.grant, message.author, preset, bot);
         if(!result) {
-            await command.sendMessage(`Missing permissions to ${lock ? "lock" : "unlock"} server.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Missing permissions to ${lock ? "lock" : "unlock"} server.`, message.channel, bot);
         }
         else {
-            await command.sendMessage(`Server ${lock ? "locked" : "unlocked"} successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Server ${lock ? "locked" : "unlocked"} successfully.`, message.channel, bot);
         }
 
         return true;
