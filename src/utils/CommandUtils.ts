@@ -50,6 +50,12 @@ export class CommandUtils {
         return(parsedMember);
     }
 
+    static async parseMemberPingOnly(potentialMember: string, guild: Guild): Promise<GuildMember> {
+        let parsedUser: User = await CommandUtils.parseUserPingOnly(potentialMember, guild.client);
+
+        return(guild.member(parsedUser));
+    }
+
     static async parseUser(potentialUser: string, client: Client): Promise<User> {
         let parsedUser: User = undefined;
 

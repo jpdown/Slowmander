@@ -33,7 +33,7 @@ class SetNickname extends Command {
         let member: GuildMember;
         let newNickname: string;
         if(args.length > 0) {
-            member = await CommandUtils.parseMember(args[0], message.guild);
+            member = await CommandUtils.parseMemberPingOnly(args[0], message.guild);
         }
 
         if(member !== undefined) {
