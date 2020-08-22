@@ -2,6 +2,7 @@ import { ReactionRoleObject } from "../config/ReactionRoleConfig";
 import { PantherBot } from "../Bot";
 import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Client, Guild, Permissions } from "discord.js";
 import { Logger } from "../Logger";
+import { ModErrorLog } from "../moderrorlog/ModErrorLog";
 
 export class ReactionRoleManager {
     private bot: PantherBot;
@@ -94,7 +95,7 @@ export class ReactionRoleManager {
                         currMessage = await currChannel.messages.fetch(currReactionRole.messageID);
                     }
                     catch(err) {
-                        await currChannel.send(`Error checking status of reaction role "${currReactionRole.name}", does the message still exist?`);
+                        await ModErrorLog.log(`Error checking status of reaction role "${currReactionRole.name}", does the message still exist?`, currChannel.guild, this.bot);
                         continue;
                     }
 
@@ -171,7 +172,7 @@ export class ReactionRoleManager {
             else {
                 //Broken reaction role, remove
                 await this.bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
-                await channel.send(`The role for reaction role ${reactionRole.name} has been deleted.`);
+                await ModErrorLog.log(`The role for reaction role ${reactionRole.name} has been deleted.`, role.guild, this.bot);
                 return(false);
             }
         }
@@ -194,7 +195,7 @@ export class ReactionRoleManager {
             else {
                 //Broken reaction role, remove
                 await this.bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
-                await channel.send(`The role for reaction role ${reactionRole.name} has been deleted.`);
+                await ModErrorLog.log(`The role for reaction role ${reactionRole.name} has been deleted.`, role.guild, this.bot);
                 return(false);
             }
         }
@@ -216,14 +217,14 @@ export class ReactionRoleManager {
         }
         //If no manage roles
         if(!channel.guild.me.hasPermission(Permissions.FLAGS.MANAGE_ROLES)) {
-            await channel.send(messageToSend + " I do not have the Manage Roles permission.");
+            await ModErrorLog.log(messageToSend + " I do not have the Manage Roles permission.", member.guild, this.bot);
         }
         //If role hierarchy
         else if(channel.guild.me.roles.highest.comparePositionTo(role) < 0) {
-            await channel.send(messageToSend + " Incorrect hierarchy, my top role is not above.")
+            await ModErrorLog.log(messageToSend + " Incorrect hierarchy, my top role is not above.", member.guild, this.bot)
         }
         else {
-            await channel.send(messageToSend);
+            await ModErrorLog.log(messageToSend, member.guild, this.bot);
             await this.logger.error(`Unknown error occurred adding or removing reaction role ${reactionRole.name} to user ${member.user.username}#${member.user.discriminator} (${member.id}) in guild ${reactionRole.guildID}.`, err);
         }
     }
