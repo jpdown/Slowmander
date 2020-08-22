@@ -66,17 +66,15 @@ export class VerificationManager {
         }
 
         //Check if emote matches
-        if(reaction.emoji.identifier != verificationConfig.emoteID) {
-            return;
-        }
-
-        //Try to remove role from user
-        try {
-            await this.applyRole(member, false);
-        }
-        catch(err) {
-            await ModErrorLog.log("Unknown error removing verification role from " + member.user.tag, member.guild, this.bot);
-            await this.logger.error(`Error removing verification role from user ${member.user.tag} in guild ${member.guild.name}.`, err);
+        if(reaction.emoji.identifier === verificationConfig.emoteID) {
+            //Try to remove role from user
+            try {
+                await this.applyRole(member, false);
+            }
+            catch(err) {
+                await ModErrorLog.log("Unknown error removing verification role from " + member.user.tag, member.guild, this.bot);
+                await this.logger.error(`Error removing verification role from user ${member.user.tag} in guild ${member.guild.name}.`, err);
+            }
         }
 
         //Check if removing reaction
