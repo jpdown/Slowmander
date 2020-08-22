@@ -31,7 +31,6 @@ export class VerificationManager {
     }
 
     public async onMessageReactionAdd(reaction: MessageReaction, user: User) {
-        
         try {
             if(reaction.partial) {
                 await reaction.fetch();
@@ -61,6 +60,8 @@ export class VerificationManager {
         //Grab verification config
         let verificationConfig: VerificationConfigObject = await this.getVerificationConfig(member.guild);
         if(!verificationConfig) {
+            await ModErrorLog.log("Verification is enabled but I do not have a config. Please set a config. Disabling verification.", member.guild, this.bot);
+            await this.bot.configs.guildConfig.setVerificationEnabled(member.guild.id, false);
             return;
         }
 
@@ -101,6 +102,8 @@ export class VerificationManager {
         //Grab verification config
         let verificationConfig: VerificationConfigObject = await this.getVerificationConfig(member.guild);
         if(!verificationConfig) {
+            await ModErrorLog.log("Verification was enabled but I do not have a config. Please set a config. Disabling verification.", member.guild, this.bot);
+            await this.bot.configs.guildConfig.setVerificationEnabled(member.guild.id, false);
             return;
         }
 
