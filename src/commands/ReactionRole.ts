@@ -276,7 +276,7 @@ class ListReactionRoles extends Command {
                 currString += `BROKEN: Channel: <#${reactionRole.channelID}>, Message: ${reactionRole.messageID},`;
             }
 
-            currString += ` Emote: ${await ReactionRoleHelper.makeEmoteFromId(reactionRole.emoteID, message)},`
+            currString += ` Emote: ${await CommandUtils.makeEmoteFromId(reactionRole.emoteID, message)},`
             currString += ` Role: <@&${reactionRole.roleID}>`;
             stringList.push(currString);
         }
@@ -288,27 +288,6 @@ class ListReactionRoles extends Command {
         let paginatedMessage = await paginator.postMessage();
 
         return {sendHelp: false, command: this, message: message};
-    }
-}
-
-class ReactionRoleHelper {
-    public static async makeEmoteFromId(emoteId: string, message: Message): Promise<string> {
-        let emote: string;
-
-        try {
-            emoteId = emoteId.split(":").pop();
-            emote = message.client.emojis.resolve(emoteId).toString();
-        }
-        catch(err) {
-            if(emoteId.indexOf(":") === -1) {
-                emote = decodeURI(emoteId);
-            }
-            else {
-                emote = emoteId;
-            }
-        }
-
-        return(emote);
     }
 }
 

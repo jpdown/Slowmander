@@ -361,4 +361,23 @@ export class CommandUtils {
 
         return(messageSent);
     }
+
+    public static async makeEmoteFromId(emoteId: string, message: Message): Promise<string> {
+        let emote: string;
+
+        try {
+            emoteId = emoteId.split(":").pop();
+            emote = message.client.emojis.resolve(emoteId).toString();
+        }
+        catch(err) {
+            if(emoteId.indexOf(":") === -1) {
+                emote = decodeURI(emoteId);
+            }
+            else {
+                emote = emoteId;
+            }
+        }
+
+        return(emote);
+    }
 }
