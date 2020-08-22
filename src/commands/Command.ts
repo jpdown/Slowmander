@@ -36,7 +36,7 @@ export abstract class Command {
         this._requiredPerm = params.requiredPerm;
         this._longDesc = params.longDesc ? params.longDesc : "";
         this._usage = params.usage ? params.usage : "";
-        this._runsInDm = params.runsInDm ? params.runsInDm : true;
+        this._runsInDm = (params.runsInDm != undefined) ? params.runsInDm : true;
         this._group = params.group;
 
         this.logger = Logger.getLogger(bot, this);
