@@ -3,7 +3,7 @@ import { PantherBot } from '../Bot';
 import { CommandUtils } from '..//utils/CommandUtils';
 import { PermissionsHelper } from '../utils/PermissionsHelper';
 
-import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client} from 'discord.js';
+import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client, Guild} from 'discord.js';
 import { ReactionPaginator } from '../utils/ReactionPaginator';
 
 import * as process from "process";
@@ -48,6 +48,9 @@ export class Whois extends Command {
             embed.addField("Boosted", member.premiumSince.toUTCString(), true);
         }
 
+        //Join pos
+        embed.addField("Join Position", await this.getJoinPos(member), false);
+
         //Roles list
         let rolesList: Collection<Snowflake, Role> = member.roles.cache.clone();
         rolesList.sort((a, b) => b.position - a.position);
@@ -66,6 +69,20 @@ export class Whois extends Command {
         await message.channel.send(embed);
 
         return {sendHelp: false, command: this, message: message};
+    }
+
+    private async getJoinPos(member: GuildMember): Promise<number> {
+        //Get all members
+        let allMembers: Collection<Snowflake, GuildMember> = await member.guild.members.fetch();
+        //Iterate, keeping track of join time
+        let joinPos: number = 1;
+        for(let [currSnowflake, currMember] of allMembers) {
+            if(currMember.joinedTimestamp < member.joinedTimestamp) {
+                joinPos++;
+            }
+        }
+
+        return(joinPos);
     }
 }
 
