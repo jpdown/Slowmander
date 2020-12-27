@@ -42,12 +42,7 @@ export class ReactionPaginator {
             let reactionCollector: ReactionCollector = this.message.createReactionCollector(reactionFilter, {time: 60000, dispose: true});
             reactionCollector.on("collect", this.onReaction.bind(this));
             reactionCollector.on("end", async (collected) => {
-                try {
-                    await this.message.reactions.removeAll();
-                }
-                catch(err) {
-                    await this.message.channel.send("I don't have perms to remove the reactions.");
-                }
+                await this.message.delete();
             })
         }
 

@@ -1,7 +1,8 @@
 import { ReactionRoleObject } from "../config/ReactionRoleConfig";
 import { PantherBot } from "../Bot";
-import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Client } from "discord.js";
+import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Client, Guild, Permissions } from "discord.js";
 import { Logger } from "../Logger";
+import { ModErrorLog } from "../moderrorlog/ModErrorLog";
 
 export class ReactionRoleManager {
     private bot: PantherBot;
@@ -85,6 +86,8 @@ export class ReactionRoleManager {
                 try {
                     currChannel = <TextChannel | NewsChannel> this.bot.client.channels.resolve(currReactionRole.channelID);
                     if(!currChannel) {
+                        //Broken, remove
+                        await this.bot.configs.reactionRoleConfig.removeReactionRole(currReactionRole.guildID, currReactionRole.name);
                         continue;
                     }
 
@@ -92,7 +95,7 @@ export class ReactionRoleManager {
                         currMessage = await currChannel.messages.fetch(currReactionRole.messageID);
                     }
                     catch(err) {
-                        await currChannel.send(`Error checking status of ${currReactionRole.name}, does the message still exist?`);
+                        await ModErrorLog.log(`Error checking status of reaction role "${currReactionRole.name}", does the message still exist?`, currChannel.guild, this.bot);
                         continue;
                     }
 
@@ -103,41 +106,6 @@ export class ReactionRoleManager {
                 }
             }
         }
-    }
-
-    public async addReactionRole(reactionRole: ReactionRoleObject, reactionMessage: Message): Promise<boolean> {
-        let dbResult: boolean = await this.bot.configs.reactionRoleConfig.addReactionRole(reactionRole);
-        if(!dbResult) return(false);
-
-        //React to message
-        try {
-            await reactionMessage.react(reactionRole.emoteID);
-            return(true);
-        }
-        catch(err) {
-            await this.logger.warning("Error reacting to message, missing perms?", err);
-            await this.bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
-            return(false);
-        }
-    }
-
-    public async removeReactionRole(guildId: Snowflake, name: string, client: Client): Promise<boolean> {
-        let removedReactionRole: ReactionRoleObject = await this.bot.configs.reactionRoleConfig.removeReactionRole(guildId, name);
-        if(!removedReactionRole) return(false);
-
-        //Remove our reaction
-        try {
-            let channel: TextChannel | NewsChannel = <TextChannel | NewsChannel> await client.channels.fetch(removedReactionRole.channelID)
-            let message: Message = await channel.messages.fetch(removedReactionRole.messageID);
-
-            let reaction: MessageReaction = message.reactions.cache.get(removedReactionRole.emoteID);
-            await reaction.users.remove(client.user);
-
-        }
-        catch(err) {
-            await this.logger.warning("Error removing reaction from message, missing perms?", err);
-        }
-        return(true);
     }
 
     private async checkUsers(message: Message, reactionRole: ReactionRoleObject) {
@@ -179,37 +147,85 @@ export class ReactionRoleManager {
             hasRole = member.roles.cache.has(reactionRole.roleID);
             //Do we need to add role?
             if(hasReacted && !hasRole) {
-                await this.addUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel);
+                if(!await this.addUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel)) {
+                    break;
+                }
             }
 
             //Do we need to remove role?
             else if(!hasReacted && hasRole) {
-                await this.removeUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel);
+                if(!await this.removeUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel)) {
+                    break;
+                }
             }
         }
     }
 
-    private async addUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel) {
+    private async addUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel): Promise<boolean> {
+        let role: Role;
         //Add role to user
         try {
-            let role: Role = await channel.guild.roles.fetch(reactionRole.roleID);
-            await member.roles.add(role);
+            role = await channel.guild.roles.fetch(reactionRole.roleID);
+            if(role) {
+                await member.roles.add(role);
+            }
+            else {
+                //Broken reaction role, remove
+                await this.bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
+                await ModErrorLog.log(`The role for reaction role ${reactionRole.name} has been deleted.`, member.guild, this.bot);
+                return(false);
+            }
         }
         catch(err) {
-            await channel.send(`There was an error adding the role to ${member.toString()}.`);
-            await this.logger.error(`Error adding reaction role ${reactionRole.name} to ${member.user.username}#${member.user.discriminator}`, err);
+            await this.issueAddingOrRemoving(member, reactionRole, channel, role, true, err);
+            return(false);
         }
+
+        return(true);
     }
 
-    private async removeUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel) {
+    private async removeUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel): Promise<boolean> {
+        let role: Role;
         //Remove role from user
         try {
-            let role: Role = await channel.guild.roles.fetch(reactionRole.roleID);
-            await member.roles.remove(role);
+            role = await channel.guild.roles.fetch(reactionRole.roleID);
+            if(role) {
+                await member.roles.remove(role);
+            }
+            else {
+                //Broken reaction role, remove
+                await this.bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
+                await ModErrorLog.log(`The role for reaction role ${reactionRole.name} has been deleted.`, member.guild, this.bot);
+                return(false);
+            }
         }
         catch(err) {
-            await channel.send(`There was an error removing the role from ${member.toString()}.`);
-            await this.logger.error(`Error removing reaction role ${reactionRole.name} from ${member.user.username}#${member.user.discriminator}`, err);
+            await this.issueAddingOrRemoving(member, reactionRole, channel, role, false, err);
+            return(false);
+        }
+
+        return(true);
+    }
+
+    private async issueAddingOrRemoving(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel, role: Role, adding: boolean, err: any) {
+        let messageToSend: string;
+        if(adding) {
+            messageToSend = `There was an error adding the role "${role.name}" to ${member.toString()}.`;
+        }
+        else {
+            messageToSend = `There was an error removing the role "${role.name}" from ${member.toString()}.`;
+        }
+        //If no manage roles
+        if(!channel.guild.me.hasPermission(Permissions.FLAGS.MANAGE_ROLES)) {
+            await ModErrorLog.log(messageToSend + " I do not have the Manage Roles permission.", member.guild, this.bot);
+        }
+        //If role hierarchy
+        else if(channel.guild.me.roles.highest.comparePositionTo(role) < 0) {
+            await ModErrorLog.log(messageToSend + " Incorrect hierarchy, my top role is not above.", member.guild, this.bot)
+        }
+        else {
+            await ModErrorLog.log(messageToSend, member.guild, this.bot);
+            await this.logger.error(`Unknown error occurred adding or removing reaction role ${reactionRole.name} to user ${member.user.username}#${member.user.discriminator} (${member.id}) in guild ${reactionRole.guildID}.`, err);
         }
     }
 }

@@ -1,6 +1,6 @@
 import { PantherBot } from "../Bot";
 import { Snowflake } from "discord.js";
-import { DatabaseEntry } from "./DatabaseEntry";
+import { DatabaseEntry, DatabaseObject } from "./DatabaseEntry";
 
 export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
     private static readonly TABLE: string = "GuildConfig";
@@ -52,6 +52,20 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
         return(await this.updateOrInsertDocument(guildId, {modlogChannel: newChannel}));
     }
 
+    public async getVipRole(guildId: Snowflake): Promise<string> {
+        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+        if(gc) {
+            return(gc.vipRole);
+        }
+
+        return(undefined);
+    }
+
+    public async setVipRole(guildId: Snowflake, newVipRole: string): Promise<boolean> {
+        return(await this.updateOrInsertDocument(guildId, {vipRole: newVipRole}));
+    }
+
     public async getModRole(guildId: Snowflake): Promise<string> {
         let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
 
@@ -80,17 +94,48 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
         return(await this.updateOrInsertDocument(guildId, {adminRole: newAdminRole}));
     }
 
+    public async getModErrorChannel(guildId: Snowflake): Promise<string> {
+        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+        
+        if(gc) {
+            return(gc.modErrorChannel);
+        }
+        
+        return(undefined);
+    }
+    
+    public async setModErrorChannel(guildId: Snowflake, newModErrorChannel: string): Promise<boolean> {
+        return(await this.updateOrInsertDocument(guildId, {modErrorChannel: newModErrorChannel}));
+    }
+
+    public async getVerificationEnabled(guildId: Snowflake): Promise<boolean> {
+        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+        if(gc) {
+            return(gc.verificationEnabled);
+        }
+
+        return(undefined);
+    }
+
+    public async setVerificationEnabled(guildId: Snowflake, newVerificationEnabled: boolean): Promise<boolean> {
+        return(await this.updateOrInsertDocument(guildId, {verificationEnabled: newVerificationEnabled}));
+    }
+    
     private async getGuildConfigObject(guildId: string): Promise<GuildConfigObject> {
         return(<GuildConfigObject> await this.getDocument(guildId));
     }
 }
 
 
-interface GuildConfigObject {
+interface GuildConfigObject extends DatabaseObject {
     id?: string,
     prefix?: string,
     eventlogChannel?: string,
     modlogChannel?: string,
+    vipRole?: string,
     modRole?: string,
-    adminRole?: string
+    adminRole?: string,
+    verificationEnabled?: boolean
+    modErrorChannel?: string
 }

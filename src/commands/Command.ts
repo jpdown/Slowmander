@@ -5,6 +5,7 @@ import { CommandGroup } from './CommandGroup';
 import { Logger } from '../Logger';
 
 export enum PermissionLevel {
+    Disabled = -1,
     Everyone = 0,
     VIP = 1,
     Mod = 2,
@@ -35,30 +36,13 @@ export abstract class Command {
         this._requiredPerm = params.requiredPerm;
         this._longDesc = params.longDesc ? params.longDesc : "";
         this._usage = params.usage ? params.usage : "";
-        this._runsInDm = params.runsInDm ? params.runsInDm : true;
+        this._runsInDm = (params.runsInDm != undefined) ? params.runsInDm : true;
         this._group = params.group;
 
         this.logger = Logger.getLogger(bot, this);
     }
 
     async abstract run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult>;
-
-    async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel, bot: PantherBot, messageOptions?: MessageOptions): Promise<Message> {
-        let messageSent: Message;
-
-        let embed: MessageEmbed = new MessageEmbed()
-            .setColor(await CommandUtils.getSelfColor(channel, bot))
-            .setDescription(message);
-
-        if(messageOptions !== undefined) {
-            messageSent = await channel.send(embed, messageOptions);
-        }
-        else {
-            messageSent = await channel.send(embed);
-        }
-
-        return(messageSent);
-    }
 
     public get name(): string {
         return(this._name);

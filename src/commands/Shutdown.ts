@@ -2,6 +2,7 @@ import {Command, PermissionLevel, CommandResult} from './Command';
 import { PantherBot } from '../Bot';
 
 import {Message} from 'discord.js';
+import { CommandUtils } from '../utils/CommandUtils';
 
 
 export class Shutdown extends Command {
@@ -10,7 +11,7 @@ export class Shutdown extends Command {
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        await this.sendMessage("Shutting down... 👋", message.channel, bot);
+        await CommandUtils.sendMessage("Shutting down... 👋", message.channel, bot);
 
         message.client.destroy();
 

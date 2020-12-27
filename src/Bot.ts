@@ -8,6 +8,7 @@ import { EventLogger } from './eventlogs/EventLogger';
 import { DatabaseManager } from './config/DatabaseManager';
 import { ConfigManager } from './config/ConfigManager';
 import { ModlogManager } from './modlogs/ModlogManager';
+import { VerificationManager } from './verification/VerificationManager';
 
 export class PantherBot {
     private _client: Client;
@@ -17,6 +18,7 @@ export class PantherBot {
     private _commandManager: CommandManager;
     private _reactionRoleManager: ReactionRoleManager;
     private _helpManager: HelpManager;
+    private _verificationManager: VerificationManager;
     private logger: Logger;
     private _eventLogger: EventLogger;
     private _modlogManager: ModlogManager;
@@ -30,7 +32,8 @@ export class PantherBot {
         this._helpManager = new HelpManager;
         this._eventLogger = new EventLogger(this);
         this._modlogManager = new ModlogManager(this);
-        
+        this._verificationManager = new VerificationManager(this);
+
         this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
         this._client.on('ready', async () => {
             await this.logger.info(`Welcome to PantherBot-Discord-JS! Logged in as ${this._client.user.tag} in ${this._client.guilds.cache.size} guild(s).`);
@@ -50,7 +53,9 @@ export class PantherBot {
             this._reactionRoleManager = new ReactionRoleManager(this);
             this._client.on('messageReactionAdd', this._reactionRoleManager.onMessageReactionAdd.bind(this._reactionRoleManager));
             this._client.on('messageReactionRemove', this._reactionRoleManager.onMessageReactionRemove.bind(this._reactionRoleManager));
-            this._client.on("ready", this._reactionRoleManager.onReady.bind(this._reactionRoleManager))
+            this._client.on("ready", this._reactionRoleManager.onReady.bind(this._reactionRoleManager));
+            this._client.on("guildMemberAdd", this._verificationManager.onGuildMemberAdd.bind(this._verificationManager));
+            this._client.on("messageReactionAdd", this._verificationManager.onMessageReactionAdd.bind(this._verificationManager));
         }).catch((err) => {
             this.logger.logSync(LogLevel.ERROR, "Error with db", err);
         })
