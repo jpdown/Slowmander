@@ -106,6 +106,10 @@ export class PantherBot {
     public get eventLogger(): EventLogger {
         return(this._eventLogger);
     }
+
+    public get modlogManager(): ModlogManager {
+        return(this._modlogManager);
+    }
 }
 
 let bot = new PantherBot;

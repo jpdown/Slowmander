@@ -50,13 +50,13 @@ class CreateRole extends Command {
 
         //Make sure we have perms
         if(!message.guild.me.hasPermission(Permissions.FLAGS.MANAGE_ROLES)) {
-            await this.sendMessage("I do not have the Manage Roles permission.", message.channel, bot);
+            await CommandUtils.sendMessage("I do not have the Manage Roles permission.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
         //Make sure this role doesn't exist
         if(await RolesHelper.getRoleFromName(newRoleName, message.guild)) {
-            await this.sendMessage(`The role ${newRoleName} already exists.`, message.channel, bot);
+            await CommandUtils.sendMessage(`The role ${newRoleName} already exists.`, message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
@@ -66,11 +66,11 @@ class CreateRole extends Command {
         }
         catch(err) {
             await this.logger.error(`Error creating role ${newRoleName} in guild ${message.guild.name}, guild ID ${message.guild.id}`, err);
-            await this.sendMessage(`Unexpected error creating role ${newRoleName}.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Unexpected error creating role ${newRoleName}.`, message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
-        await this.sendMessage(`Role ${newRoleName} created successfully.`, message.channel, bot);
+        await CommandUtils.sendMessage(`Role ${newRoleName} created successfully.`, message.channel, bot);
         return {sendHelp: false, command: this, message: message};
     }
 }
@@ -89,7 +89,7 @@ class RemoveRole extends Command {
 
         //Make sure we have perms
         if(!message.guild.me.hasPermission(Permissions.FLAGS.MANAGE_ROLES)) {
-            await this.sendMessage("I do not have the Manage Roles permission.", message.channel, bot);
+            await CommandUtils.sendMessage("I do not have the Manage Roles permission.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
@@ -97,7 +97,7 @@ class RemoveRole extends Command {
         let roleToRemove: Role = await RolesHelper.getRoleFromName(roleName, message.guild);
 
         if(!roleToRemove) {
-            await this.sendMessage(`The role ${roleName} doesn't exist.`, message.channel, bot);
+            await CommandUtils.sendMessage(`The role ${roleName} doesn't exist.`, message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
@@ -107,11 +107,11 @@ class RemoveRole extends Command {
         }
         catch(err) {
             await this.logger.error(`Error removing role ${roleName} in guild ${message.guild.name}, guild ID ${message.guild.id}`, err);
-            await this.sendMessage(`Unexpected error removing role ${roleName}.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Unexpected error removing role ${roleName}.`, message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
-        await this.sendMessage(`Role ${roleName} removed successfully.`, message.channel, bot);
+        await CommandUtils.sendMessage(`Role ${roleName} removed successfully.`, message.channel, bot);
         return {sendHelp: false, command: this, message: message};
     }
 }

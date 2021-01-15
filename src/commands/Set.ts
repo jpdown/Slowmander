@@ -21,6 +21,7 @@ export class Set extends CommandGroup {
         this.registerSubCommand(new SetAdminRole(this, bot));
         this.registerSubCommand(new SetEventLogChannel(this, bot));
         this.registerSubCommand(new SetModErrorLogChannel(this, bot));
+        this.registerSubCommand(new SetModlogChannel(this, bot));
     }
 }
 
@@ -273,16 +274,16 @@ class SetModlogChannel extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        //Set channel
-        // let result: boolean = await bot.eventLogger.setEventlogChannel(message.guild.id, channel.id);
+        // Set channel
+        let result: boolean = await bot.modlogManager.setModlogChannel(message.guild.id, channel.id);
 
 
-        // if(result) {
-        //     await this.sendMessage(`Modlog channel set to ${channel.toString()} for guild ${message.guild.name} successfully.`, message.channel, bot);
-        // }
-        // else {
-        //     await this.sendMessage(`Modlog channel was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
-        // }
+        if(result) {
+            await CommandUtils.sendMessage(`Modlog channel set to ${channel.toString()} for guild ${message.guild.name} successfully.`, message.channel, bot);
+        }
+        else {
+            await CommandUtils.sendMessage(`Modlog channel was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+        }
 
         return {sendHelp: false, command: this, message: message};
     }

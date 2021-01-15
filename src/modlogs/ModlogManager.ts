@@ -1,5 +1,5 @@
 import { PantherBot } from "../Bot";
-import { GuildMember, Message, Collection, Snowflake, Guild, User, Client, TextChannel, MessageEmbed, NewsChannel, DMChannel, GuildChannel, Role, GuildAuditLogsAction, GuildAuditLogsActionType, GuildAuditLogs, GuildAuditLogsEntry, Channel, Invite, PermissionResolvable } from "discord.js";
+import { GuildMember, Message, Collection, Snowflake, Guild, User, Client, TextChannel, MessageEmbed, NewsChannel, DMChannel, GuildChannel, Role, GuildAuditLogsAction, GuildAuditLogsActionType, GuildAuditLogs, GuildAuditLogsEntry, Channel, Invite, PermissionResolvable, GuildAuditLogsTarget, AuditLogChange, GuildEmoji, Webhook, Integration, GuildAuditLogsActions, VoiceState } from "discord.js";
 import { Logger } from "../Logger";
 import { PermissionsHelper } from "../utils/PermissionsHelper";
 
@@ -16,13 +16,51 @@ export class ModlogManager {
         this.eventListener = new ModlogEventListener(bot);
     }
 
-    public async logChannelPermsUpdate(channel: GuildChannel, action: "CREATE" | "DELETE" | "UPDATE", oldAllow: Permissions, 
-        newAllow: Permissions, oldDeny: Permissions, newDeny: Permissions) {
-            //Calculate new neutral
-            let newNeutal: Permissions = 
+    public async logModAction(target: any, executor: User, changes: AuditLogChange[], timestamp: Date | number, action: string, guild: Guild, reason?: string): Promise<void> {
+        let embed: MessageEmbed = new MessageEmbed();
+        let channel: TextChannel | NewsChannel = await this.getLogChannel(guild.id);
+        let targetString: string = "";
+
+        // set author to executor
+        embed.setAuthor(executor.username, executor.avatarURL());
+
+        // add info about action
+        embed.setDescription(action);
+
+        if (target && target.name) {
+            targetString += target.name;
+        }
+        else if (target && target.username) {
+            targetString += target.username;
+        }
+        else if (target && target.id) {
+            targetString += target.id;
+        }
+
+        if (target && target.toString() !== "") {
+            targetString += " - " + target.toString();
+        }
+
+        if (targetString !== "") {
+            embed.addField("Target", targetString);
+        }
+
+        if (changes !== undefined && changes !== null) {
+            for (let change of changes) {
+                embed.addField(change.key, `\`\`\`diff\n- ${change.old}\n+ ${change.new}\`\`\``);
+            }
+        }
+
+        if (reason !== undefined && reason !== null) {
+            embed.addField("Reason", reason);
+        }
+
+        embed.setTimestamp(timestamp);
+
+        await channel.send(embed);
     }
 
-    public async setModlogChannel(guildId: string, channelId: string) {
+    public async setModlogChannel(guildId: string, channelId: string): Promise<boolean> {
         let result: boolean = await this.bot.configs.guildConfig.setModlogChannel(guildId, channelId);
         if(result) this.channelMap.set(guildId, channelId);
 
@@ -64,14 +102,18 @@ export class ModlogManager {
 
 class ModlogEventListener {
     private logger: Logger;
+    private bot: PantherBot;
 
     private loggedPrunes: Snowflake[];
 
     constructor(bot: PantherBot) {
         //Register events
         let client: Client = bot.client;
+        this.bot = bot;
         this.logger = Logger.getLogger(bot, this);
         this.loggedPrunes = [];
+        client.on("channelCreate", this.onChannelCreate.bind(this));
+        client.on("channelDelete", this.onChannelDelete.bind(this));
         client.on("channelUpdate", this.onChannelUpdate.bind(this));
         client.on("guildMemberRemove", this.onGuildMemberRemove.bind(this));
         client.on("guildBanAdd", this.onGuildBanAdd.bind(this));
@@ -83,192 +125,161 @@ class ModlogEventListener {
         client.on("roleUpdate", this.onRoleUpdate.bind(this));
         client.on("messageDelete", this.onMessageDelete.bind(this));
         client.on("messageDeleteBulk", this.onMessageDeleteBulk.bind(this));
+        client.on("voiceStateUpdate", this.onVoiceStateUpdate.bind(this));
     }
 
-    public async onChannelUpdate(channel: DMChannel | GuildChannel) {
-        //log CHANNEL_OVERWRITE_x events
-
-        let currentTime: Date = new Date();
-
+    public async onChannelCreate(channel: DMChannel | GuildChannel) {
+        //log CHANNEL_CREATE events
         if(channel.type === "dm") {
             return;
         }
 
         let guild: Guild = channel.guild;
 
-        //Verify we have permissions
-        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
+        /*
+        target: GuildChannel
+        executor: User
+        changes: name, type, permission_overwrites, nsfw, rate_limit_per_user, bitrate
+
+        type:
+        0 - TextChannel
+        2 - VoiceChannel
+        4 - Category
+        5 - AnnouncementChannel
+        */
+
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["CHANNEL_CREATE"], channel.id);
+
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
+        }
+    }
+
+    public async onChannelDelete(channel: DMChannel | GuildChannel) {
+        //log CHANNEL_DELETE events
+        if(channel.type === "dm") {
             return;
         }
 
-        //Grab the most recent channel create event from audit log
-        let auditLogs: GuildAuditLogs;
-        let matchingEntries: Collection<Snowflake, GuildAuditLogsEntry>;
-        let matchingLog: GuildAuditLogsEntry;
+        let guild: Guild = channel.guild;
+
+        /*
+        */
+
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["CHANNEL_DELETE"], channel.id);
+
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
+        }
+    }
+
+    public async onChannelUpdate(channel: DMChannel | GuildChannel) {
+        //log CHANNEL_OVERWRITE_x events
+        // also CHANNEL_UPDATE
+
+        if(channel.type === "dm") {
+            return;
+        }
+
+        let guild: Guild = channel.guild; //Verify we have permissions
 
         /* 
-        CREATE: changes: id (of role/member), type (role, member), allow, deny
-        DELETE: changes: id (of role/member), type (role, member), allow, deny
-        UPDATE: changes: allow/deny, possibly both
+        overwrite:
+        CREATE: changes: id (of role/member), type (role, member), allow, deny, allow_new, deny_new
+        DELETE: changes: id (of role/member), type (role, member), allow, deny, allow_new, deny_new
+        UPDATE: changes: allow/deny, possibly both, , allow_new, deny_new
 
         extra on all is either Role or GuildMember
 
         allow/deny has old and new, compare for changes
+
+        update:
+        changes:
+            topic, nsfw, rate_limit_per_user, name, 
         */
 
-        try {
-            auditLogs = await guild.fetchAuditLogs();
-            matchingEntries = auditLogs.entries.filter((entry) => (this.globalAuditLogChecks(entry, currentTime, channel.client) && (entry.action === "CHANNEL_OVERWRITE_CREATE" || entry.action === "CHANNEL_OVERWRITE_UPDATE"
-                || entry.action === "CHANNEL_OVERWRITE_DELETE") && (!(entry.target instanceof Invite) && entry.target.id === channel.id)));
-            if(matchingEntries.size > 1) {
-                matchingLog = matchingEntries.first();
-                
-                console.log("channel update");
-                console.log(matchingLog);
-                console.log("=================");
-            }
-        }
-        catch(err) {
-            this.logger.warning("Error getting audit logs from channel update.", err);
-            return
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["CHANNEL_OVERWRITE_CREATE", "CHANNEL_OVERWRITE_DELETE", "CHANNEL_OVERWRITE_UPDATE", "CHANNEL_UPDATE"], channel.id);
+
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
     }
 
     public async onGuildMemberRemove(member: GuildMember) {
         //Log kicks and (not right now but in the future) prunes
 
-        let currentTime: Date = new Date();
         let guild: Guild = member.guild;
-
-        //Verify we have permissions
-        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
-            return;
-        }
-
-        //Grab the most recent channel create event from audit log
-        let auditLogs: GuildAuditLogs;
-        let matchingEntries: Collection<Snowflake, GuildAuditLogsEntry>;
-        let matchingLog: GuildAuditLogsEntry;
 
         /*
         KICK
         target: user
+
+        PRUNE
+        delete_member_days
+        members_removed
         */
 
-        try {
-            auditLogs = await guild.fetchAuditLogs();
-            matchingEntries = auditLogs.entries.filter((entry) => (this.globalAuditLogChecks(entry, currentTime, member.client) && ((entry.action === "MEMBER_KICK" && (<User>entry.target).id === member.id)) || entry.action === "MEMBER_PRUNE"));
-            if(matchingEntries.size > 0) {
-                matchingLog = matchingEntries.first();
-
-                if(matchingLog.action === "MEMBER_PRUNE") {
-                    if(this.loggedPrunes.includes(matchingLog.id)) return;
-                    else {
-                        //Keep track that we've logged this prune
-                        this.loggedPrunes.push(matchingLog.id);
-                        //Queue a remove of this in 5 seconds (we ignore events that happened more than 5 seconds ago)
-                        setTimeout(async () => {
-                            this.loggedPrunes.splice(this.loggedPrunes.indexOf(matchingLog.id, 1))
-                        }, 5000);
-                    }
-                }
-
-                console.log("member kicked/pruned (maybe)");
-                console.log(matchingLog);
-                console.log("=================");
-            }
-
-            return;
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["MEMBER_KICK"], member.id);
+        // if we didn't find a kick, look for a prune
+        if (matchingLog === undefined) {
+            matchingLog = await this.getAuditLogEntry(guild, ["MEMBER_PRUNE"]);
         }
-        catch(err) {
-            this.logger.warning("Error getting audit logs from member kicked/pruned.", err);
-            return;
+
+        if(matchingLog !== undefined && matchingLog.action === "MEMBER_PRUNE") {
+            if(this.loggedPrunes.includes(matchingLog.id)) return;
+            else {
+                //Keep track that we've logged this prune
+                this.loggedPrunes.push(matchingLog.id);
+                //Queue a remove of this in 5 seconds (we ignore events that happened more than 5 seconds ago)
+                setTimeout(async () => {
+                    this.loggedPrunes.splice(this.loggedPrunes.indexOf(matchingLog.id, 1))
+                }, 5000);
+            }
+        }
+
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
     }
 
     public async onGuildBanAdd(guild: Guild, user: User) {
-        let currentTime: Date = new Date();
-
-        //Verify we have permissions
-        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
-            return;
-        }
-
-        //Grab the most recent channel create event from audit log
-        let auditLogs: GuildAuditLogs;
-        let matchingEntries: Collection<Snowflake, GuildAuditLogsEntry>;
-        let matchingLog: GuildAuditLogsEntry;
-
         /*
         target: User
         */
 
-        try {
-            auditLogs = await guild.fetchAuditLogs({type: "MEMBER_BAN_ADD"});
-            matchingEntries = auditLogs.entries.filter((entry) => this.globalAuditLogChecks(entry, currentTime, guild.client) && (<User>entry.target).id === user.id);
-            if(matchingEntries.size > 0) {
-                matchingLog = matchingEntries.first();
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["MEMBER_BAN_ADD"], user.id);
 
-                console.log("member banned");
-                console.log(matchingLog);
-                console.log("=================");
-            }
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
-        catch(err) {
-            this.logger.warning("Error getting audit logs from member banned.", err);
-            return;
-        }
-
     }
 
     public async onGuildBanRemove(guild: Guild, user: User) {
-        let currentTime: Date = new Date();
-
-        //Verify we have permissions
-        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
-            return;
-        }
-
-        //Grab the most recent channel create event from audit log
-        let auditLogs: GuildAuditLogs;
-        let matchingEntries: Collection<Snowflake, GuildAuditLogsEntry>;
-        let matchingLog: GuildAuditLogsEntry;
-
         /*
         target: User
         */
 
-        try {
-            auditLogs = await guild.fetchAuditLogs({type: "MEMBER_BAN_REMOVE"});
-            matchingEntries = auditLogs.entries.filter((entry) => this.globalAuditLogChecks(entry, currentTime, guild.client) && (<User>entry.target).id === user.id);
-            if(matchingEntries.size > 0) {
-                matchingLog = matchingEntries.first();
-                
-                console.log("member unbanned");
-                console.log(matchingLog);
-                console.log("=================");
-            }
-        }
-        catch(err) {
-            this.logger.warning("Error getting audit logs from member unbanned.", err);
-            return;
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["MEMBER_BAN_REMOVE"], user.id);
+
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
     }
 
     public async onGuildMemberUpdate(oldMember: GuildMember, newMember: GuildMember) {
         let guild: Guild = newMember.guild;
-        let currentTime: Date = new Date();
-
-        //Verify we have permissions
-        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
-            return;
-        }
-
-        //Grab the most recent channel create event from audit log
-        let auditLogs: GuildAuditLogs;
-        let matchingEntries: Collection<Snowflake, GuildAuditLogsEntry>;
-        let matchingLog: GuildAuditLogsEntry;
-
         /*
         NICK
         changes: id: "nick", old new
@@ -280,42 +291,24 @@ class ModlogEventListener {
         new is array of objects with params id and name (role id and name)
         */
 
-        try {
-            auditLogs = await guild.fetchAuditLogs();
-            matchingEntries = auditLogs.entries.filter((entry) => this.globalAuditLogChecks(entry, currentTime, newMember.client) && (entry.action === "MEMBER_UPDATE" || entry.action === "MEMBER_ROLE_UPDATE") && (<User>entry.target).id === newMember.id);
-            if(matchingEntries.size > 0) {
-                matchingLog = matchingEntries.first();
-                console.log("member updated / role updated (maybe)");
-                console.log(matchingLog);
-                console.log("=================");
-            }
-            
-            return;
-        }
-        catch(err) {
-            this.logger.warning("Error getting audit logs from member update / role update.", err);
-            return;
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["MEMBER_UPDATE", "MEMBER_ROLE_UPDATE"], newMember.id);
+
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
     }
 
     public async onGuildMemberAdd(member: GuildMember) {
         let guild: Guild = member.guild;
-        let currentTime: Date = new Date();
-
+        
         //Check if member is a bot
         if(!member.user.bot) {
             return;
         }
-
-        //Verify we have permissions
-        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
-            return;
-        }
-
-        //Grab the most recent channel create event from audit log
-        let auditLogs: GuildAuditLogs;
-        let matchingEntries: Collection<Snowflake, GuildAuditLogsEntry>;
-        let matchingLog: GuildAuditLogsEntry;
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["BOT_ADD"], member.id);
 
         /*
         changes: null
@@ -323,185 +316,105 @@ class ModlogEventListener {
         target is bot User
         */
 
-        try {
-            auditLogs = await guild.fetchAuditLogs({type: "BOT_ADD"});
-            matchingEntries = auditLogs.entries.filter((entry) => this.globalAuditLogChecks(entry, currentTime, member.client) && (<User>entry.target).id === member.id);
-            if(matchingEntries.size > 0) {
-                matchingLog = matchingEntries.first();
-                
-                console.log("bot added");
-                console.log(matchingLog);
-                console.log("=================");
-            }
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
-        catch(err) {
-            this.logger.warning("Error getting audit logs from bot add.", err);
-            return;
-        }
-
     }
 
     public async onRoleCreate(role: Role) {
         let guild: Guild = role.guild;
-        let currentTime: Date = new Date();
 
-        //Verify we have permissions
-        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
-            return;
-        }
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["ROLE_CREATE"], role.id);
 
-        //Grab the most recent channel create event from audit log
-        let auditLogs: GuildAuditLogs;
-        let matchingEntries: Collection<Snowflake, GuildAuditLogsEntry>;
-        let matchingLog: GuildAuditLogsEntry;
-
-        try {
-            auditLogs = await guild.fetchAuditLogs({type: "ROLE_CREATE"});
-            matchingEntries = auditLogs.entries.filter((entry) => this.globalAuditLogChecks(entry, currentTime, role.client) && (<Role>entry.target).id === role.id);
-            if(matchingEntries.size > 0) {
-                matchingLog = matchingEntries.first();
-
-                console.log("role created");
-                console.log(matchingLog);
-                console.log("=================");
-            }
-        }
-        catch(err) {
-            this.logger.warning("Error getting audit logs from role create.", err);
-            return;
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
     }
 
     public async onRoleDelete(role: Role) {
         let guild: Guild = role.guild;
-        let currentTime: Date = new Date();
 
-        //Verify we have permissions
-        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
-            return;
-        }
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["ROLE_DELETE"], role.id);
 
-        //Grab the most recent channel create event from audit log
-        let auditLogs: GuildAuditLogs;
-        let matchingEntries: Collection<Snowflake, GuildAuditLogsEntry>;
-        let matchingLog: GuildAuditLogsEntry;
-
-        try {
-            auditLogs = await guild.fetchAuditLogs({type: "ROLE_DELETE"});
-            matchingEntries = auditLogs.entries.filter((entry) => this.globalAuditLogChecks(entry, currentTime, role.client) && (<Role>entry.target).id === role.id);
-            if(matchingEntries.size > 0) {
-                matchingLog = matchingEntries.first();
-
-                console.log("role deleted");
-                console.log(matchingLog);
-                console.log("=================");
-            }
-        }
-        catch(err) {
-            this.logger.warning("Error getting audit logs from role delete.", err);
-            return;
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
     }
 
     public async onRoleUpdate(oldRole: Role, newRole: Role) {
         let guild: Guild = newRole.guild;
-        let currentTime: Date = new Date();
 
-        //Verify we have permissions
-        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
-            return;
-        }
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["ROLE_UPDATE"], newRole.id);
 
-        //Grab the most recent channel create event from audit log
-        let auditLogs: GuildAuditLogs;
-        let matchingEntries: Collection<Snowflake, GuildAuditLogsEntry>;
-        let matchingLog: GuildAuditLogsEntry;
-
-        try {
-            auditLogs = await guild.fetchAuditLogs({type: "ROLE_UPDATE"});
-            matchingEntries = auditLogs.entries.filter((entry) => this.globalAuditLogChecks(entry, currentTime, newRole.client) && (<Role>entry.target).id === newRole.id);
-            if(matchingEntries.size > 0) {
-                matchingLog = matchingEntries.first();
-
-                console.log("role updated");
-                console.log(matchingLog);
-                console.log("=================");
-            }
-        }
-        catch(err) {
-            this.logger.warning("Error getting audit logs from role update.", err);
-            return;
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
     }
 
-    //why isn't this logging?? TODO
     public async onMessageDelete(message: Message) {
+        if(message.partial) {
+            return;
+        }
+
         if(message.channel.type === "dm") {
             return;
         }
 
         let guild: Guild = message.guild;
-        let currentTime: Date = new Date();
 
-        //Verify we have permissions
-        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
-            return;
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["MESSAGE_DELETE"], message.author.id);
+
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
-
-        //Grab the most recent channel create event from audit log
-        let auditLogs: GuildAuditLogs;
-        let matchingEntries: Collection<Snowflake, GuildAuditLogsEntry>;
-        let matchingLog: GuildAuditLogsEntry;
-
-        try {
-            auditLogs = await guild.fetchAuditLogs({type: "MESSAGE_DELETE"});
-            matchingEntries = auditLogs.entries.filter((entry) => this.globalAuditLogChecks(entry, currentTime, message.client) && !(entry.target instanceof Invite) && entry.target.id === message.id);
-            if(matchingEntries.size > 0) {
-                matchingLog = matchingEntries.first();
-
-                console.log("message deleted");
-                console.log(matchingLog);
-                console.log("=================");
-            }
-        }
-        catch(err) {
-            this.logger.warning("Error getting audit logs from message delete.", err);
-            return;
-        }
-
     }
 
-
-    //TODO: Solve this issue
     public async onMessageDeleteBulk(messages: Collection<Snowflake, Message>) {
+        if (messages.first().partial) {
+            return;
+        }
+
         if(messages.first().channel.type === "dm") {
             return;
         }
 
         let guild: Guild = messages.first().guild;
-        let currentTime: Date = new Date();
 
-        //Verify we have permissions
-        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
-            return;
+        /*
+         * count
+         */
+
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["MESSAGE_BULK_DELETE"], messages.first().channel.id);
+
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
+    }
 
-        //Grab the most recent channel create event from audit log
-        let auditLogs: GuildAuditLogs;
-        let matchingLog: GuildAuditLogsEntry;
+    public async onVoiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
+        let guild: Guild = newState.guild;
 
-        try {
-            auditLogs = await guild.fetchAuditLogs({type: "MESSAGE_BULK_DELETE"});
-            matchingLog = auditLogs.entries.filter((entry) => this.globalAuditLogChecks(entry, currentTime, guild.client)).first();
+        /*
+         */
+
+        // Get log entry
+        let matchingLog: GuildAuditLogsEntry = await this.getAuditLogEntry(guild, ["MEMBER_MOVE", "MEMBER_DISCONNECT"], newState.member?.id);
+
+        if (matchingLog !== undefined) {
+            console.log(matchingLog);
+            await this.bot.modlogManager.logModAction(matchingLog.target, matchingLog.executor, matchingLog.changes, matchingLog.createdTimestamp, matchingLog.action, guild, matchingLog.reason);
         }
-        catch(err) {
-            this.logger.warning("Error getting audit logs from message delete.", err);
-            return;
-        }
-
-        console.log("message deleted bulk");
-        console.log(matchingLog);
-        console.log("=================");
     }
 
     private globalAuditLogChecks(entry: GuildAuditLogsEntry, currentTime: Date, client: Client): boolean {
@@ -523,5 +436,45 @@ class ModlogEventListener {
         }
 
         return(check);
+    }
+
+    private async getAuditLogEntry(guild: Guild, matchedTypes: GuildAuditLogsAction[], targetId?: Snowflake): Promise<GuildAuditLogsEntry> {
+        let currentTime: Date = new Date();
+
+        //Verify we have permissions
+        if(!guild.me.hasPermission("VIEW_AUDIT_LOG")) {
+            return undefined;
+        }
+        // TODO: add enable disable logic
+
+        //Grab the most recent channel create event from audit log
+        let auditLogs: Collection<Snowflake, GuildAuditLogsEntry>;
+        let matchingLog: GuildAuditLogsEntry;
+
+        try {
+            // if only one type, we can filter during api request
+            if (matchedTypes.length === 1) {
+                auditLogs = (await guild.fetchAuditLogs({type: matchedTypes[0]})).entries;
+            }
+            // if multiple types, we need to filter after grabbing
+            else {
+                auditLogs = (await guild.fetchAuditLogs()).entries;
+                auditLogs = auditLogs.filter((entry: GuildAuditLogsEntry) => (matchedTypes.indexOf(entry.action) !== -1));
+            }
+
+            auditLogs = auditLogs.filter((entry: GuildAuditLogsEntry) => this.globalAuditLogChecks(entry, currentTime, guild.client));
+            
+            // if matching target id
+            if (targetId !== undefined && targetId !== null) {
+                auditLogs = auditLogs.filter((entry: GuildAuditLogsEntry) => (!(entry.target instanceof Invite) && entry.target.id === targetId));
+            }
+
+            matchingLog = auditLogs.first();
+            return matchingLog;
+        }
+        catch(err) {
+            this.logger.warning("Error getting audit logs.", err);
+            return undefined;
+        }
     }
 }
