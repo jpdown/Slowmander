@@ -57,6 +57,7 @@ export class PantherBot {
             this._client.on("guildMemberAdd", this._verificationManager.onGuildMemberAdd.bind(this._verificationManager));
             this._client.on("messageReactionAdd", this._verificationManager.onMessageReactionAdd.bind(this._verificationManager));
             this._client.on("guildMemberAdd", this._hondeBannerManager.onGuildMemberAdd.bind(this._hondeBannerManager));
+            this._client.on("message", this._hondeBannerManager.onMessage.bind(this._hondeBannerManager));
         }).catch((err) => {
             this.logger.logSync(LogLevel.ERROR, "Error with db", err);
         })
