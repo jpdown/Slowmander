@@ -8,6 +8,7 @@ import { EventLogger } from './eventlogs/EventLogger';
 import { DatabaseManager } from './config/DatabaseManager';
 import { ConfigManager } from './config/ConfigManager';
 import { VerificationManager } from './verification/VerificationManager';
+import { HondeBannerManager } from './hondebanner/HondeBannerManager';
 
 export class PantherBot {
     private _client: Client;
@@ -18,6 +19,7 @@ export class PantherBot {
     private _reactionRoleManager: ReactionRoleManager;
     private _helpManager: HelpManager;
     private _verificationManager: VerificationManager;
+    private _hondeBannerManager: HondeBannerManager;
     private logger: Logger;
     private _eventLogger: EventLogger;
 
@@ -30,6 +32,7 @@ export class PantherBot {
         this._helpManager = new HelpManager;
         this._eventLogger = new EventLogger(this);
         this._verificationManager = new VerificationManager(this);
+        this._hondeBannerManager = new HondeBannerManager(this);
         
         this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
         this._client.on('ready', async () => {
@@ -53,6 +56,7 @@ export class PantherBot {
             this._client.on("ready", this._reactionRoleManager.onReady.bind(this._reactionRoleManager));
             this._client.on("guildMemberAdd", this._verificationManager.onGuildMemberAdd.bind(this._verificationManager));
             this._client.on("messageReactionAdd", this._verificationManager.onMessageReactionAdd.bind(this._verificationManager));
+            this._client.on("guildMemberAdd", this._hondeBannerManager.onGuildMemberAdd.bind(this._hondeBannerManager));
         }).catch((err) => {
             this.logger.logSync(LogLevel.ERROR, "Error with db", err);
         })
