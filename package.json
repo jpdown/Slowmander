@@ -4,17 +4,17 @@
   "description": "PantherBot-Discord with discord.js",
   "main": "Bot.js",
   "dependencies": {
-    "@types/node-fetch": "^2.5.7",
-    "@types/rethinkdb": "^2.3.14",
-    "@types/ws": "^7.2.4",
-    "bufferutil": "^4.0.1",
-    "discord.js": "^12.2.0",
+    "@types/node-fetch": "^2.5.10",
+    "@types/rethinkdb": "^2.3.16",
+    "@types/ws": "^7.4.6",
+    "bufferutil": "^4.0.3",
+    "discord.js": "^12.5.3",
     "erlpack": "github:discordapp/erlpack",
     "node-fetch": "^2.6.1",
     "rethinkdb": "^2.4.2",
-    "typescript": "^3.8.3",
-    "utf-8-validate": "^5.0.2",
-    "zlib-sync": "^0.1.6"
+    "typescript": "^3.9.10",
+    "utf-8-validate": "^5.0.5",
+    "zlib-sync": "^0.1.7"
   },
   "devDependencies": {},
   "scripts": {
