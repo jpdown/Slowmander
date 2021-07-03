@@ -351,19 +351,14 @@ export class CommandUtils {
         return(emote);
     }
 
-    static async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel, bot: PantherBot, messageOptions?: MessageOptions): Promise<Message> {
+    static async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel, bot: PantherBot): Promise<Message> {
         let messageSent: Message;
 
         let embed: MessageEmbed = new MessageEmbed()
             .setColor(await CommandUtils.getSelfColor(channel, bot))
             .setDescription(message);
 
-        if(messageOptions !== undefined) {
-            messageSent = await channel.send(embed, messageOptions);
-        }
-        else {
-            messageSent = await channel.send(embed);
-        }
+        messageSent = await channel.send(embed);
 
         return(messageSent);
     }
