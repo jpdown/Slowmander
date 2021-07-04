@@ -91,6 +91,14 @@ export class Credentials {
         return(this.credentialsObject.catApiToken);
     }
 
+    public get twitchId(): string {
+        return this.credentialsObject.twitchId;
+    }
+
+    public get twitchSecret(): string {
+        return this.credentialsObject.twitchSecret;
+    }
+
     private generateConfig() {
         this.credentialsObject = {
             token: "",
@@ -101,7 +109,9 @@ export class Credentials {
             rethinkUser: "admin",
             rethinkPass: "",
             rethinkDb: "pantherbot",
-            rethinkCert: ""
+            rethinkCert: "",
+            twitchId: "",
+            twitchSecret: ""
         };
 
         this.saveConfig();
@@ -120,4 +130,6 @@ interface CredentialsObject {
     rethinkPass: string,
     rethinkDb: string,
     rethinkCert: string,
+    twitchId: string,
+    twitchSecret: string
 }
