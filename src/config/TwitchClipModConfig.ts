@@ -31,37 +31,110 @@ export class TwitchClipModConfig extends DatabaseEntry<TwitchClipModObject> {
         return(clipModConfig);
     }
 
-    public async setChannelClipMod(channelId: Snowflake, twitchChannels: string[]): Promise<boolean> {
+    public async enableChannelTwitchClipMod(channelId: Snowflake): Promise<boolean> {
         let newConfig: TwitchClipModObject = {
             id: channelId,
-            twitchChannels: twitchChannels
+            enabled: true
         }
         if (await this.updateOrInsertDocument(channelId, newConfig)) {
-            this.clipModConfigCache.set(channelId, newConfig);
+            this.clipModConfigCache.set(channelId, await this.getDocument(channelId));
             return true;
         }
         return false;
     }
 
-    public async removeChannelTwitchClipMod(channelId: Snowflake): Promise<TwitchClipModObject> {
-        //Check if we have this channel
-        let channelClipMod: TwitchClipModObject = await this.getChannelTwitchClipMod(channelId);
+    public async disableChannelTwitchClipMod(channelId: Snowflake): Promise<boolean> {
+        let newConfig: TwitchClipModObject = {
+            id: channelId,
+            enabled: false
+        }
+        if (await this.updateOrInsertDocument(channelId, newConfig)) {
+            this.clipModConfigCache.set(channelId, await this.getDocument(channelId));
+            return true;
+        }
+        return false;
+    }
 
-        if(!channelClipMod) {
-            return(undefined)
+    public async enableApprovedChannels(channelId: Snowflake): Promise<boolean> {
+        let newConfig: TwitchClipModObject = {
+            id: channelId,
+            approvedChannelsOnly: true
+        }
+        if (await this.updateOrInsertDocument(channelId, newConfig)) {
+            this.clipModConfigCache.set(channelId, await this.getDocument(channelId));
+            return true;
+        }
+        return false;
+    }
+
+    public async disableApprovedChannels(channelId: Snowflake): Promise<boolean> {
+        let newConfig: TwitchClipModObject = {
+            id: channelId,
+            approvedChannelsOnly: false
+        }
+        if (await this.updateOrInsertDocument(channelId, newConfig)) {
+            this.clipModConfigCache.set(channelId, await this.getDocument(channelId));
+            return true;
+        }
+        return false;
+    }
+
+    public async addApprovedChannel(channelId: Snowflake, twitchChannelId: string): Promise<boolean> {
+        let currConfig: TwitchClipModObject = await this.getChannelTwitchClipMod(channelId);
+        let newConfig: TwitchClipModObject = {
+            id: channelId
         }
 
-        let result: boolean = await this.removeMatchingDocuments(channelClipMod);
-
-        if(result) {
-            return(channelClipMod)
+        if (currConfig.twitchChannels === undefined) {
+            newConfig.twitchChannels = [];
+        }
+        else {
+            newConfig.twitchChannels = currConfig.twitchChannels;
         }
 
-        return(undefined);
+        if (newConfig.twitchChannels.includes(twitchChannelId)) {
+            return false;
+        }
+
+        newConfig.twitchChannels.push(twitchChannelId);
+
+        if (await this.updateOrInsertDocument(channelId, newConfig)) {
+            this.clipModConfigCache.set(channelId, await this.getDocument(channelId));
+            return true;
+        }
+        return false;
+    }
+
+    public async removeApprovedChannel(channelId: Snowflake, twitchChannelId: string): Promise<boolean> {
+        let currConfig: TwitchClipModObject = await this.getChannelTwitchClipMod(channelId);
+        let newConfig: TwitchClipModObject = {
+            id: channelId
+        }
+
+        if (currConfig.twitchChannels === undefined) {
+            return false;
+        }
+        else {
+            newConfig.twitchChannels = currConfig.twitchChannels;
+        }
+
+        if (!newConfig.twitchChannels.includes(twitchChannelId)) {
+            return false;
+        }
+
+        newConfig.twitchChannels.splice(newConfig.twitchChannels.indexOf(twitchChannelId), 1)
+
+        if (await this.updateOrInsertDocument(channelId, newConfig)) {
+            this.clipModConfigCache.set(channelId, await this.getDocument(channelId));
+            return true;
+        }
+        return false;
     }
 }
 
 export interface TwitchClipModObject extends DatabaseObject {
     id: string,
-    twitchChannels: string[]
+    enabled?: boolean,
+    approvedChannelsOnly?: boolean,
+    twitchChannels?: string[]
 }
