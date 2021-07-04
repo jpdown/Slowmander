@@ -9,6 +9,7 @@ import { DatabaseManager } from './config/DatabaseManager';
 import { ConfigManager } from './config/ConfigManager';
 import { VerificationManager } from './verification/VerificationManager';
 import { HondeBannerManager } from './hondebanner/HondeBannerManager';
+import { TwitchAPIManager } from './twitch/TwitchAPIManager';
 
 export class PantherBot {
     private _client: Client;
@@ -20,6 +21,7 @@ export class PantherBot {
     private _helpManager: HelpManager;
     private _verificationManager: VerificationManager;
     private _hondeBannerManager: HondeBannerManager;
+    private _twitchApiManager: TwitchAPIManager;
     private logger: Logger;
     private _eventLogger: EventLogger;
 
@@ -33,6 +35,7 @@ export class PantherBot {
         this._eventLogger = new EventLogger(this);
         this._verificationManager = new VerificationManager(this);
         this._hondeBannerManager = new HondeBannerManager(this);
+        this._twitchApiManager = new TwitchAPIManager(this, this._credentials.twitchId, this._credentials.twitchSecret);
         
         this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
         this._client.on('ready', async () => {
@@ -99,6 +102,10 @@ export class PantherBot {
 
     public get helpManager(): HelpManager {
         return(this._helpManager);
+    }
+
+    public get twitchApiManager(): TwitchAPIManager {
+        return this._twitchApiManager;
     }
 
     public get client(): Client {
