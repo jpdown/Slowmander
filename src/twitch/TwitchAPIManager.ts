@@ -56,6 +56,21 @@ export class TwitchAPIManager {
         return twitchUsers;
     }
 
+    public async getUsersByIds(userIds: string[]): Promise<HelixUser[]> {
+        if (this.client === undefined) {
+            await this.getClient();
+        }
+
+        if (this.client === undefined) {
+            // Give up, we don't have auth
+            await this.logger.warning("No Twitch auth, failing.")
+            return null;
+        }
+
+        let twitchUsers: HelixUser[] = await this.client.helix.users.getUsersByIds(userIds);
+        return twitchUsers;
+    }
+
     public async getClipBroadcasterId(clipId: string): Promise<string | null> {
         if (this.client === undefined) {
             await this.getClient();
