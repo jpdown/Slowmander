@@ -26,6 +26,7 @@ export class TwitchAPIManager {
 
         if (this.client === undefined) {
             // Give up, we don't have auth
+            await this.logger.warning("No Twitch auth, failing.")
             return null;
         }
 
@@ -40,6 +41,21 @@ export class TwitchAPIManager {
         }
     }
 
+    public async getUserIds(users: string[]): Promise<HelixUser[]> {
+        if (this.client === undefined) {
+            await this.getClient();
+        }
+
+        if (this.client === undefined) {
+            // Give up, we don't have auth
+            await this.logger.warning("No Twitch auth, failing.")
+            return null;
+        }
+
+        let twitchUsers: HelixUser[] = await this.client.helix.users.getUsersByNames(users);
+        return twitchUsers;
+    }
+
     public async getClipBroadcasterId(clipId: string): Promise<string | null> {
         if (this.client === undefined) {
             await this.getClient();
@@ -47,6 +63,7 @@ export class TwitchAPIManager {
 
         if (this.client === undefined) {
             // Give up, we don't have auth
+            await this.logger.warning("No Twitch auth, failing.")
             return null;
         }
 

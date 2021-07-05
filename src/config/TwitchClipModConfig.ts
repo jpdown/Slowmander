@@ -21,11 +21,8 @@ export class TwitchClipModConfig extends DatabaseEntry<TwitchClipModObject> {
 
         //Grab from database
         let clipModConfig: TwitchClipModObject = await this.getDocument(channelId);
-        if(!clipModConfig) {
-            return(undefined);
-        }
 
-        //Cache
+        //Cache (we want to intentionally cache undefined)
         this.clipModConfigCache.set(channelId, clipModConfig);
 
         return(clipModConfig);
@@ -85,7 +82,7 @@ export class TwitchClipModConfig extends DatabaseEntry<TwitchClipModObject> {
             id: channelId
         }
 
-        if (currConfig.twitchChannels === undefined) {
+        if (currConfig === undefined || currConfig.twitchChannels === undefined) {
             newConfig.twitchChannels = [];
         }
         else {
@@ -111,7 +108,7 @@ export class TwitchClipModConfig extends DatabaseEntry<TwitchClipModObject> {
             id: channelId
         }
 
-        if (currConfig.twitchChannels === undefined) {
+        if (currConfig === undefined || currConfig.twitchChannels === undefined) {
             return false;
         }
         else {
