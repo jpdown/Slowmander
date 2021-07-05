@@ -9,6 +9,8 @@ import { DatabaseManager } from './config/DatabaseManager';
 import { ConfigManager } from './config/ConfigManager';
 import { VerificationManager } from './verification/VerificationManager';
 import { HondeBannerManager } from './hondebanner/HondeBannerManager';
+import { TwitchAPIManager } from './twitch/TwitchAPIManager';
+import { TwitchClipModManager } from './twitch/TwitchClipModManager';
 
 export class PantherBot {
     private _client: Client;
@@ -20,6 +22,8 @@ export class PantherBot {
     private _helpManager: HelpManager;
     private _verificationManager: VerificationManager;
     private _hondeBannerManager: HondeBannerManager;
+    private _twitchApiManager: TwitchAPIManager;
+    private _twitchClipModManager: TwitchClipModManager;
     private logger: Logger;
     private _eventLogger: EventLogger;
 
@@ -33,6 +37,8 @@ export class PantherBot {
         this._eventLogger = new EventLogger(this);
         this._verificationManager = new VerificationManager(this);
         this._hondeBannerManager = new HondeBannerManager(this);
+        this._twitchApiManager = new TwitchAPIManager(this, this._credentials.twitchId, this._credentials.twitchSecret);
+        this._twitchClipModManager = new TwitchClipModManager(this);
         
         this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
         this._client.on('ready', async () => {
@@ -58,6 +64,8 @@ export class PantherBot {
             this._client.on("messageReactionAdd", this._verificationManager.onMessageReactionAdd.bind(this._verificationManager));
             this._client.on("guildMemberAdd", this._hondeBannerManager.onGuildMemberAdd.bind(this._hondeBannerManager));
             this._client.on("message", this._hondeBannerManager.onMessage.bind(this._hondeBannerManager));
+            this._client.on("message", this._twitchClipModManager.onMessage.bind(this._twitchClipModManager));
+            this._client.on("messageUpdate", this._twitchClipModManager.onMessageUpdate.bind(this._twitchClipModManager));
         }).catch((err) => {
             this.logger.logSync(LogLevel.ERROR, "Error with db", err);
         })
@@ -99,6 +107,10 @@ export class PantherBot {
 
     public get helpManager(): HelpManager {
         return(this._helpManager);
+    }
+
+    public get twitchApiManager(): TwitchAPIManager {
+        return this._twitchApiManager;
     }
 
     public get client(): Client {

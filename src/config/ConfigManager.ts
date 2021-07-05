@@ -4,6 +4,7 @@ import { GuildConfig } from "./GuildConfig";
 import { ReactionRoleConfig } from "./ReactionRoleConfig";
 import { LockdownConfigObject, LockdownConfig } from "./LockdownConfig";
 import { VerificationConfig } from "./VerificationConfig";
+import { TwitchClipModConfig } from "./TwitchClipModConfig";
 
 export class ConfigManager {
     private _botConfig: BotConfig;
@@ -11,6 +12,7 @@ export class ConfigManager {
     private _reactionRoleConfig: ReactionRoleConfig
     private _lockdownConfig: LockdownConfig;
     private _verificationConfig: VerificationConfig;
+    private _twitchClipModConfig: TwitchClipModConfig;
     private _bot: PantherBot;
 
     constructor(bot: PantherBot) {
@@ -20,6 +22,7 @@ export class ConfigManager {
         this._reactionRoleConfig = new ReactionRoleConfig(bot);
         this._lockdownConfig = new LockdownConfig(bot);
         this._verificationConfig = new VerificationConfig(bot);
+        this._twitchClipModConfig = new TwitchClipModConfig(bot);
     }
 
     public get botConfig() {
@@ -40,5 +43,9 @@ export class ConfigManager {
 
     public get verificationConfig() {
         return(this._verificationConfig);
+    }
+
+    public get twitchClipModConfig() {
+        return this._twitchClipModConfig;
     }
 }
