@@ -297,6 +297,8 @@ class ChannelModInfo extends Command {
             return {sendHelp: false, command: this, message: message};
         }
 
+        let responseMessage: Message = await CommandUtils.sendMessage("Getting info...", message.channel, bot);
+
         // Get config
         let config: TwitchClipModObject = await bot.configs.twitchClipModConfig.getChannelTwitchClipMod(channel.id);
 
@@ -315,14 +317,21 @@ class ChannelModInfo extends Command {
             embed.addField("Approved Channels Only", config.approvedChannelsOnly ? "True" : "False", true);
 
             if (config.twitchChannels && config.twitchChannels.length > 0) {
-                embed.addField("Approved Channels", config.twitchChannels.join("\n"), true);
+                let twitchUsers: HelixUser[] = await bot.twitchApiManager.getUsersByIds(config.twitchChannels);
+                let usernames: string = "";
+                for (let user of twitchUsers) {
+                    if (user) {
+                        usernames += user.displayName + "\n"
+                    }
+                }
+                embed.addField("Approved Channels", usernames, true);
             }
             else {
                 embed.addField("Approved Channels", "None", true);
             }
         }
 
-        message.channel.send(embed);
+        responseMessage.edit(embed);
         return {sendHelp: false, command: this, message: message};
     }
 }
