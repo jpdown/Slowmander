@@ -30,6 +30,10 @@ export class TwitchClipModManager {
             return;
         }
 
+        if (message.author.bot) {
+            return;
+        }
+
         // See if message in moderated channel
         let clipModConfig: TwitchClipModObject = await this.bot.configs.twitchClipModConfig.getChannelTwitchClipMod(message.channel.id);
 
@@ -46,6 +50,10 @@ export class TwitchClipModManager {
         }
 
         if (oldMessage && oldMessage.content === newMessage.content) {
+            return;
+        }
+
+        if (newMessage.author.bot) {
             return;
         }
 
