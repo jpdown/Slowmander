@@ -24,7 +24,7 @@ export class Cat extends Command {
             this.apiToken = bot.catApiToken;
         }
 
-        let sentMessage: Message = await CommandUtils.sendMessage("Looking for a cat...", message.channel, bot);
+        let sentMessage: Message = await CommandUtils.sendMessage("Looking for a cat...", message.channel, bot, message);
         let catUrl: string = await CatAPIHelper.getImage(message.author, bot, this.API, this.apiToken);
         let embed: MessageEmbed;
 
@@ -42,7 +42,7 @@ export class Cat extends Command {
                 .setDescription("I couldn't find a cat... :(");
         }
         
-        await sentMessage.edit(embed);
+        await sentMessage.edit({ embeds: [embed] });
 
         return {sendHelp: false, command: this, message: message};
     }
@@ -56,14 +56,14 @@ export class Dog extends Command {
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        let sentMessage: Message = await CommandUtils.sendMessage("Looking for a dog...", message.channel, bot);
+        let sentMessage: Message = await CommandUtils.sendMessage("Looking for a dog...", message.channel, bot, message);
         let dogJson: DogAPIResp;
         let dogImage: string;
         let embed: MessageEmbed;
 
         try {
             let headers = {
-                "User-Agent": "PantherBot-discord.js"
+                "User-Agent": "Slowmander"
             }
 
             dogJson = await (await fetch(this.API, { method: "get", headers: headers })).json();
@@ -87,7 +87,7 @@ export class Dog extends Command {
                 .setDescription("I couldn't find a dog... :(");
         }
         
-        await sentMessage.edit(embed);
+        await sentMessage.edit({ embeds: [embed] });
 
         return {sendHelp: false, command: this, message: message};
     }
@@ -101,7 +101,7 @@ export class DadJoke extends Command {
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        let sentMessage: Message = await CommandUtils.sendMessage("Looking for a dad joke...", message.channel, bot);
+        let sentMessage: Message = await CommandUtils.sendMessage("Looking for a dad joke...", message.channel, bot, message);
         let dadJokeMessage: string = "";
         let embed: MessageEmbed;
 
@@ -129,7 +129,7 @@ export class DadJoke extends Command {
                 .setDescription("I couldn't find a dad joke... :(");
         }
         
-        await sentMessage.edit(embed);
+        await sentMessage.edit({ embeds: [embed] });
 
         return {sendHelp: false, command: this, message: message};
     }

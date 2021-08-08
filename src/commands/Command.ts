@@ -42,7 +42,7 @@ export abstract class Command {
         this.logger = Logger.getLogger(bot, this);
     }
 
-    async abstract run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult>;
+    abstract run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult>;
 
     public get name(): string {
         return(this._name);

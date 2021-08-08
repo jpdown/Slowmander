@@ -59,7 +59,7 @@ export class HelpManager {
             }
         }
         
-        await message.channel.send(embed);
+        await message.channel.send({ embeds: [embed], reply: {messageReference: message} });
     }
 
     public async sendFullHelp(message: Message, bot: PantherBot) {
@@ -82,7 +82,7 @@ export class HelpManager {
             .setDescription(helpMessage)
             .setTimestamp(Date.now());
 
-        await message.channel.send(embed);
+        await message.channel.send({ embeds: [embed], reply: {messageReference: message} });
     }
 
     private async getSubCommand(command: Command, extraArgs: string[], message: Message, bot: PantherBot): Promise<Command> {

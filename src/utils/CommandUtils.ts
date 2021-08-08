@@ -1,17 +1,17 @@
-import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, PermissionOverwriteOption, Message, MessageReaction, ReactionEmoji, MessageEmbed, MessageOptions } from "discord.js";
+import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, Message, MessageReaction, ReactionEmoji, MessageEmbed, MessageOptions, ThreadChannel } from "discord.js";
 import { PantherBot } from "../Bot";
 
 export class CommandUtils {
-    static async getSelfColor(channel: TextChannel | DMChannel | NewsChannel, bot: PantherBot): Promise<ColorResolvable> {
+    static async getSelfColor(channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, bot: PantherBot): Promise<ColorResolvable> {
         let color: ColorResolvable;
 
-        if(channel.type === "text" || channel.type === "news") {
+        if(channel.type !== "DM") {
             color = channel.guild.me.displayColor;
         }
 
         //If no color or color is black, we want default color
         if(!color || color === 0) {
-            color = await bot.configs.botConfig.getDefaultColor();
+            color = <ColorResolvable> await bot.configs.botConfig.getDefaultColor();
         }
 
         return(color);
@@ -31,7 +31,7 @@ export class CommandUtils {
             parsedMember = await this.parseMemberNickname(potentialMember, guild);
         }
         else {
-            parsedMember = guild.member(parsedUser);
+            parsedMember = guild.members.cache.get(parsedUser.id);
         }
 
         return(parsedMember);
@@ -39,13 +39,9 @@ export class CommandUtils {
 
     static async parseMemberNickname(potentialMember: string, guild: Guild): Promise<GuildMember> {
         let parsedMember: GuildMember = undefined;
+        potentialMember = potentialMember.toLowerCase();
 
-        for(let member of guild.members.cache.array()) {
-            if(member.nickname && member.nickname.toLowerCase().startsWith(potentialMember.toLowerCase())) {
-                parsedMember = member;
-                break;
-            }
-        }
+        parsedMember = guild.members.cache.find(m => m.nickname?.toLowerCase().startsWith(potentialMember))
 
         return(parsedMember);
     }
@@ -53,7 +49,7 @@ export class CommandUtils {
     static async parseMemberPingOnly(potentialMember: string, guild: Guild): Promise<GuildMember> {
         let parsedUser: User = await CommandUtils.parseUserPingOnly(potentialMember, guild.client);
 
-        return(guild.member(parsedUser));
+        return(guild.members.cache.get(parsedUser.id));
     }
 
     static async parseUser(potentialUser: string, client: Client): Promise<User> {
@@ -84,14 +80,9 @@ export class CommandUtils {
 
     static async parseUserByName(potentialUser: string, client: Client): Promise<User> {
         let parsedUser: User = undefined;
-        let userCache: Collection<Snowflake, User> = client.users.cache;
+        let lowerUser: string = potentialUser.toLowerCase();
 
-        for(let user of userCache.values()) {
-            if(user.username.toLowerCase().startsWith(potentialUser.toLowerCase()) || `${user.username}#${user.discriminator}` === potentialUser) {
-                parsedUser = user;
-                break;
-            }
-        }
+        parsedUser = client.users.cache.find(u => u.username.toLowerCase().startsWith(lowerUser) || u.tag === potentialUser)
 
         return(parsedUser);
     }
@@ -100,10 +91,10 @@ export class CommandUtils {
         let snowflake: string = potentialUser;
 
         if(snowflake.startsWith("<@") && snowflake.endsWith(">")) {
-            snowflake = snowflake.substring(2, snowflake.length - 1);
+            snowflake = snowflake.slice(2, -1);
         }
         if(snowflake.startsWith("!")) {
-            snowflake = snowflake.substring(1);
+            snowflake = snowflake.slice(1);
         }
         
         if(!await CommandUtils.verifySnowflake(snowflake)) {
@@ -160,23 +151,28 @@ export class CommandUtils {
         return(snowflake);
     }
 
-    static async parseTextChannel(potentialChannel: string, client: Client): Promise<TextChannel | NewsChannel | DMChannel> {
+    static async parseTextChannel(potentialChannel: string, client: Client): Promise<TextChannel | NewsChannel | DMChannel | ThreadChannel> {
         let channel: Channel = await CommandUtils.parseChannel(potentialChannel, client);
-        let parsedTextChannel: TextChannel | NewsChannel | DMChannel = undefined;
+        let parsedTextChannel: TextChannel | NewsChannel | DMChannel | ThreadChannel = undefined;
 
         if(channel === undefined) {
             return(undefined);
         }
 
         switch(channel.type) {
-            case "text":
+            case "GUILD_TEXT":
                 parsedTextChannel = <TextChannel>channel;
                 break;
-            case "news":
+            case "GUILD_NEWS":
                 parsedTextChannel = <NewsChannel>channel;
                 break;
-            case "dm":
+            case "DM":
                 parsedTextChannel = <DMChannel>channel;
+                break;
+            case "GUILD_NEWS_THREAD":
+            case "GUILD_PRIVATE_THREAD":
+            case "GUILD_PUBLIC_THREAD":
+                parsedTextChannel = <ThreadChannel>channel;
                 break;
         }
 
@@ -234,15 +230,10 @@ export class CommandUtils {
     }
 
     static async parseEmoteByName(potentialEmote: string, client: Client): Promise<GuildEmoji> {
-        let emoteCache: GuildEmoji[] = client.emojis.cache.array();
+        let emoteName = potentialEmote.toLowerCase();
+        let currEmote: GuildEmoji = client.emojis.cache.find(e => e.name.toLowerCase() === emoteName);
 
-        for(let currEmote of emoteCache) {
-            if(currEmote.name.toLowerCase() === potentialEmote.toLowerCase()) {
-                return(currEmote);
-            }
-        }
-
-        return(undefined);
+        return(currEmote);
     }
 
     static async parseEmoteID(potentialEmote: string): Promise<Snowflake> {
@@ -259,27 +250,15 @@ export class CommandUtils {
     }
 
     static async parseWebhookUrl(potentialWebhook: string): Promise<WebhookClient> {
-        let webhook: WebhookClient = undefined;
-        let splitUrl: string[] = potentialWebhook.split("/");
-
-        if(splitUrl.length === 7) {
-            webhook = new WebhookClient(splitUrl[5], splitUrl[6])
-        }
+        let webhook: WebhookClient = new WebhookClient({url: potentialWebhook})
 
         return(webhook);
     }
 
     static async verifySnowflake(potentialSnowflake: string): Promise<boolean> {
-        const discordEpoch: number = 1420070400000;
-
-        //If doesn't consist solely of digits
-        if(!/^\d*$/.test(potentialSnowflake)) {
-            return(false);
-        }
-        
         //Deconstruct snowflake
         let deconstructedSnowflake: DeconstructedSnowflake = SnowflakeUtil.deconstruct(potentialSnowflake);
-        if(deconstructedSnowflake.timestamp <= discordEpoch) {
+        if(deconstructedSnowflake.timestamp <= SnowflakeUtil.EPOCH) {
             return(false);
         }
 
@@ -305,7 +284,7 @@ export class CommandUtils {
         }
 
         //Make overwrite options object
-        let overwriteOptions: PermissionOverwriteOption = {}
+        let overwriteOptions: PermissionOverwriteOptions = {}
         for(let perm of grantedPerms.toArray()) {
             overwriteOptions[perm] = true;
         }
@@ -319,10 +298,10 @@ export class CommandUtils {
         //Try to update permissions
         try {
             for(let role of roles) {
-                await channel.updateOverwrite(role, overwriteOptions, reason);
+                await channel.permissionOverwrites.edit(role, overwriteOptions, {reason: reason});
             }
             for(let user of users) {
-                await channel.updateOverwrite(user, overwriteOptions, reason);
+                await channel.permissionOverwrites.edit(user, overwriteOptions, {reason: reason});
             }
             return(true);
         }
@@ -334,7 +313,7 @@ export class CommandUtils {
     static async getEmote(message: Message, bot: PantherBot): Promise<ReactionEmoji | GuildEmoji> {
         //Ask for emote
         let sentMessage: Message = await CommandUtils.sendMessage("Please react on this message with the emote you would like to use.", message.channel, bot);
-        let reactions: Collection<string, MessageReaction> = await sentMessage.awaitReactions((reaction, user) => user.id === message.author.id, {time:60000, max: 1});
+        let reactions: Collection<string, MessageReaction> = await sentMessage.awaitReactions({filter: (reaction, user) => user.id === message.author.id, time:60000, max: 1});
 
         //Check if unicode or if we have the custom emote
         if(reactions.size < 1) {
@@ -351,14 +330,14 @@ export class CommandUtils {
         return(emote);
     }
 
-    static async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel, bot: PantherBot): Promise<Message> {
+    static async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, bot: PantherBot, repliedMessage?: Message): Promise<Message> {
         let messageSent: Message;
 
         let embed: MessageEmbed = new MessageEmbed()
             .setColor(await CommandUtils.getSelfColor(channel, bot))
             .setDescription(message);
 
-        messageSent = await channel.send(embed);
+        messageSent = await channel.send({ embeds: [embed], reply: { messageReference: repliedMessage } });
 
         return(messageSent);
     }

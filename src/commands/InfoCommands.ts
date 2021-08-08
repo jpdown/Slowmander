@@ -49,14 +49,19 @@ export class Whois extends Command {
         }
 
         //Join pos
-        embed.addField("Join Position", await this.getJoinPos(member), false);
+        embed.addField("Join Position", (await this.getJoinPos(member)).toString(), false);
 
         //Roles list
         let rolesList: Collection<Snowflake, Role> = member.roles.cache.clone();
         rolesList.sort((a, b) => b.position - a.position);
         rolesList.delete(message.guild.roles.everyone.id);
         if(rolesList.size > 0) {
-            embed.addField(`Roles (${rolesList.size})`, rolesList.array().join(", "), false);
+            let rolesStr: string = "";
+            for (let role of rolesList.values()) {
+                rolesStr += role.name + ", ";
+            }
+
+            embed.addField(`Roles (${rolesList.size})`, rolesStr.slice(0, -2), false);
         }
 
         //Bot permission
@@ -66,7 +71,7 @@ export class Whois extends Command {
         }
 
         //Send
-        await message.channel.send(embed);
+        await message.channel.send({ embeds: [embed], reply: {messageReference: message} });
 
         return {sendHelp: false, command: this, message: message};
     }
