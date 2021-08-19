@@ -2,7 +2,7 @@ import {Command, PermissionLevel, CommandResult} from './Command';
 import {CommandGroup} from './CommandGroup'
 import { PantherBot } from '../Bot';
 
-import {Message, MessageEmbed, Permissions, CategoryChannel, GuildChannel, Role, User, TextChannel, NewsChannel, Guild, Snowflake} from 'discord.js';
+import {Message, MessageEmbed, Permissions, CategoryChannel, GuildChannel, Role, User, TextChannel, NewsChannel, Guild, Snowflake, ThreadChannel} from 'discord.js';
 import { CommandUtils } from '../utils/CommandUtils';
 import { LockdownConfigObject } from '../config/LockdownConfig';
 import { ReactionPaginator } from '../utils/ReactionPaginator';
@@ -253,9 +253,9 @@ class LockdownHelper {
         //Make lists
         let channels: GuildChannel[] = [];
         for(let channelId of lockdownConfig.channelIDs) {
-            let parsedGuildChannel: GuildChannel = message.guild.channels.resolve(channelId);
-            if(parsedGuildChannel) {
-                channels.push(parsedGuildChannel);
+            let parsedChannel: GuildChannel | ThreadChannel = message.guild.channels.resolve(channelId);
+            if(parsedChannel && (parsedChannel as GuildChannel)) {
+                channels.push(<GuildChannel>parsedChannel);
             }
         }
 
@@ -282,7 +282,7 @@ class LockdownHelper {
     static async updateChannelPerms(channels: GuildChannel[], roles: Role[], lock: boolean, grant: boolean, executor: User, preset: string, bot: PantherBot): Promise<boolean> {
         let reason: string = `${executor.username}#${executor.discriminator} performed ${preset} `;
 
-        let zeroPerms: Permissions = new Permissions(0);
+        let zeroPerms: Permissions = new Permissions(0n);
         let neutralPerms: Permissions = zeroPerms;
         let grantedPerms: Permissions = zeroPerms;
         let revokedPerms: Permissions = zeroPerms;

@@ -37,7 +37,7 @@ export class PermissionsHelper {
             return(PermissionLevel.Owner);
         }
         else if(roleList.has(await bot.configs.guildConfig.getAdminRole(member.guild.id))
-            || member.guild.ownerID === member.id) {
+            || member.guild.ownerId === member.id) {
                 return(PermissionLevel.Admin)
         }
         else if(roleList.has(await bot.configs.guildConfig.getModRole(member.guild.id))) {

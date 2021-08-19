@@ -105,7 +105,7 @@ export class Roles extends Command {
 
         //List of strings
         let stringList: string[] = [];
-        for(let role of rolesList.array()) {
+        for(let role of rolesList.values()) {
             stringList.push(role.toString() + " - " + role.members.size + " members.");
         }
 
@@ -140,7 +140,7 @@ export class Members extends Command {
 
         //List of strings
         let stringList: string[] = [];
-        for(let member of memberList.array()) {
+        for(let member of memberList.values()) {
             stringList.push("**" + member.user.username + "#" + member.user.discriminator + "** - " + member.id);
         }
 
@@ -178,7 +178,7 @@ export class Avatar extends Command {
             .setImage(avatarUrl)
             .setAuthor(user.username + "#" + user.discriminator, avatarUrl, avatarUrl);
         
-        await message.channel.send(embed);
+        await message.channel.send({embeds: [embed]});
 
         return {sendHelp: false, command: this, message: message};
     }
@@ -195,12 +195,12 @@ export class Stats extends Command {
             .addField("RAM Usage", Math.floor(process.memoryUsage().rss / 1048576) + "MB", true)
             .addField("Load",await this.getLoadString(), true)
             .addField("Uptime", await this.getFormattedUptime(), true)
-            .addField("User Count", await this.getUserCount(message.client), true)
-            .addField("Guild Count", message.client.guilds.cache.size, true)
-            .addField("Channel Count", message.client.channels.cache.size, true)
+            .addField("User Count", await (await this.getUserCount(message.client)).toString(), true)
+            .addField("Guild Count", message.client.guilds.cache.size.toString(), true)
+            .addField("Channel Count", message.client.channels.cache.size.toString(), true)
             .setAuthor(message.client.user.username + "#" + message.client.user.discriminator, message.client.user.displayAvatarURL({format: "png", dynamic: true, size: 4096}));
         
-        await message.channel.send(embed);
+        await message.channel.send({embeds: [embed]});
 
         return {sendHelp: false, command: this, message: message};
     }

@@ -1,8 +1,8 @@
-import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, Message, MessageReaction, ReactionEmoji, MessageEmbed, MessageOptions, ThreadChannel } from "discord.js";
+import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, Message, MessageReaction, ReactionEmoji, MessageEmbed, MessageOptions, ThreadChannel, TextBasedChannels } from "discord.js";
 import { PantherBot } from "../Bot";
 
 export class CommandUtils {
-    static async getSelfColor(channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, bot: PantherBot): Promise<ColorResolvable> {
+    static async getSelfColor(channel: TextBasedChannels, bot: PantherBot): Promise<ColorResolvable> {
         let color: ColorResolvable;
 
         if(channel.type !== "DM") {
@@ -151,29 +151,16 @@ export class CommandUtils {
         return(snowflake);
     }
 
-    static async parseTextChannel(potentialChannel: string, client: Client): Promise<TextChannel | NewsChannel | DMChannel | ThreadChannel> {
+    static async parseTextChannel(potentialChannel: string, client: Client): Promise<TextBasedChannels> {
         let channel: Channel = await CommandUtils.parseChannel(potentialChannel, client);
-        let parsedTextChannel: TextChannel | NewsChannel | DMChannel | ThreadChannel = undefined;
+        let parsedTextChannel: TextBasedChannels = undefined;
 
         if(channel === undefined) {
             return(undefined);
         }
 
-        switch(channel.type) {
-            case "GUILD_TEXT":
-                parsedTextChannel = <TextChannel>channel;
-                break;
-            case "GUILD_NEWS":
-                parsedTextChannel = <NewsChannel>channel;
-                break;
-            case "DM":
-                parsedTextChannel = <DMChannel>channel;
-                break;
-            case "GUILD_NEWS_THREAD":
-            case "GUILD_PRIVATE_THREAD":
-            case "GUILD_PUBLIC_THREAD":
-                parsedTextChannel = <ThreadChannel>channel;
-                break;
+        if (channel.isText()) {
+            parsedTextChannel = <TextBasedChannels>channel;
         }
 
         return(parsedTextChannel);
@@ -330,7 +317,7 @@ export class CommandUtils {
         return(emote);
     }
 
-    static async sendMessage(message: string, channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, bot: PantherBot, repliedMessage?: Message): Promise<Message> {
+    static async sendMessage(message: string, channel: TextBasedChannels, bot: PantherBot, repliedMessage?: Message): Promise<Message> {
         let messageSent: Message;
 
         let embed: MessageEmbed = new MessageEmbed()
