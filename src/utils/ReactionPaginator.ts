@@ -1,8 +1,9 @@
-import { MessageReaction, Message, MessageEmbed, TextChannel, NewsChannel, DMChannel, User, CollectorFilter, ReactionCollector, TextBasedChannels } from "discord.js";
-import { CommandUtils } from "./CommandUtils";
-import { Command } from "../commands/Command";
-import { PermissionsHelper } from "./PermissionsHelper";
-import { PantherBot } from "../Bot";
+import { CommandUtils } from "utils/CommandUtils";
+import { Command } from "commands/Command";
+import { PermissionsHelper } from "utils/PermissionsHelper";
+import { PantherBot } from "Bot";
+
+import { MessageReaction, Message, MessageEmbed, User, ReactionCollector, TextBasedChannels } from "discord.js";
 
 export class ReactionPaginator {
     public static readonly NEXT_PAGE: string = "➡️";

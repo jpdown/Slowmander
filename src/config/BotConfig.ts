@@ -1,7 +1,7 @@
-import r from "rethinkdb";
-import { PantherBot } from "../Bot";
+import { PantherBot } from "Bot";
+import { DatabaseEntry, DatabaseObject } from "config/DatabaseEntry";
+
 import { WebhookClient } from "discord.js";
-import { DatabaseEntry, DatabaseObject } from "./DatabaseEntry";
 
 export class BotConfig extends DatabaseEntry<BotConfigObject> {
     private static readonly TABLE: string = "BotConfig";

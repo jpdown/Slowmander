@@ -1,11 +1,11 @@
-import {Command, PermissionLevel, CommandResult} from './Command';
-import { PantherBot } from '../Bot';
+import {Command, PermissionLevel, CommandResult} from 'commands/Command';
+import { PantherBot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
+import { Logger } from 'Logger';
 
 import {Message, User, MessageEmbed } from 'discord.js';
 import fetch from "node-fetch";
 import querystring from "querystring";
-import { CommandUtils } from '../utils/CommandUtils';
-import { Logger } from '../Logger';
 
 export class Cat extends Command {
     private readonly API: string = "https://api.thecatapi.com/v1/images/search";

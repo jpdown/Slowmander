@@ -1,6 +1,7 @@
+import { PantherBot } from "Bot";
+import { Logger } from "Logger";
+
 import r from "rethinkdb";
-import { PantherBot } from "../Bot";
-import { Logger } from "../Logger";
 
 export class DatabaseManager {
     private _connection: r.Connection;

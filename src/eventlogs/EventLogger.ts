@@ -1,6 +1,7 @@
-import { PantherBot } from "../Bot";
+import { PantherBot } from "Bot";
+import { Logger } from "Logger";
+
 import { GuildMember, Message, Collection, Snowflake, Guild, User, Client, TextChannel, MessageEmbed, NewsChannel } from "discord.js";
-import { Logger } from "../Logger";
 
 export class EventLogger {
     private bot: PantherBot;

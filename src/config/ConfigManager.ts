@@ -1,10 +1,10 @@
-import { BotConfig } from "./BotConfig";
-import { PantherBot } from "../Bot";
-import { GuildConfig } from "./GuildConfig";
-import { ReactionRoleConfig } from "./ReactionRoleConfig";
-import { LockdownConfigObject, LockdownConfig } from "./LockdownConfig";
-import { VerificationConfig } from "./VerificationConfig";
-import { TwitchClipModConfig } from "./TwitchClipModConfig";
+import { BotConfig } from "config/BotConfig";
+import { PantherBot } from "Bot";
+import { GuildConfig } from "config/GuildConfig";
+import { ReactionRoleConfig } from "config/ReactionRoleConfig";
+import { LockdownConfig } from "config/LockdownConfig";
+import { VerificationConfig } from "config/VerificationConfig";
+import { TwitchClipModConfig } from "config/TwitchClipModConfig";
 
 export class ConfigManager {
     private _botConfig: BotConfig;

@@ -1,6 +1,7 @@
+import { PantherBot } from "Bot";
+import { DatabaseEntry, DatabaseObject } from 'config/DatabaseEntry';
+
 import { Snowflake } from "discord.js";
-import { PantherBot } from "../Bot";
-import { DatabaseEntry, DatabaseObject } from './DatabaseEntry';
 
 export class TwitchClipModConfig extends DatabaseEntry<TwitchClipModObject> {
     private static readonly TABLE = "TwitchClipMod";

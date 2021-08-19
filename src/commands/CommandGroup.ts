@@ -1,5 +1,5 @@
-import { Command, PermissionLevel, CommandResult, CommandParameters } from "./Command";
-import { PantherBot } from "../Bot";
+import { Command, PermissionLevel, CommandResult, CommandParameters } from "commands/Command";
+import { PantherBot } from "Bot";
 
 import { Message, PermissionResolvable, Permissions } from "discord.js";
 

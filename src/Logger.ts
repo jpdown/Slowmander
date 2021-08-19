@@ -1,6 +1,6 @@
-import { PantherBot } from "./Bot";
-import { WebhookClient } from "discord.js";
+import { PantherBot } from "Bot";
 
+import { WebhookClient } from "discord.js";
 import * as fs from "fs";
 
 export class Logger {

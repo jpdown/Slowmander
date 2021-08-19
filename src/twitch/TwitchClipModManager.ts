@@ -1,8 +1,9 @@
+import { Logger } from "Logger";
+import { PantherBot } from "Bot";
+import { TwitchClipModObject } from "config/TwitchClipModConfig";
+import { ModErrorLog } from "moderrorlog/ModErrorLog";
+
 import { Message, Permissions } from "discord.js";
-import { Logger } from "../Logger";
-import { PantherBot } from "../Bot";
-import { TwitchClipModObject } from "../config/TwitchClipModConfig";
-import { ModErrorLog } from "../moderrorlog/ModErrorLog";
 
 export class TwitchClipModManager {
     private bot: PantherBot;

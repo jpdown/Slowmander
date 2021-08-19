@@ -1,7 +1,8 @@
+import { PantherBot } from 'Bot';
+import { LogLevel, Logger } from 'Logger';
+import { RethinkCredentials } from 'config/DatabaseManager';
+
 import * as fs from 'fs';
-import { PantherBot } from '../Bot';
-import { LogLevel, Logger } from '../Logger';
-import { RethinkCredentials } from './DatabaseManager';
 
 export class Credentials {
     readonly CREDENTIALS_PATH: string = "./data/credentials.json";

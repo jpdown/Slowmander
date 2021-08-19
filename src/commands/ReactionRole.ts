@@ -1,12 +1,12 @@
-import { CommandGroup } from "./CommandGroup";
-import { Command, CommandResult } from "./Command";
-import { PermissionLevel } from "./Command";
-import { PantherBot } from "../Bot";
-import { ReactionRoleObject } from "../config/ReactionRoleConfig";
-import { ReactionPaginator } from "../utils/ReactionPaginator"
+import { CommandGroup } from "commands/CommandGroup";
+import { Command, CommandResult } from "commands/Command";
+import { PermissionLevel } from "commands/Command";
+import { PantherBot } from "Bot";
+import { ReactionRoleObject } from "config/ReactionRoleConfig";
+import { ReactionPaginator } from "utils/ReactionPaginator"
+import { CommandUtils } from "utils/CommandUtils";
 
-import { Message, Role, TextChannel, NewsChannel, Permissions, ReactionEmoji, Emoji, User, MessageReaction, Collection, ReactionCollector, GuildEmoji, Snowflake, Guild } from "discord.js";
-import { CommandUtils } from "../utils/CommandUtils";
+import { Message, Role, TextChannel, NewsChannel, Permissions, ReactionEmoji, MessageReaction, GuildEmoji, Snowflake } from "discord.js";
 
 export class ReactionRoleManagement extends CommandGroup {
     constructor(bot: PantherBot) {

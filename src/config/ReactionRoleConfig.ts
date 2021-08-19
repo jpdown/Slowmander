@@ -1,7 +1,7 @@
-import { Message, Snowflake, GuildEmoji, ReactionEmoji } from 'discord.js';
+import { PantherBot } from "Bot";
+import { DatabaseEntry, DatabaseObject } from 'config/DatabaseEntry';
 
-import { PantherBot } from "../Bot";
-import { DatabaseEntry, DatabaseObject } from './DatabaseEntry';
+import { Message, Snowflake, GuildEmoji, ReactionEmoji } from 'discord.js';
 
 export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {
     private static readonly TABLE = "ReactionRoles";

@@ -1,9 +1,9 @@
-import { PantherBot } from "../Bot";
-import { Logger } from "../Logger";
+import { PantherBot } from "Bot";
+import { Logger } from "Logger";
+import { VerificationConfigObject } from "config/VerificationConfig";
+import { ModErrorLog } from "moderrorlog/ModErrorLog";
 
-import { GuildMember, MessageReaction, User, Role, Permissions, GuildEmoji, Guild } from "discord.js";
-import { VerificationConfigObject, VerificationConfig } from "../config/VerificationConfig";
-import { ModErrorLog } from "../moderrorlog/ModErrorLog";
+import { GuildMember, MessageReaction, User, Role, Permissions, Guild } from "discord.js";
 
 export class VerificationManager {
     private bot: PantherBot;

@@ -1,8 +1,8 @@
-import { PantherBot } from "../Bot";
+import { PantherBot } from "Bot";
+import { Logger } from "Logger";
 
 import { ApiClient, HelixClip, HelixUser } from "twitch";
 import { ClientCredentialsAuthProvider } from "twitch-auth";
-import { Logger } from "../Logger";
 
 export class TwitchAPIManager {
     private bot: PantherBot;

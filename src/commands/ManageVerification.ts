@@ -1,10 +1,10 @@
-import {Command, PermissionLevel, CommandResult} from './Command';
-import { PantherBot } from '../Bot';
+import {Command, PermissionLevel, CommandResult} from 'commands/Command';
+import { PantherBot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
+import { CommandGroup } from 'commands/CommandGroup';
+import { VerificationConfigObject } from 'config/VerificationConfig';
 
-import {Message, MessageEmbed, Permissions, TextChannel, NewsChannel, DMChannel, Role, GuildEmoji, ReactionEmoji, Snowflake} from 'discord.js';
-import { CommandUtils } from '../utils/CommandUtils';
-import { CommandGroup } from './CommandGroup';
-import { VerificationConfigObject } from '../config/VerificationConfig';
+import {Message, MessageEmbed, Permissions, TextChannel, NewsChannel, DMChannel, Role, GuildEmoji, ReactionEmoji} from 'discord.js';
 
 export class ManageVerification extends CommandGroup {
     constructor(bot: PantherBot) {

@@ -1,12 +1,12 @@
-import { Command, CommandResult } from "./commands/Command";
-import * as commands from "./commands";
-import { PantherBot } from "./Bot";
+import { Command, CommandResult } from "commands/Command";
+import * as commands from "commands";
+import { PantherBot } from "Bot";
+import { CommandUtils } from "utils/CommandUtils";
+import { PermissionsHelper } from "utils/PermissionsHelper";
+import { CommandGroup } from "commands/CommandGroup";
+import { Logger } from "Logger";
 
 import { Message, MessageEmbed, Snowflake } from "discord.js";
-import { CommandUtils } from "./utils/CommandUtils";
-import { PermissionsHelper } from "./utils/PermissionsHelper";
-import { CommandGroup } from "./commands/CommandGroup";
-import { Logger } from "./Logger";
 
 export class CommandManager {
     private commandMap: Map<string, Command>;

@@ -1,8 +1,8 @@
-import {Command, PermissionLevel, CommandResult} from './Command';
-import { PantherBot } from '../Bot';
+import {Command, PermissionLevel, CommandResult} from 'commands/Command';
+import { PantherBot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
 
-import {Message, TextChannel, NewsChannel, DMChannel, Permissions} from 'discord.js';
-import { CommandUtils } from '../utils/CommandUtils';
+import {Message, TextChannel, NewsChannel, DMChannel} from 'discord.js';
 
 export class Say extends Command {
     constructor(bot: PantherBot) {

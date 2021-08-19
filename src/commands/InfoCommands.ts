@@ -1,10 +1,10 @@
-import {Command, PermissionLevel, CommandResult} from './Command';
-import { PantherBot } from '../Bot';
-import { CommandUtils } from '..//utils/CommandUtils';
-import { PermissionsHelper } from '../utils/PermissionsHelper';
+import {Command, PermissionLevel, CommandResult} from 'commands/Command';
+import { PantherBot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
+import { PermissionsHelper } from 'utils/PermissionsHelper';
+import { ReactionPaginator } from 'utils/ReactionPaginator';
 
-import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client, Guild} from 'discord.js';
-import { ReactionPaginator } from '../utils/ReactionPaginator';
+import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client} from 'discord.js';
 
 import * as process from "process";
 import * as os from "os";

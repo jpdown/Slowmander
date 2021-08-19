@@ -1,7 +1,8 @@
-import { PermissionLevel } from "../commands/Command";
+import { PermissionLevel } from "commands/Command";
+import { PantherBot } from "Bot";
+import { Command } from "commands/Command";
+
 import { User, GuildMember, Collection, Snowflake, Role, Permissions } from "discord.js";
-import { PantherBot } from "../Bot";
-import { Command } from "../commands/Command";
 
 export class PermissionsHelper {
     

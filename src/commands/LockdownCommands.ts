@@ -1,11 +1,11 @@
-import {Command, PermissionLevel, CommandResult} from './Command';
-import {CommandGroup} from './CommandGroup'
-import { PantherBot } from '../Bot';
+import {Command, PermissionLevel, CommandResult} from 'commands/Command';
+import {CommandGroup} from 'commands/CommandGroup'
+import { PantherBot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
+import { LockdownConfigObject } from 'config/LockdownConfig';
+import { ReactionPaginator } from 'utils/ReactionPaginator';
 
 import {Message, MessageEmbed, Permissions, CategoryChannel, GuildChannel, Role, User, TextChannel, NewsChannel, Guild, Snowflake, ThreadChannel} from 'discord.js';
-import { CommandUtils } from '../utils/CommandUtils';
-import { LockdownConfigObject } from '../config/LockdownConfig';
-import { ReactionPaginator } from '../utils/ReactionPaginator';
 
 export class Lockdown extends Command {
     constructor(bot: PantherBot) {

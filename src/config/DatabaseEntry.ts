@@ -1,5 +1,5 @@
-import { PantherBot } from "../Bot";
-import { Logger } from "../Logger";
+import { PantherBot } from "Bot";
+import { Logger } from "Logger";
 
 import r from "rethinkdb";
 

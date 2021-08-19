@@ -1,10 +1,10 @@
-import {Command, PermissionLevel, CommandResult} from './Command';
-import { PantherBot } from '../Bot';
+import {Command, PermissionLevel, CommandResult} from 'commands/Command';
+import { PantherBot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
+import { CommandGroup } from 'commands/CommandGroup';
+import { TwitchClipModObject } from 'config/TwitchClipModConfig';
 
-import {Message, Permissions, MessageEmbed, Channel, TextChannel, NewsChannel, DMChannel} from 'discord.js';
-import { CommandUtils } from '../utils/CommandUtils';
-import { CommandGroup } from './CommandGroup';
-import { TwitchClipModObject } from '../config/TwitchClipModConfig';
+import {Message, Permissions, MessageEmbed, TextChannel, NewsChannel, DMChannel} from 'discord.js';
 import { HelixUser } from 'twitch/lib';
 
 export class ManageTwitchClipMod extends CommandGroup {

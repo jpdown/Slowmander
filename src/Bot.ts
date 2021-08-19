@@ -1,15 +1,16 @@
+import {Credentials} from 'config/Credentials';
+import { CommandManager } from 'CommandManager';
+import { ReactionRoleManager } from 'reactionroles/ReactionRoleManager';
+import { HelpManager } from 'HelpManager';
+import { Logger, LogLevel } from 'Logger';
+import { EventLogger } from 'eventlogs/EventLogger';
+import { DatabaseManager } from 'config/DatabaseManager';
+import { ConfigManager } from 'config/ConfigManager';
+import { VerificationManager } from 'verification/VerificationManager';
+import { TwitchAPIManager } from 'twitch/TwitchAPIManager';
+import { TwitchClipModManager } from 'twitch/TwitchClipModManager';
+
 import {Client, Snowflake} from 'discord.js';
-import {Credentials} from './config/Credentials';
-import { CommandManager } from './CommandManager';
-import { ReactionRoleManager } from './reactionroles/ReactionRoleManager';
-import { HelpManager } from './HelpManager';
-import { Logger, LogLevel } from './Logger';
-import { EventLogger } from './eventlogs/EventLogger';
-import { DatabaseManager } from './config/DatabaseManager';
-import { ConfigManager } from './config/ConfigManager';
-import { VerificationManager } from './verification/VerificationManager';
-import { TwitchAPIManager } from './twitch/TwitchAPIManager';
-import { TwitchClipModManager } from './twitch/TwitchClipModManager';
 
 export class PantherBot {
     private _client: Client;

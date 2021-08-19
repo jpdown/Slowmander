@@ -1,5 +1,6 @@
-import { ColorResolvable, TextChannel, DMChannel, NewsChannel, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, Message, MessageReaction, ReactionEmoji, MessageEmbed, MessageOptions, ThreadChannel, TextBasedChannels } from "discord.js";
-import { PantherBot } from "../Bot";
+import { PantherBot } from "Bot";
+
+import { ColorResolvable, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, Message, MessageReaction, ReactionEmoji, MessageEmbed, TextBasedChannels } from "discord.js";
 
 export class CommandUtils {
     static async getSelfColor(channel: TextBasedChannels, bot: PantherBot): Promise<ColorResolvable> {

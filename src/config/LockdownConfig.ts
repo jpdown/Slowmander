@@ -1,6 +1,7 @@
-import { PantherBot } from "../Bot";
+import { PantherBot } from "Bot";
+import { DatabaseEntry, DatabaseObject } from "config/DatabaseEntry";
+
 import { Snowflake } from "discord.js";
-import { DatabaseEntry, DatabaseObject } from "./DatabaseEntry";
 
 export class LockdownConfig extends DatabaseEntry<LockdownConfigObject> {
     private static readonly TABLE: string = "LockdownConfig";

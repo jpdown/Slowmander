@@ -1,9 +1,10 @@
-import { PantherBot } from "./Bot";
+import { PantherBot } from "Bot";
+import { Command, PermissionLevel } from "commands/Command";
+import { PermissionsHelper } from "utils/PermissionsHelper";
+import { CommandUtils } from "utils/CommandUtils";
+import { CommandGroup } from "commands/CommandGroup";
+
 import { Message, MessageEmbed, GuildMember, User, Permissions } from "discord.js";
-import { Command, PermissionLevel } from "./commands/Command";
-import { PermissionsHelper } from "./utils/PermissionsHelper";
-import { CommandUtils } from "./utils/CommandUtils";
-import { CommandGroup } from "./commands/CommandGroup";
 
 export class HelpManager {
     public async sendCommandHelp(command: Command, message: Message, bot: PantherBot, extraArgs?: string[]) {

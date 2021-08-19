@@ -1,5 +1,6 @@
+import { PantherBot } from "Bot";
+
 import { Guild, MessageEmbed, Snowflake, TextChannel, NewsChannel, Permissions } from "discord.js";
-import { PantherBot } from "../Bot";
 
 export class ModErrorLog {
     public static async log(message: string, guild: Guild, bot: PantherBot): Promise<boolean> {

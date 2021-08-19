@@ -1,8 +1,9 @@
-import { ReactionRoleObject } from "../config/ReactionRoleConfig";
-import { PantherBot } from "../Bot";
-import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Client, Guild, Permissions } from "discord.js";
-import { Logger } from "../Logger";
-import { ModErrorLog } from "../moderrorlog/ModErrorLog";
+import { ReactionRoleObject } from "config/ReactionRoleConfig";
+import { PantherBot } from "Bot";
+import { Logger } from "Logger";
+import { ModErrorLog } from "moderrorlog/ModErrorLog";
+
+import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Permissions } from "discord.js";
 
 export class ReactionRoleManager {
     private bot: PantherBot;

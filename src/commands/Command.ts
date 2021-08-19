@@ -1,8 +1,8 @@
-import {PantherBot} from '../Bot';
-import {Message, TextChannel, DMChannel, NewsChannel, MessageEmbed, Guild, MessageOptions, PermissionResolvable} from 'discord.js';
-import {CommandUtils} from '../utils/CommandUtils';
-import { CommandGroup } from './CommandGroup';
-import { Logger } from '../Logger';
+import {PantherBot} from 'Bot';
+import { CommandGroup } from 'commands/CommandGroup';
+import { Logger } from 'Logger';
+
+import {Message, PermissionResolvable} from 'discord.js';
 
 export enum PermissionLevel {
     Disabled = -1,

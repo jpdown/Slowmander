@@ -1,10 +1,10 @@
-import { CommandGroup } from "./CommandGroup";
-import { Command, CommandResult } from "./Command";
-import { PermissionLevel } from "./Command";
-import { PantherBot } from "../Bot";
+import { CommandGroup } from "commands/CommandGroup";
+import { Command, CommandResult } from "commands/Command";
+import { PermissionLevel } from "commands/Command";
+import { PantherBot } from "Bot";
+import { CommandUtils } from "utils/CommandUtils";
 
 import { Message, GuildMember, Role, TextChannel, Channel, Permissions } from "discord.js";
-import { CommandUtils } from "../utils/CommandUtils";
 
 export class Set extends CommandGroup {
     constructor(bot: PantherBot) {
