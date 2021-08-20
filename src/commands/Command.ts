@@ -17,12 +17,12 @@ export abstract class Command {
     protected _name: string;
     protected _aliases: string[];
     protected _permLevel: PermissionLevel;
-    protected _requiredPerm: PermissionResolvable;
+    protected _requiredPerm?: PermissionResolvable;
     protected _desc: string;
     protected _longDesc: string;
     protected _usage: string;
     protected _runsInDm: boolean;
-    protected _group: CommandGroup;
+    protected _group?: CommandGroup;
     protected logger: Logger;
 
     constructor(name: string, permLevel: PermissionLevel, desc: string, bot: PantherBot, params?: CommandParameters) {
@@ -65,7 +65,7 @@ export abstract class Command {
         return(this._permLevel);
     }
 
-    public get requiredPerm(): PermissionResolvable {
+    public get requiredPerm(): PermissionResolvable | undefined {
         return(this._requiredPerm);
     }
 

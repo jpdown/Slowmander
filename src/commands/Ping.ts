@@ -16,7 +16,7 @@ export class Ping extends Command {
             .setColor(await CommandUtils.getSelfColor(message.channel, bot))
             .setDescription(`Last Heartbeat: ${message.client.ws.ping}ms\nAPI Latency: ${m.createdTimestamp - message.createdTimestamp}ms`)
 
-        await m.edit("", embed);
+        await m.edit({embeds: [embed]});
 
         return {sendHelp: false, command: this, message: message};
     }

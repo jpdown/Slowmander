@@ -23,7 +23,7 @@ export abstract class CommandGroup extends Command {
         return(this._subCommands);
     }
 
-    public async getSubCommand(arg: string): Promise<Command> {
+    public async getSubCommand(arg: string): Promise<Command | undefined> {
         return(this._subCommands.get(arg));
     }
 
@@ -41,8 +41,8 @@ export abstract class CommandGroup extends Command {
         return(lowestPerm);
     }
 
-    public get requiredPerm(): PermissionResolvable {
-        let perms: Permissions = new Permissions();
+    public get requiredPerm(): PermissionResolvable | undefined {
+        let perms: Permissions | undefined = new Permissions();
         let numWithPerms: number = 0;
 
         for(let subCommand of this._subCommands.values()) {

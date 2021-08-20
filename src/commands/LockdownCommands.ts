@@ -5,7 +5,7 @@ import { CommandUtils } from 'utils/CommandUtils';
 import { LockdownConfigObject } from 'config/LockdownConfig';
 import { ReactionPaginator } from 'utils/ReactionPaginator';
 
-import {Message, MessageEmbed, Permissions, CategoryChannel, GuildChannel, Role, User, TextChannel, NewsChannel, Guild, Snowflake, ThreadChannel} from 'discord.js';
+import {Message, MessageEmbed, Permissions, CategoryChannel, GuildChannel, Role, User, TextChannel, NewsChannel, Guild, Snowflake, ThreadChannel, GuildMember} from 'discord.js';
 
 export class Lockdown extends Command {
     constructor(bot: PantherBot) {
@@ -18,7 +18,7 @@ export class Lockdown extends Command {
         }
         catch(err) {
             await CommandUtils.sendMessage("Error locking server.", message.channel, bot);
-            await this.logger.error(`Error locking guild ${message.guild.name}`, err);
+            await this.logger.error(`Error locking guild ${message.guild!.name}`, err);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -36,7 +36,7 @@ export class Unlock extends Command {
         }
         catch(err) {
             await CommandUtils.sendMessage("Error unlocking server.", message.channel, bot);
-            await this.logger.error(`Error unlocking guild ${message.guild.name}`, err);
+            await this.logger.error(`Error unlocking guild ${message.guild!.name}`, err);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -64,7 +64,7 @@ class ManageLockdownList extends Command {
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        let lockdownPresets: LockdownConfigObject[] = await bot.configs.lockdownConfig.getAllLockdownPresets(message.guild.id);
+        let lockdownPresets: LockdownConfigObject[] = await bot.configs.lockdownConfig.getAllLockdownPresets(message.guild!.id);
 
         if(lockdownPresets.length < 1) {
             await CommandUtils.sendMessage("No presets found.", message.channel, bot);
@@ -77,7 +77,7 @@ class ManageLockdownList extends Command {
         }
 
         //Make paginator
-        let paginator: ReactionPaginator = new ReactionPaginator(presetNames, 10, `Lockdown presets in guild ${message.guild.name}`, message.channel, bot, this);
+        let paginator: ReactionPaginator = new ReactionPaginator(presetNames, 10, `Lockdown presets in guild ${message.guild!.name}`, message.channel, bot, this);
         let paginatedMessage: Message = await paginator.postMessage();
 
         return {sendHelp: false, command: this, message: message};
@@ -94,7 +94,7 @@ class ManageLockdownInfo extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let lockdownPreset: LockdownConfigObject = await bot.configs.lockdownConfig.getLockdownPreset(message.guild.id, args[0]);
+        let lockdownPreset: LockdownConfigObject = await bot.configs.lockdownConfig.getLockdownPreset(message.guild!.id, args[0]);
 
         if(!lockdownPreset) {
             return {sendHelp: true, command: this, message: message};
@@ -131,14 +131,14 @@ class ManageLockdownSet extends Command {
         }
 
         //Parse channels
-        let channelResult: {result: boolean, parsedIDs: string[]} = await this.parseChannels(args[1], message.guild);
+        let channelResult: {result: boolean, parsedIDs: string[]} = await this.parseChannels(args[1], message.guild!);
         if(!channelResult.result) {
             await CommandUtils.sendMessage("One or more of the channels given was incorrect.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
         //Parse roles
-        let rolesResult: {result: boolean, parsedIDs: string[]} = await this.parseRoles(args[2], message.guild);
+        let rolesResult: {result: boolean, parsedIDs: string[]} = await this.parseRoles(args[2], message.guild!);
         if(!rolesResult.result) {
             await CommandUtils.sendMessage("One or more of the roles given was incorrect.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
@@ -152,7 +152,7 @@ class ManageLockdownSet extends Command {
 
         //Make LockdownConfig
         let lockdownConfig: LockdownConfigObject = {
-            guildID: message.guild.id,
+            guildID: message.guild!.id,
             channelIDs: channelResult.parsedIDs,
             roleIDs: rolesResult.parsedIDs,
             grant: grant,
@@ -220,7 +220,7 @@ class ManageLockdownRemove extends Command {
         }
 
         //Try to delete
-        if(await bot.configs.lockdownConfig.removeLockdownPreset(message.guild.id, args[0])) {
+        if(await bot.configs.lockdownConfig.removeLockdownPreset(message.guild!.id, args[0])) {
             await CommandUtils.sendMessage(`Lockdown preset ${args[0]} removed successfully.`, message.channel, bot);
         }
         else {
@@ -244,16 +244,16 @@ class LockdownHelper {
         }
 
         //Try to get config
-        let lockdownConfig: LockdownConfigObject = await bot.configs.lockdownConfig.getLockdownPreset(message.guild.id, preset);
+        let lockdownConfig: LockdownConfigObject = await bot.configs.lockdownConfig.getLockdownPreset(message.guild!.id, preset);
         if(!lockdownConfig) {
-            await CommandUtils.sendMessage(`No lockdown config found, please make one with \`${await bot.commandManager.getPrefix(message.guild.id)}managelockdown\`. The default preset is \`default\`.`, message.channel, bot);
+            await CommandUtils.sendMessage(`No lockdown config found, please make one with \`${await bot.commandManager.getPrefix(message.guild!.id)}managelockdown\`. The default preset is \`default\`.`, message.channel, bot);
             return false;
         }
 
         //Make lists
         let channels: GuildChannel[] = [];
         for(let channelId of lockdownConfig.channelIDs) {
-            let parsedChannel: GuildChannel | ThreadChannel = message.guild.channels.resolve(channelId);
+            let parsedChannel: GuildChannel | ThreadChannel | null = message.guild!.channels.resolve(channelId);
             if(parsedChannel && (parsedChannel as GuildChannel)) {
                 channels.push(<GuildChannel>parsedChannel);
             }
@@ -261,7 +261,7 @@ class LockdownHelper {
 
         let roles: Role[] = [];
         for(let roleId of lockdownConfig.roleIDs) {
-            let parsedRole: Role = message.guild.roles.resolve(roleId);
+            let parsedRole: Role | null = message.guild!.roles.resolve(roleId);
             if(parsedRole) {
                 roles.push(parsedRole);
             }
@@ -305,14 +305,14 @@ class LockdownHelper {
         let modAndAdminRoles: Role[] = [];
         let modRoleId: Snowflake = await bot.configs.guildConfig.getModRole(guild.id);
         if(modRoleId) {
-            let modRole: Role = guild.roles.resolve(modRoleId);
+            let modRole: Role | null = guild.roles.resolve(modRoleId);
             if(modRole) { 
                 modAndAdminRoles.push(modRole);
             }
         }
         let adminRoleId: Snowflake = await bot.configs.guildConfig.getAdminRole(guild.id);
         if(adminRoleId) {
-            let adminRole: Role = guild.roles.resolve(adminRoleId);
+            let adminRole: Role | null = guild.roles.resolve(adminRoleId);
             if(adminRole) { 
                 modAndAdminRoles.push(adminRole);
             }
@@ -321,7 +321,7 @@ class LockdownHelper {
         for(let channel of channels) {
             try {
                 if(await CommandUtils.updateChannelPerms(channel, roles, [], grantedPerms, revokedPerms, neutralPerms, reason)) {
-                    await CommandUtils.updateChannelPerms(channel, modAndAdminRoles, [channel.client.user], new Permissions(this.PERMISSION), zeroPerms, zeroPerms, reason);
+                    await CommandUtils.updateChannelPerms(channel, modAndAdminRoles, [channel.client.user!], new Permissions(this.PERMISSION), zeroPerms, zeroPerms, reason);
                     await this.trySendMessage(channel, lock, bot);
                 }
                 else {
@@ -337,11 +337,11 @@ class LockdownHelper {
 
     static async trySendMessage(channel: GuildChannel, lock: boolean, bot: PantherBot): Promise<boolean> {
         //if not a channel we can send messages in
-        if(channel.type === "voice" || channel.type === "store") {
+        if(!channel.isText() && channel.type !== "GUILD_CATEGORY") {
             return(false);
         }
         //If category, send in all children recursively
-        if(channel.type === "category") {
+        if(channel.type === "GUILD_CATEGORY") {
             for(let childChannel of (<CategoryChannel>channel).children.values()) {
                 if(childChannel.permissionsLocked) {
                     await this.trySendMessage(childChannel, lock, bot);
@@ -350,7 +350,8 @@ class LockdownHelper {
             return(true);
         }
         //Check perms
-        if(!channel.permissionsFor(bot.client.user).has(Permissions.FLAGS.SEND_MESSAGES)) {
+        let member: GuildMember = channel.guild.members.cache.get(bot.client.user!.id)!;
+        if(!channel.permissionsFor(member).has(Permissions.FLAGS.SEND_MESSAGES)) {
             return(false);
         }
         let embed = new MessageEmbed()
@@ -358,7 +359,7 @@ class LockdownHelper {
             .setDescription(lock ? this.LOCK_MESSAGE : this.UNLOCK_MESSAGE);
 
         try {
-            await (<TextChannel | NewsChannel>channel).send(embed);
+            await (<TextChannel | NewsChannel>channel).send({embeds: [embed]});
             return(true);
         }
         catch(err) {

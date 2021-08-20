@@ -4,7 +4,7 @@ import { CommandUtils } from 'utils/CommandUtils';
 import { PermissionsHelper } from 'utils/PermissionsHelper';
 import { ReactionPaginator } from 'utils/ReactionPaginator';
 
-import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client} from 'discord.js';
+import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client, Guild} from 'discord.js';
 
 import * as process from "process";
 import * as os from "os";
@@ -15,10 +15,10 @@ export class Whois extends Command {
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        let member: GuildMember = message.member;
+        let member: GuildMember = <GuildMember>message.member;
 
         if(args.length > 0) {
-            let parsedMember: GuildMember = await CommandUtils.parseMember(args.join(" "), message.guild);
+            let parsedMember: GuildMember = await CommandUtils.parseMember(args.join(" "), message.guild!);
             if(parsedMember) {
                 member = parsedMember;
             }
@@ -43,7 +43,9 @@ export class Whois extends Command {
 
         //Time related portions
         embed.addField("Registered", member.user.createdAt.toUTCString(), true);
-        embed.addField("Joined", member.joinedAt.toUTCString(), true);
+        if (member.joinedAt) {
+            embed.addField("Joined", member.joinedAt.toUTCString(), true);
+        }
         if(member.premiumSince) {
             embed.addField("Boosted", member.premiumSince.toUTCString(), true);
         }
@@ -54,7 +56,7 @@ export class Whois extends Command {
         //Roles list
         let rolesList: Collection<Snowflake, Role> = member.roles.cache.clone();
         rolesList.sort((a, b) => b.position - a.position);
-        rolesList.delete(message.guild.roles.everyone.id);
+        rolesList.delete(message.guild!.roles.everyone.id);
         if(rolesList.size > 0) {
             let rolesStr: string = "";
             for (let role of rolesList.values()) {
@@ -82,7 +84,7 @@ export class Whois extends Command {
         //Iterate, keeping track of join time
         let joinPos: number = 1;
         for(let [currSnowflake, currMember] of allMembers) {
-            if(currMember.joinedTimestamp < member.joinedTimestamp) {
+            if((currMember.joinedTimestamp ?? Number.MAX_VALUE) < (member.joinedTimestamp ?? Number.MAX_VALUE)) {
                 joinPos++;
             }
         }
@@ -98,10 +100,10 @@ export class Roles extends Command {
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         //Roles list
-        await message.guild.roles.fetch(); //Fetch all roles (just to be sure)
-        let rolesList: Collection<Snowflake, Role> = message.guild.roles.cache.clone();
+        await message.guild!.roles.fetch(); //Fetch all roles (just to be sure)
+        let rolesList: Collection<Snowflake, Role> = message.guild!.roles.cache.clone();
         rolesList.sort((a, b) => b.position - a.position);
-        rolesList.delete(message.guild.roles.everyone.id);
+        rolesList.delete(message.guild!.roles.everyone.id);
 
         //List of strings
         let stringList: string[] = [];
@@ -111,7 +113,7 @@ export class Roles extends Command {
 
         //Make paginator
         let paginator: ReactionPaginator = new ReactionPaginator(stringList, 10, 
-            "Roles in " + message.guild.name, message.channel, bot, this);
+            "Roles in " + message.guild!.name, message.channel, bot, this);
 
         let paginatedMessage = await paginator.postMessage();
 
@@ -130,7 +132,7 @@ export class Members extends Command {
         }
 
         //Get role
-        let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
+        let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild!);
 
         if(role === undefined) {
             return {sendHelp: true, command: this, message: message};
@@ -197,8 +199,10 @@ export class Stats extends Command {
             .addField("Uptime", await this.getFormattedUptime(), true)
             .addField("User Count", await (await this.getUserCount(message.client)).toString(), true)
             .addField("Guild Count", message.client.guilds.cache.size.toString(), true)
-            .addField("Channel Count", message.client.channels.cache.size.toString(), true)
-            .setAuthor(message.client.user.username + "#" + message.client.user.discriminator, message.client.user.displayAvatarURL({format: "png", dynamic: true, size: 4096}));
+            .addField("Channel Count", message.client.channels.cache.size.toString(), true);
+        if (message.client.user) {
+            embed.setAuthor(message.client.user.username + "#" + message.client.user.discriminator, message.client.user.displayAvatarURL({format: "png", dynamic: true, size: 4096}));
+        }
         
         await message.channel.send({embeds: [embed]});
 

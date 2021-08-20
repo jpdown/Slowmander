@@ -4,7 +4,7 @@ import { CommandUtils } from 'utils/CommandUtils';
 import { CommandGroup } from 'commands/CommandGroup';
 import { TwitchClipModObject } from 'config/TwitchClipModConfig';
 
-import {Message, Permissions, MessageEmbed, TextChannel, NewsChannel, DMChannel} from 'discord.js';
+import {Message, Permissions, MessageEmbed, TextChannel, NewsChannel, DMChannel, TextBasedChannels} from 'discord.js';
 import { HelixUser } from 'twitch/lib';
 
 export class ManageTwitchClipMod extends CommandGroup {
@@ -36,12 +36,12 @@ class EnableClipModeration extends Command {
         }
 
         // Parse channel
-        let channel: TextChannel | NewsChannel | DMChannel = await CommandUtils.parseTextChannel(args[0], message.client);
-        if (!channel || channel.type === "dm") {
+        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
         
-        if (channel.guild.id !== message.guild.id) {
+        if (channel.guild.id !== message.guild!.id) {
             await CommandUtils.sendMessage("Please give a channel from this guild.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
@@ -75,12 +75,12 @@ class DisableClipModeration extends Command {
         }
 
         // Parse channel
-        let channel: TextChannel | NewsChannel | DMChannel = await CommandUtils.parseTextChannel(args[0], message.client);
-        if (!channel || channel.type === "dm") {
+        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
         
-        if (channel.guild.id !== message.guild.id) {
+        if (channel.guild.id !== message.guild!.id) {
             await CommandUtils.sendMessage("Please give a channel from this guild.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
@@ -110,12 +110,12 @@ class EnableApprovedChannels extends Command {
         }
 
         // Parse Discord channel
-        let channel: TextChannel | NewsChannel | DMChannel = await CommandUtils.parseTextChannel(args[0], message.client);
-        if (!channel || channel.type === "dm") {
+        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
         
-        if (channel.guild.id !== message.guild.id) {
+        if (channel.guild.id !== message.guild!.id) {
             await CommandUtils.sendMessage("Please give a channel from this guild.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
@@ -148,12 +148,12 @@ class DisableApprovedChannels extends Command {
         }
 
         // Parse Discord channel
-        let channel: TextChannel | NewsChannel | DMChannel = await CommandUtils.parseTextChannel(args[0], message.client);
-        if (!channel || channel.type === "dm") {
+        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
         
-        if (channel.guild.id !== message.guild.id) {
+        if (channel.guild.id !== message.guild!.id) {
             await CommandUtils.sendMessage("Please give a channel from this guild.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
@@ -185,12 +185,12 @@ class AddTwitchChannel extends Command {
         }
 
         // Parse Discord channel
-        let channel: TextChannel | NewsChannel | DMChannel = await CommandUtils.parseTextChannel(args[0], message.client);
-        if (!channel || channel.type === "dm") {
+        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
         
-        if (channel.guild.id !== message.guild.id) {
+        if (channel.guild.id !== message.guild!.id) {
             await CommandUtils.sendMessage("Please give a channel from this guild.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
@@ -236,12 +236,12 @@ class DeleteTwitchChannel extends Command {
         }
 
         // Parse Discord channel
-        let channel: TextChannel | NewsChannel | DMChannel = await CommandUtils.parseTextChannel(args[0], message.client);
-        if (!channel || channel.type === "dm") {
+        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
         
-        if (channel.guild.id !== message.guild.id) {
+        if (channel.guild.id !== message.guild!.id) {
             await CommandUtils.sendMessage("Please give a channel from this guild.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
@@ -287,12 +287,12 @@ class ChannelModInfo extends Command {
         }
 
         // Parse channel
-        let channel: TextChannel | NewsChannel | DMChannel = await CommandUtils.parseTextChannel(args[0], message.client);
-        if (!channel || channel.type === "dm") {
+        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
         
-        if (channel.guild.id !== message.guild.id) {
+        if (channel.guild.id !== message.guild!.id) {
             await CommandUtils.sendMessage("Please give a channel from this guild.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
@@ -331,7 +331,7 @@ class ChannelModInfo extends Command {
             }
         }
 
-        responseMessage.edit(embed);
+        responseMessage.edit({embeds: [embed]});
         return {sendHelp: false, command: this, message: message};
     }
 }

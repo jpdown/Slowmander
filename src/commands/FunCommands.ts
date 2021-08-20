@@ -9,7 +9,7 @@ import querystring from "querystring";
 
 export class Cat extends Command {
     private readonly API: string = "https://api.thecatapi.com/v1/images/search";
-    private apiToken: string;
+    private apiToken?: string;
 
     constructor(bot: PantherBot) {
         super("cat", PermissionLevel.Everyone, "Gives a random cat image", bot, {aliases: ["kitty", "meow"]});
@@ -19,13 +19,13 @@ export class Cat extends Command {
         if(!this.apiToken) {
             if(bot.catApiToken === "") {
                 CommandUtils.sendMessage("I don't have an API token.", message.channel, bot);
-                return;
+                return {sendHelp: false, command: this, message: message};
             }
             this.apiToken = bot.catApiToken;
         }
 
         let sentMessage: Message = await CommandUtils.sendMessage("Looking for a cat...", message.channel, bot, message);
-        let catUrl: string = await CatAPIHelper.getImage(message.author, bot, this.API, this.apiToken);
+        let catUrl: string | undefined = await CatAPIHelper.getImage(message.author, bot, this.API, this.apiToken);
         let embed: MessageEmbed;
 
         if(catUrl !== undefined && catUrl !== "") {
@@ -58,7 +58,7 @@ export class Dog extends Command {
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         let sentMessage: Message = await CommandUtils.sendMessage("Looking for a dog...", message.channel, bot, message);
         let dogJson: DogAPIResp;
-        let dogImage: string;
+        let dogImage: string | undefined = undefined;
         let embed: MessageEmbed;
 
         try {
@@ -136,8 +136,8 @@ export class DadJoke extends Command {
 }
 
 class CatAPIHelper {
-    public static async getImage(user: User, bot: PantherBot, api: string, token: string): Promise<string> {
-        let imageUrl: string = undefined;
+    public static async getImage(user: User, bot: PantherBot, api: string, token: string): Promise<string | undefined> {
+        let imageUrl: string | undefined = undefined;
 
         let headers = {
             "X-API-KEY": token

@@ -39,7 +39,7 @@ class SetUsername extends Command {
         }
 
         try {
-            await message.client.user.setUsername(newUsername);
+            await message.client.user!.setUsername(newUsername);
             await CommandUtils.sendMessage("Username changed successfully.", message.channel, bot);
         }
         catch(err) {
@@ -61,7 +61,7 @@ class SetAvatar extends Command {
             return {sendHelp: true, command: this, message: message};
         }
         try {
-            await message.client.user.setAvatar(args[0]);
+            await message.client.user!.setAvatar(args[0]);
             await CommandUtils.sendMessage("Avatar changed successfully.", message.channel, bot);
         }
         catch(err) {
@@ -163,19 +163,19 @@ class SetStatus extends Command {
 
         switch(args[0]) {
             case "online":
-                await message.client.user.setStatus("online");
+                await message.client.user!.setStatus("online");
                 break;
             case "away":
             case "idle":
-                await message.client.user.setStatus("idle");
+                await message.client.user!.setStatus("idle");
                 break;
             case "dnd":
-                await message.client.user.setStatus("dnd");
+                await message.client.user!.setStatus("dnd");
                 break;
             case "invis":
             case "invisible":
             case "offline":
-                await message.client.user.setStatus("invisible");
+                await message.client.user!.setStatus("invisible");
                 break;
             default:
                 return {sendHelp: true, command: this, message: message};
@@ -198,7 +198,7 @@ class SetActivity extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let activityType: string = args.shift();
+        let activityType: string | undefined = args.shift();
         let activityString: string = args.join(" ");
         let activityOptions: ActivityOptions;
 
@@ -223,7 +223,7 @@ class SetActivity extends Command {
                 return {sendHelp: true, command: this, message: message};
         }
 
-        await message.client.user.setActivity(activityString, activityOptions);
+        await message.client.user!.setActivity(activityString, activityOptions);
         await CommandUtils.sendMessage("Activity updated successfully.", message.channel, bot);
 
         return {sendHelp: false, command: this, message: message};
@@ -265,9 +265,11 @@ class GetInviteLink extends Command {
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        let invite: string = await message.client.generateInvite(["ADD_REACTIONS", "CHANGE_NICKNAME", "BAN_MEMBERS", "KICK_MEMBERS", 
-            "ATTACH_FILES", "CONNECT", "MANAGE_MESSAGES", "MANAGE_NICKNAMES", "MANAGE_ROLES", "MANAGE_WEBHOOKS", "READ_MESSAGE_HISTORY",
-            "SEND_MESSAGES", "USE_EXTERNAL_EMOJIS", "SPEAK", "VIEW_CHANNEL"]);
+        let invite = await message.client.generateInvite({ scopes: ["applications.commands", "bot"], permissions: [
+            "ADD_REACTIONS", "BAN_MEMBERS", "CHANGE_NICKNAME", "EMBED_LINKS", "KICK_MEMBERS", "MANAGE_CHANNELS", "MANAGE_MESSAGES",
+            "MANAGE_NICKNAMES", "MANAGE_ROLES", "MANAGE_THREADS", "MANAGE_WEBHOOKS", "READ_MESSAGE_HISTORY", "SEND_MESSAGES",
+            "USE_EXTERNAL_EMOJIS", "USE_EXTERNAL_STICKERS", "USE_PUBLIC_THREADS", "USE_PRIVATE_THREADS", "VIEW_AUDIT_LOG", "VIEW_CHANNEL"
+        ]})
         
         await CommandUtils.sendMessage(`[Invite Link](${invite})`, message.channel, bot);
 

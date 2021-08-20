@@ -152,7 +152,7 @@ export class CommandUtils {
         return(snowflake);
     }
 
-    static async parseTextChannel(potentialChannel: string, client: Client): Promise<TextBasedChannels> {
+    static async parseTextChannel(potentialChannel: string, client: Client): Promise<TextBasedChannels | undefined> {
         let channel: Channel = await CommandUtils.parseChannel(potentialChannel, client);
         let parsedTextChannel: TextBasedChannels = undefined;
 
