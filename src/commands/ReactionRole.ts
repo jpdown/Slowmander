@@ -32,12 +32,12 @@ class AddReactionRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let reactionRoleParsedArgs: ReactionRoleParsedArgs = await this.parseArgs(args, message, bot);
+        let reactionRoleParsedArgs: ReactionRoleParsedArgs | undefined = await this.parseArgs(args, message, bot);
         if(!reactionRoleParsedArgs) {
             return {sendHelp: false, command: this, message: message};
         }
 
-        if(await bot.configs.reactionRoleConfig.guildHasReactionRoleName(message.guild.id, reactionRoleParsedArgs.name)) {
+        if(await bot.configs.reactionRoleConfig.guildHasReactionRoleName(message.guild!.id, reactionRoleParsedArgs.name)) {
             await CommandUtils.sendMessage(`Adding reaction role failed. Reaction role ${reactionRoleParsedArgs.name} already exists.`, message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
@@ -53,7 +53,7 @@ class AddReactionRole extends Command {
 
         //Create object
         let reactionRoleObject: ReactionRoleObject = {
-            guildID: message.guild.id,
+            guildID: message.guild!.id,
             channelID: reactionRoleParsedArgs.channel.id,
             messageID: reactionRoleParsedArgs.reactionMessage.id,
             emoteID: emote.identifier,
@@ -74,7 +74,7 @@ class AddReactionRole extends Command {
         return {sendHelp: false, command: this, message: message};
     }
 
-    private async parseArgs(args: string[], message: Message, bot: PantherBot): Promise<ReactionRoleParsedArgs> {
+    private async parseArgs(args: string[], message: Message, bot: PantherBot): Promise<ReactionRoleParsedArgs | undefined> {
         let channel: TextChannel | NewsChannel;
         let reactionMessage: Message;
         let role: Role;
@@ -91,7 +91,7 @@ class AddReactionRole extends Command {
         let linkChannelId: string = splitLink[5];
         let linkMessageId: string = splitLink[6];
 
-        if(linkGuildId !== message.guild.id) {
+        if(linkGuildId !== message.guild!.id) {
             await CommandUtils.sendMessage("Adding reaction role failed. The message link was for a message not in this guild.", message.channel, bot);
             return(undefined);
         }
