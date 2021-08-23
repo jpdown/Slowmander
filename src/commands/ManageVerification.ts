@@ -4,7 +4,7 @@ import { CommandUtils } from 'utils/CommandUtils';
 import { CommandGroup } from 'commands/CommandGroup';
 import { VerificationConfigObject } from 'config/VerificationConfig';
 
-import {Message, MessageEmbed, Permissions, TextChannel, NewsChannel, DMChannel, Role, GuildEmoji, ReactionEmoji, TextBasedChannels, GuildMember} from 'discord.js';
+import {Message, MessageEmbed, Permissions, Role, GuildEmoji, ReactionEmoji, TextBasedChannels, GuildMember} from 'discord.js';
 
 export class ManageVerification extends CommandGroup {
     constructor(bot: PantherBot) {
@@ -87,7 +87,7 @@ class SetVerification extends Command {
             return {sendHelp: false, command: this, message: message};
         }
 
-        let role: Role = await CommandUtils.parseRole(args[1], message.guild!);
+        let role: Role | undefined = await CommandUtils.parseRole(args[1], message.guild!);
         if(!role) {
             await CommandUtils.sendMessage("Invalid role specified, verification config not saved.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
@@ -103,7 +103,7 @@ class SetVerification extends Command {
         }
 
         //Get emote to listen for
-        let emote: GuildEmoji | ReactionEmoji = await CommandUtils.getEmote(message, bot);
+        let emote: GuildEmoji | ReactionEmoji | undefined = await CommandUtils.getEmote(message, bot);
         if(!emote) {
             return {sendHelp: false, command: this, message: message};
         }
@@ -144,7 +144,7 @@ class VerificationStatus extends Command {
         let embed: MessageEmbed = new MessageEmbed()
             .addField("Status", await bot.configs.guildConfig.getVerificationEnabled(message.guild!.id) ? "Enabled" : "Disabled", true)
             .addField("Channel", `<#${verificationConfig.channelID}>`, true)
-            .addField("Emote", await CommandUtils.makeEmoteFromId(verificationConfig.emoteID, message), true)
+            .addField("Emote", await CommandUtils.makeEmoteFromId(verificationConfig.emoteID, message) ?? "Invalid", true)
             .addField("Role", `<@&${verificationConfig.roleID}>`, true)
             .setTitle("Verification Status in " + message.guild!.name)
             .setColor(await CommandUtils.getSelfColor(message.channel, bot));

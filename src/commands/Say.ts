@@ -2,7 +2,7 @@ import {Command, PermissionLevel, CommandResult} from 'commands/Command';
 import { PantherBot } from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 
-import {Message, TextChannel, NewsChannel, DMChannel} from 'discord.js';
+import {Message, TextBasedChannels} from 'discord.js';
 
 export class Say extends Command {
     constructor(bot: PantherBot) {
@@ -16,7 +16,7 @@ export class Say extends Command {
 
         //we stealthy
         try {
-            if(!(message.channel.type === "dm")) {
+            if(!(message.channel.type === "DM")) {
                 await message.delete();
             }
         }
@@ -26,8 +26,8 @@ export class Say extends Command {
         }
 
         let lastChannel: number = 0;
-        let channelList: (TextChannel | NewsChannel | DMChannel)[] = [];
-        let currChannel: TextChannel | NewsChannel | DMChannel;
+        let channelList: TextBasedChannels[] = [];
+        let currChannel: TextBasedChannels | undefined;
         for(lastChannel = 0; lastChannel < args.length; lastChannel++) {
             currChannel = await CommandUtils.parseTextChannel(args[lastChannel], message.client);
             if(currChannel === undefined) {

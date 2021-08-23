@@ -26,7 +26,7 @@ export class CommandUtils {
 
     static async parseMember(potentialMember: string, guild: Guild): Promise<GuildMember | undefined> {
         let parsedMember: GuildMember | undefined = undefined;
-        let parsedUser: User = await CommandUtils.parseUser(potentialMember, guild.client);
+        let parsedUser: User | undefined = await CommandUtils.parseUser(potentialMember, guild.client);
 
         if(!parsedUser) {
             parsedMember = await this.parseMemberNickname(potentialMember, guild);
@@ -73,7 +73,7 @@ export class CommandUtils {
         let parsedUser: User | undefined = undefined;
 
         try {
-            let snowflake: Snowflake = await CommandUtils.parseUserID(potentialUser);
+            let snowflake: Snowflake | undefined = await CommandUtils.parseUserID(potentialUser);
             if(snowflake) {
                 parsedUser = await client.users.fetch(snowflake);
             }
@@ -111,10 +111,10 @@ export class CommandUtils {
 
     static async parseRole(potentialRole: string, guild: Guild): Promise<Role | undefined> {
         let parsedRole: Role | undefined = undefined;
-        let snowflake: Snowflake = await CommandUtils.parseRoleID(potentialRole, guild);
+        let snowflake: Snowflake | undefined = await CommandUtils.parseRoleID(potentialRole, guild);
 
         if(snowflake) {
-            parsedRole = await guild.roles.fetch(snowflake);
+            parsedRole = await guild.roles.fetch(snowflake) ?? undefined;
         }
         
         if(!parsedRole || parsedRole === null) {
@@ -157,7 +157,7 @@ export class CommandUtils {
     }
 
     static async parseTextChannel(potentialChannel: string, client: Client): Promise<TextBasedChannels | undefined> {
-        let channel: Channel = await CommandUtils.parseChannel(potentialChannel, client);
+        let channel: Channel | undefined = await CommandUtils.parseChannel(potentialChannel, client);
         let parsedTextChannel: TextBasedChannels | undefined = undefined;
 
         if(channel === undefined) {
@@ -208,7 +208,7 @@ export class CommandUtils {
         let parsedEmote: GuildEmoji | undefined = undefined;
 
         try {
-            let snowflake: Snowflake = await CommandUtils.parseEmoteID(potentialEmote);
+            let snowflake: Snowflake | undefined = await CommandUtils.parseEmoteID(potentialEmote);
             if(snowflake) {
                 parsedEmote = client.emojis.resolve(snowflake) ?? undefined;
             }
@@ -343,8 +343,10 @@ export class CommandUtils {
         let emote: string | undefined;
 
         try {
-            emoteId = emoteId.split(":").pop();
-            emote = message.client.emojis.resolve(emoteId)?.toString();
+            emoteId = emoteId.split(":").pop() ?? "";
+            if (emoteId !== "") {
+                emote = message.client.emojis.resolve(emoteId)?.toString();
+            }
         }
         catch(err) {
             if(emoteId.indexOf(":") === -1) {

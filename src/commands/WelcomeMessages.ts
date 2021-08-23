@@ -15,7 +15,7 @@ export class WelcomeMessages extends Command {
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        let channel: TextChannel = <TextChannel> message.guild.channels.resolve(this.CHANNEL_ID);
+        let channel: TextChannel = <TextChannel> message.client.channels.resolve(this.CHANNEL_ID);
         let messageOne: Message = await channel.messages.fetch(this.MESSAGE_ONE_ID);
         let messageTwo: Message = await channel.messages.fetch(this.MESSAGE_TWO_ID);
         let messageThree: Message = await channel.messages.fetch(this.MESSAGE_THREE_ID);
@@ -28,10 +28,10 @@ export class WelcomeMessages extends Command {
             .addField("YouTube", "https://www.youtube.com/jpdown", false)
             .addField("Twitter", "https://www.twitter.com/jpdown", false)
             .addField("Invite Link", "https://discord.gg/Y9NhGZD", false)
-            .setThumbnail(message.guild.iconURL({size: 4096, format: "png", dynamic: true}))
+            .setThumbnail(channel.guild.iconURL({size: 4096, format: "png", dynamic: true})!)
             .setColor(await CommandUtils.getSelfColor(channel, bot));
         
-        await messageOne.edit(embed);
+        await messageOne.edit({embeds: [embed]});
 
         //Build second embed
         embed = new MessageEmbed()
@@ -44,7 +44,7 @@ export class WelcomeMessages extends Command {
                 + "Basically, use your brain. This Discord is meant to be a welcoming and positive place so let's keep it that way!")
             .setColor(await CommandUtils.getSelfColor(channel, bot));
         
-        await messageTwo.edit(embed);
+        await messageTwo.edit({embeds: [embed]});
 
         //Build third embed
         embed = new MessageEmbed()
@@ -55,7 +55,7 @@ export class WelcomeMessages extends Command {
             .addField("<:YouTubePings:702734117879545916>", "Pings for my YouTube videos", true)
             .setColor(await CommandUtils.getSelfColor(channel, bot));
         
-        await messageThree.edit(embed);
+        await messageThree.edit({embeds: [embed]});
 
         return {sendHelp: false, command: this, message: message};
     }

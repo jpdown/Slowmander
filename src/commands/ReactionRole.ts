@@ -6,7 +6,7 @@ import { ReactionRoleObject } from "config/ReactionRoleConfig";
 import { ReactionPaginator } from "utils/ReactionPaginator"
 import { CommandUtils } from "utils/CommandUtils";
 
-import { Message, Role, TextChannel, NewsChannel, Permissions, ReactionEmoji, MessageReaction, GuildEmoji, Snowflake } from "discord.js";
+import { Message, Role, TextChannel, NewsChannel, Permissions, ReactionEmoji, MessageReaction, GuildEmoji, Snowflake, GuildChannelResolvable } from "discord.js";
 
 export class ReactionRoleManagement extends CommandGroup {
     constructor(bot: PantherBot) {
@@ -46,7 +46,7 @@ class AddReactionRole extends Command {
             return {sendHelp: false, command: this, message: message};
         }
 
-        let emote: ReactionEmoji | GuildEmoji = await CommandUtils.getEmote(message, bot);
+        let emote: ReactionEmoji | GuildEmoji | undefined = await CommandUtils.getEmote(message, bot);
         if(!emote) {
             return {sendHelp: false, command: this, message: message};
         }
@@ -77,7 +77,7 @@ class AddReactionRole extends Command {
     private async parseArgs(args: string[], message: Message, bot: PantherBot): Promise<ReactionRoleParsedArgs | undefined> {
         let channel: TextChannel | NewsChannel;
         let reactionMessage: Message;
-        let role: Role;
+        let role: Role | undefined;
         let name: string;
 
         //Parse message link
@@ -122,8 +122,11 @@ class AddReactionRole extends Command {
     }
 
     private async checkPerms(role: Role, reactionMessage: Message, message: Message, bot: PantherBot): Promise<boolean> {
+        if (!role.guild.me || !reactionMessage.guild?.me || !(reactionMessage.channel as GuildChannelResolvable)) {
+            return false;
+        }
         //Manage roles
-        if(!role.guild.me.hasPermission(Permissions.FLAGS.MANAGE_ROLES)) {
+        if(!role.guild.me.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
             await CommandUtils.sendMessage("Adding reaction role failed. I do not have the Manage Roles permission.", message.channel, bot);
             return false;
         }
@@ -133,7 +136,7 @@ class AddReactionRole extends Command {
             return false;
         }
         //If we can't react in the channel
-        if(!reactionMessage.guild.me.permissionsIn(reactionMessage.channel).has(Permissions.FLAGS.ADD_REACTIONS)) {
+        if(!reactionMessage.guild.me.permissionsIn(reactionMessage.channel as GuildChannelResolvable).has(Permissions.FLAGS.ADD_REACTIONS)) {
             await CommandUtils.sendMessage(`Adding reaction role failed. I do not have reaction perms in ${reactionMessage.channel.toString()}`, message.channel, bot);
             return false;
         }
@@ -155,7 +158,7 @@ class AddReactionRole extends Command {
         }
         catch(err) {
             await CommandUtils.sendMessage("Adding reaction role failed. Unexpected error while reacting to message.", message.channel, bot);
-            await this.logger.warning(`Error reacting to message ${reactionMessage.id} in channel ${reactionMessage.channel.id} in guild ${reactionMessage.guild.id}`, err);
+            await this.logger.warning(`Error reacting to message ${reactionMessage.id} in channel ${reactionMessage.channel.id} in guild ${reactionMessage.guild?.id}`, err);
             await bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
             return(false);
         }
@@ -175,12 +178,12 @@ class RemoveReactionRole extends Command {
 
         let name: string = args[0];
 
-        if(!await bot.configs.reactionRoleConfig.guildHasReactionRoleName(message.guild.id, name)) {
+        if(!await bot.configs.reactionRoleConfig.guildHasReactionRoleName(message.guild!.id, name)) {
             await CommandUtils.sendMessage(`Reaction role ${name} does not exist.`, message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
 
-        let success: boolean = await this.removeReactionRole(message.guild.id, name, message, bot);
+        let success: boolean = await this.removeReactionRole(message.guild!.id, name, message, bot);
         if(success) {
             await CommandUtils.sendMessage(`Reaction role ${name} removed successfully.`, message.channel, bot);
         }
@@ -197,10 +200,10 @@ class RemoveReactionRole extends Command {
         if(!removedReactionRole) return(false);
 
         //Remove our reaction
-        let reaction: MessageReaction = await this.getReaction(removedReactionRole, bot);
+        let reaction: MessageReaction | undefined = await this.getReaction(removedReactionRole, bot);
         if(reaction) {
             try {
-                await reaction.users.remove(message.client.user);
+                await reaction.users.remove(message.client.user!);
             }
             catch(err) {
                 await CommandUtils.sendMessage("Unexpected error occurred when removing reaction.", message.channel, bot);
@@ -210,10 +213,10 @@ class RemoveReactionRole extends Command {
         return(true);
     }
 
-    private async getReaction(reactionRole: ReactionRoleObject, bot: PantherBot): Promise<MessageReaction> {
+    private async getReaction(reactionRole: ReactionRoleObject, bot: PantherBot): Promise<MessageReaction | undefined> {
         let channel: TextChannel | NewsChannel;
         let reactionMessage: Message;
-        let reaction: MessageReaction;
+        let reaction: MessageReaction | undefined;
 
         //Get channel
         try {
@@ -232,7 +235,7 @@ class RemoveReactionRole extends Command {
         //Get reaction
         try {
             reaction = reactionMessage.reactions.cache.get(reactionRole.emoteID);
-            if(reaction.partial) {
+            if(reaction?.partial) {
                 reaction = await reaction.fetch();
             }
         }
@@ -251,7 +254,7 @@ class ListReactionRoles extends Command {
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         //Get reactionroles
-        let reactionRoles: ReactionRoleObject[] = await bot.configs.reactionRoleConfig.getGuildReactionRoles(message.guild.id);
+        let reactionRoles: ReactionRoleObject[] = await bot.configs.reactionRoleConfig.getGuildReactionRoles(message.guild!.id);
 
         if(reactionRoles.length < 1) {
             await CommandUtils.sendMessage("I have no current reaction roles.", message.channel, bot);

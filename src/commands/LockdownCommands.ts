@@ -176,9 +176,9 @@ class ManageLockdownSet extends Command {
         let result: boolean = true;
         let parsedIDs: string[] = [];
         for(let givenChannel of splitChannels) {
-            let parsedID: string = await CommandUtils.parseChannelID(givenChannel);
+            let parsedID: string  | undefined= await CommandUtils.parseChannelID(givenChannel);
             //Make sure valid channel
-            if(!guild.channels.resolve(parsedID)) {
+            if(!parsedID || !guild.channels.resolve(parsedID)) {
                 result = false;
                 break;
             }
@@ -195,7 +195,7 @@ class ManageLockdownSet extends Command {
         let result: boolean = true;
         let parsedIDs: string[] = [];
         for(let givenRole of splitRoles) {
-            let parsedRole: Role = await CommandUtils.parseRole(givenRole, guild);
+            let parsedRole: Role | undefined = await CommandUtils.parseRole(givenRole, guild);
             //Make sure valid role
             if(!parsedRole) {
                 result = false;

@@ -30,17 +30,17 @@ class SetNickname extends Command {
     }
 
     public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        let member: GuildMember;
+        let member: GuildMember | undefined;
         let newNickname: string;
         if(args.length > 0) {
-            member = await CommandUtils.parseMemberPingOnly(args[0], message.guild);
+            member = await CommandUtils.parseMemberPingOnly(args[0], message.guild!);
         }
 
         if(member !== undefined) {
             args.shift();
         }
         else {
-            member = message.guild.me;
+            member = message.guild!.me!;
         }
 
         //Check if we can change nickname
@@ -62,19 +62,19 @@ class SetNickname extends Command {
     }
 
     private async checkPerms(member: GuildMember, message: Message, bot: PantherBot): Promise<boolean> {
-        if(member.id === member.client.user.id && !member.hasPermission(Permissions.FLAGS.CHANGE_NICKNAME)) {
+        if(member.id === member.client.user!.id && !member.permissions.has(Permissions.FLAGS.CHANGE_NICKNAME)) {
             await CommandUtils.sendMessage("Setting nickname failed: I'm missing permission to change my own nickname.", message.channel, bot);
             return(false);
         }
-        else if(member.id !== member.client.user.id && !message.guild.me.hasPermission(Permissions.FLAGS.MANAGE_NICKNAMES)) {
+        else if(member.id !== member.client.user!.id && !message.guild!.me!.permissions.has(Permissions.FLAGS.MANAGE_NICKNAMES)) {
             await CommandUtils.sendMessage("Setting nickname failed: I'm missing permission to change other nicknames.", message.channel, bot);
             return(false);
         }
-        else if(member.id !== member.client.user.id && message.guild.me.roles.highest.comparePositionTo(member.roles.highest) <= 0) {
+        else if(member.id !== member.client.user!.id && message.guild!.me!.roles.highest.comparePositionTo(member.roles.highest) <= 0) {
             await CommandUtils.sendMessage("Setting nickname failed: My top role is below the member's top role.", message.channel, bot);
             return(false);
         }
-        else if(member.id !== member.client.user.id && member.id === member.guild.ownerID) {
+        else if(member.id !== member.client.user!.id && member.id === member.guild.ownerId) {
             await CommandUtils.sendMessage("Setting nickname failed: I cannot change the nickname of the server owner.", message.channel, bot);
             return(false);
         }
@@ -95,13 +95,13 @@ class SetGuildPrefix extends Command {
 
         let prefix: string = args.join(" ");
 
-        let result: boolean = await bot.commandManager.setGuildPrefix(message.guild.id, prefix);
+        let result: boolean = await bot.commandManager.setGuildPrefix(message.guild!.id, prefix);
 
         if(result) {
-            await CommandUtils.sendMessage(`Prefix for guild ${message.guild.name} set to ${prefix} successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Prefix for guild ${message.guild!.name} set to ${prefix} successfully.`, message.channel, bot);
         }
         else {
-            await CommandUtils.sendMessage(`Prefix was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Prefix was unable to be set for guild ${message.guild!.name}.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -118,19 +118,19 @@ class SetVipRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
+        let role: Role | undefined = await CommandUtils.parseRole(args.join(" "), message.guild!);
 
         if(role === undefined) {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let result: boolean = await bot.configs.guildConfig.setVipRole(message.guild.id, role.id);
+        let result: boolean = await bot.configs.guildConfig.setVipRole(message.guild!.id, role.id);
 
         if(result) {
-            await CommandUtils.sendMessage(`VIP role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`VIP role for guild ${message.guild!.name} set to ${role.toString()} successfully.`, message.channel, bot);
         }
         else {
-            await CommandUtils.sendMessage(`VIP role was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+            await CommandUtils.sendMessage(`VIP role was unable to be set for guild ${message.guild!.name}.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -147,19 +147,19 @@ class SetModRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
+        let role: Role | undefined = await CommandUtils.parseRole(args.join(" "), message.guild!);
 
         if(role === undefined) {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let result: boolean = await bot.configs.guildConfig.setModRole(message.guild.id, role.id);
+        let result: boolean = await bot.configs.guildConfig.setModRole(message.guild!.id, role.id);
 
         if(result) {
-            await CommandUtils.sendMessage(`Mod role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Mod role for guild ${message.guild!.name} set to ${role.toString()} successfully.`, message.channel, bot);
         }
         else {
-            await CommandUtils.sendMessage(`Mod role was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Mod role was unable to be set for guild ${message.guild!.name}.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -176,19 +176,19 @@ class SetAdminRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild);
+        let role: Role | undefined = await CommandUtils.parseRole(args.join(" "), message.guild!);
 
         if(role === undefined) {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let result: boolean = await bot.configs.guildConfig.setAdminRole(message.guild.id, role.id);
+        let result: boolean = await bot.configs.guildConfig.setAdminRole(message.guild!.id, role.id);
 
         if(result) {
-            await CommandUtils.sendMessage(`Admin role for guild ${message.guild.name} set to ${role.toString()} successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Admin role for guild ${message.guild!.name} set to ${role.toString()} successfully.`, message.channel, bot);
         }
         else {
-            await CommandUtils.sendMessage(`Admin role was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Admin role was unable to be set for guild ${message.guild!.name}.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -205,21 +205,21 @@ class SetEventLogChannel extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let channel: Channel = await CommandUtils.parseChannel(args.join(" "), message.client);
+        let channel: Channel | undefined = await CommandUtils.parseChannel(args.join(" "), message.client);
 
         if(channel === undefined || !(channel as TextChannel)) {
             return {sendHelp: true, command: this, message: message};
         }
 
         //Set channel
-        let result: boolean = await bot.eventLogger.setEventlogChannel(message.guild.id, channel.id);
+        let result: boolean = await bot.eventLogger.setEventlogChannel(message.guild!.id, channel.id);
 
 
         if(result) {
-            await CommandUtils.sendMessage(`Eventlog channel set to ${channel.toString()} for guild ${message.guild.name} successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Eventlog channel set to ${channel.toString()} for guild ${message.guild!.name} successfully.`, message.channel, bot);
         }
         else {
-            await CommandUtils.sendMessage(`Eventlog channel was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Eventlog channel was unable to be set for guild ${message.guild!.name}.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};
@@ -236,21 +236,21 @@ class SetModErrorLogChannel extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let channel: Channel = await CommandUtils.parseChannel(args.join(" "), message.client);
+        let channel: Channel | undefined = await CommandUtils.parseChannel(args.join(" "), message.client);
 
         if(channel === undefined || !(channel as TextChannel)) {
             return {sendHelp: true, command: this, message: message};
         }
 
         //Set channel
-        let result: boolean = await bot.configs.guildConfig.setModErrorChannel(message.guild.id, channel.id);
+        let result: boolean = await bot.configs.guildConfig.setModErrorChannel(message.guild!.id, channel.id);
 
 
         if(result) {
-            await CommandUtils.sendMessage(`Mod error log channel set to ${channel.toString()} for guild ${message.guild.name} successfully.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Mod error log channel set to ${channel.toString()} for guild ${message.guild!.name} successfully.`, message.channel, bot);
         }
         else {
-            await CommandUtils.sendMessage(`Mod error log channel was unable to be set for guild ${message.guild.name}.`, message.channel, bot);
+            await CommandUtils.sendMessage(`Mod error log channel was unable to be set for guild ${message.guild!.name}.`, message.channel, bot);
         }
 
         return {sendHelp: false, command: this, message: message};

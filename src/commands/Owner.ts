@@ -82,7 +82,7 @@ class AddOwner extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let user: User = await CommandUtils.parseUser(args.join(" "), message.client);
+        let user: User | undefined = await CommandUtils.parseUser(args.join(" "), message.client);
 
         if(user === undefined) {
             return {sendHelp: true, command: this, message: message};
@@ -109,7 +109,7 @@ class RemoveOwner extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let user: User = await CommandUtils.parseUser(args.join(" "), message.client);
+        let user: User | undefined = await CommandUtils.parseUser(args.join(" "), message.client);
 
         if(user === undefined) {
             return {sendHelp: true, command: this, message: message};

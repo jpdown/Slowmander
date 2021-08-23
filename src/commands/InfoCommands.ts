@@ -4,7 +4,7 @@ import { CommandUtils } from 'utils/CommandUtils';
 import { PermissionsHelper } from 'utils/PermissionsHelper';
 import { ReactionPaginator } from 'utils/ReactionPaginator';
 
-import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client, Guild} from 'discord.js';
+import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client} from 'discord.js';
 
 import * as process from "process";
 import * as os from "os";
@@ -18,7 +18,7 @@ export class Whois extends Command {
         let member: GuildMember = <GuildMember>message.member;
 
         if(args.length > 0) {
-            let parsedMember: GuildMember = await CommandUtils.parseMember(args.join(" "), message.guild!);
+            let parsedMember: GuildMember | undefined = await CommandUtils.parseMember(args.join(" "), message.guild!);
             if(parsedMember) {
                 member = parsedMember;
             }
@@ -132,7 +132,7 @@ export class Members extends Command {
         }
 
         //Get role
-        let role: Role = await CommandUtils.parseRole(args.join(" "), message.guild!);
+        let role: Role | undefined = await CommandUtils.parseRole(args.join(" "), message.guild!);
 
         if(role === undefined) {
             return {sendHelp: true, command: this, message: message};
@@ -167,7 +167,7 @@ export class Avatar extends Command {
         }
 
         //Get user
-        let user: User = await CommandUtils.parseUser(args.join(" "), message.client);
+        let user: User | undefined = await CommandUtils.parseUser(args.join(" "), message.client);
 
         if(user === undefined) {
             return {sendHelp: true, command: this, message: message};

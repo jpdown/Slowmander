@@ -4,7 +4,7 @@ import { CommandUtils } from 'utils/CommandUtils';
 import { CommandGroup } from 'commands/CommandGroup';
 import { TwitchClipModObject } from 'config/TwitchClipModConfig';
 
-import {Message, Permissions, MessageEmbed, TextChannel, NewsChannel, DMChannel, TextBasedChannels} from 'discord.js';
+import {Message, Permissions, MessageEmbed, TextBasedChannels} from 'discord.js';
 import { HelixUser } from 'twitch/lib';
 
 export class ManageTwitchClipMod extends CommandGroup {
