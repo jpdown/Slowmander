@@ -8,7 +8,7 @@ export class PermissionsHelper {
     
     public static async checkPermsAndDM(user: User | GuildMember, command: Command, bot: PantherBot): Promise<boolean> {
         let permLevel: PermissionLevel;
-        let hasPerm: boolean;
+        let hasPerm: boolean = false;
         let inDm: boolean = false;
         if(!(user as GuildMember).guild) {
             permLevel = await PermissionsHelper.getUserPermLevel(user as User, bot);
@@ -33,18 +33,19 @@ export class PermissionsHelper {
 
     public static async getMemberPermLevel(member: GuildMember, bot: PantherBot): Promise<PermissionLevel> {
         let roleList: Collection<Snowflake, Role> = member.roles.cache;
+        let tempRole: string | undefined = undefined;
 
         if(bot.owners.includes(member.user.id)) {
             return(PermissionLevel.Owner);
         }
-        else if(roleList.has(await bot.configs.guildConfig.getAdminRole(member.guild.id))
+        else if((tempRole = await bot.configs.guildConfig.getAdminRole(member.guild.id)) && roleList.has(tempRole)
             || member.guild.ownerId === member.id) {
                 return(PermissionLevel.Admin)
         }
-        else if(roleList.has(await bot.configs.guildConfig.getModRole(member.guild.id))) {
+        else if((tempRole = await bot.configs.guildConfig.getModRole(member.guild.id)) && roleList.has(tempRole)) {
             return(PermissionLevel.Mod)
         }
-        else if(roleList.has(await bot.configs.guildConfig.getVipRole(member.guild.id))) {
+        else if((tempRole = await bot.configs.guildConfig.getVipRole(member.guild.id)) && roleList.has(tempRole)) {
             return(PermissionLevel.VIP)
         }
         else if(member.guild.id != "326543379955580929") { //Shitty disable commands in acai's discord

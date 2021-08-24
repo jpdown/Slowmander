@@ -6,7 +6,7 @@ import { PermissionsHelper } from "utils/PermissionsHelper";
 import { CommandGroup } from "commands/CommandGroup";
 import { Logger } from "Logger";
 
-import { Message, MessageEmbed, Snowflake } from "discord.js";
+import { Message, MessageEmbed, PartialMessage, Snowflake } from "discord.js";
 
 export class CommandManager {
     private commandMap: Map<string, Command>;
@@ -22,11 +22,11 @@ export class CommandManager {
         this.registerAll();
     }
 
-    public async parseCommand(message: Message) {
+    public async parseCommand(message: Message | PartialMessage) {
         //Handle partial events
         try {
             if(message.partial) {
-                await message.fetch();
+                message = await message.fetch();
             }
         }
         catch(err) {
@@ -34,7 +34,7 @@ export class CommandManager {
             return;
         }
 
-        let prefix: string;
+        let prefix: string | undefined;
 
         if(message.guild) {
             prefix = await this.getPrefix(message.guild.id);
@@ -57,7 +57,7 @@ export class CommandManager {
 
         //Split args, find command
         let args: string[] = await CommandUtils.splitCommandArgs(message.content, prefix.length);
-        let command: Command = await this.getCommand(args.shift());
+        let command: Command | undefined = await this.getCommand(args.shift());
         //If command not found, exit
         if(command === undefined) {
             return;
@@ -67,23 +67,23 @@ export class CommandManager {
         if(await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, this.bot)) {
             try {
                 let result: CommandResult = await command.run(this.bot, message, args);
-                if(result.sendHelp) {
+                if(result.sendHelp && result.command) {
                     await this.bot.helpManager.sendCommandHelp(result.command, result.message, this.bot);
                 }
             }
             catch(err) {
                 await this.logger.error(`Error running command "${command.fullName}".`, err);
-                await message.channel.send((new MessageEmbed)
+                await message.channel.send({embeds: [(new MessageEmbed)
                     .setColor(0xFF0000)
                     .setTitle("❌ Error running command.")
-                    .setTimestamp(Date.now()));
+                    .setTimestamp(Date.now())]});
             }
         }
     }
 
     public async parseSubCommand(group: CommandGroup, args: string[], message: Message, bot: PantherBot): Promise<CommandResult> {
         //Find command
-        let command: Command = await this.getCommandHelper(args.shift(), group.subCommands);
+        let command: Command | undefined = await this.getCommandHelper(args.shift(), group.subCommands);
         //If command not found, exit
         if(command === undefined) {
             return {sendHelp: true, command: group, message: message};
@@ -97,7 +97,7 @@ export class CommandManager {
         return {sendHelp: false, command: null, message: message};
     }
 
-    public async getCommand(commandToGet: string): Promise<Command> {
+    public async getCommand(commandToGet: string | undefined): Promise<Command | undefined> {
         return(await this.getCommandHelper(commandToGet, this.commandMap));
     }
     
@@ -111,14 +111,14 @@ export class CommandManager {
         return(commandList);
     }
 
-    public async getPrefix(guildId?: string): Promise<string> {
+    public async getPrefix(guildId?: string): Promise<string | undefined> {
         if(guildId) {
             if(this.prefixMap.has(guildId)) {
                 return(this.prefixMap.get(guildId));
             }
             else {
                 try {
-                    let prefix: string = await this.bot.configs.guildConfig.getPrefix(guildId);
+                    let prefix: string | undefined = await this.bot.configs.guildConfig.getPrefix(guildId);
                     if(prefix) {
                         this.prefixMap.set(guildId, prefix);
                         return(prefix);
@@ -164,8 +164,8 @@ export class CommandManager {
         }
     }
 
-    private async getCommandHelper(commandToGet: string, commandList: Map<string, Command>): Promise<Command> {
-        if(commandList.has(commandToGet)) {
+    private async getCommandHelper(commandToGet: string | undefined, commandList: Map<string, Command>): Promise<Command | undefined> {
+        if(commandToGet && commandList.has(commandToGet)) {
             return(commandList.get(commandToGet));
         }
         else {

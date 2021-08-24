@@ -14,7 +14,7 @@ export class HelpManager {
         }
 
         let helpMessage: string = "";
-        let prefix: string = await bot.commandManager.getPrefix(message.guild ? message.guild.id : undefined)
+        let prefix: string | undefined = await bot.commandManager.getPrefix(message.guild ? message.guild.id : undefined)
 
         //Get perms and is DM
         if(!await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, bot)) {
@@ -87,7 +87,7 @@ export class HelpManager {
     }
 
     private async getSubCommand(command: Command, extraArgs: string[], message: Message, bot: PantherBot): Promise<Command> {
-        let subCommand: Command = undefined;
+        let subCommand: Command | undefined = undefined;
 
         for(let i: number = 0; i < extraArgs.length; i++) {
             if(command as CommandGroup) {

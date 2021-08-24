@@ -27,7 +27,12 @@ export class PantherBot {
     private _eventLogger: EventLogger;
 
     constructor() {
-        this._client = new Client({partials: ['MESSAGE', 'REACTION']});
+        this._client = new Client({intents: [
+            "GUILDS", "GUILD_MEMBERS", "GUILD_BANS", "GUILD_EMOJIS_AND_STICKERS",
+            "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS",
+            "DIRECT_MESSAGES", "DIRECT_MESSAGE_REACTIONS"
+        ], 
+        partials: ['MESSAGE', 'REACTION']});
         this.logger = Logger.getLogger(this,this);
         this._credentials = new Credentials(this);
         this._databaseManager = new DatabaseManager(this, this._credentials.rethinkCreds);
@@ -37,10 +42,11 @@ export class PantherBot {
         this._verificationManager = new VerificationManager(this);
         this._twitchApiManager = new TwitchAPIManager(this, this._credentials.twitchId, this._credentials.twitchSecret);
         this._twitchClipModManager = new TwitchClipModManager(this);
+        this._configManager = new ConfigManager(this);
+        this._reactionRoleManager = new ReactionRoleManager(this);
         
-        this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
         this._client.on('ready', async () => {
-            await this.logger.info(`Welcome to PantherBot-Discord-JS! Logged in as ${this._client.user.tag} in ${this._client.guilds.cache.size} guild(s).`);
+            await this.logger.info(`Welcome to PantherBot-Discord-JS! Logged in as ${this._client.user!.tag} in ${this._client.guilds.cache.size} guild(s).`);
         })
     }
     
@@ -53,8 +59,7 @@ export class PantherBot {
         
         //Connect to db
         this._databaseManager.connect().then(() => {
-            this._configManager = new ConfigManager(this);
-            this._reactionRoleManager = new ReactionRoleManager(this);
+            this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
             this._client.on('messageReactionAdd', this._reactionRoleManager.onMessageReactionAdd.bind(this._reactionRoleManager));
             this._client.on('messageReactionRemove', this._reactionRoleManager.onMessageReactionRemove.bind(this._reactionRoleManager));
             this._client.on("ready", this._reactionRoleManager.onReady.bind(this._reactionRoleManager));

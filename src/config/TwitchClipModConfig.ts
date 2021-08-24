@@ -5,9 +5,9 @@ import { Snowflake } from "discord.js";
 
 export class TwitchClipModConfig extends DatabaseEntry<TwitchClipModObject> {
     private static readonly TABLE = "TwitchClipMod";
-    private static readonly DEFAULT_ENTRY: TwitchClipModObject = undefined;
+    private static readonly DEFAULT_ENTRY: TwitchClipModObject | undefined = undefined;
 
-    private clipModConfigCache: Map<Snowflake, TwitchClipModObject>;
+    private clipModConfigCache: Map<Snowflake, TwitchClipModObject | undefined>;
 
     constructor(bot: PantherBot) {
         super(TwitchClipModConfig.TABLE, TwitchClipModConfig.DEFAULT_ENTRY, bot);
@@ -15,13 +15,13 @@ export class TwitchClipModConfig extends DatabaseEntry<TwitchClipModObject> {
         this.clipModConfigCache = new Map<Snowflake, TwitchClipModObject>();
     }
 
-    public async getChannelTwitchClipMod(channelId: Snowflake): Promise<TwitchClipModObject> {
+    public async getChannelTwitchClipMod(channelId: Snowflake): Promise<TwitchClipModObject | undefined> {
         if (this.clipModConfigCache.has(channelId)) {
             return this.clipModConfigCache.get(channelId)
         }
 
         //Grab from database
-        let clipModConfig: TwitchClipModObject = await this.getDocument(channelId);
+        let clipModConfig: TwitchClipModObject | undefined = await this.getDocument(channelId);
 
         //Cache (we want to intentionally cache undefined)
         this.clipModConfigCache.set(channelId, clipModConfig);
@@ -78,7 +78,7 @@ export class TwitchClipModConfig extends DatabaseEntry<TwitchClipModObject> {
     }
 
     public async addApprovedChannel(channelId: Snowflake, twitchChannelId: string): Promise<boolean> {
-        let currConfig: TwitchClipModObject = await this.getChannelTwitchClipMod(channelId);
+        let currConfig: TwitchClipModObject | undefined = await this.getChannelTwitchClipMod(channelId);
         let newConfig: TwitchClipModObject = {
             id: channelId
         }
@@ -104,7 +104,7 @@ export class TwitchClipModConfig extends DatabaseEntry<TwitchClipModObject> {
     }
 
     public async removeApprovedChannel(channelId: Snowflake, twitchChannelId: string): Promise<boolean> {
-        let currConfig: TwitchClipModObject = await this.getChannelTwitchClipMod(channelId);
+        let currConfig: TwitchClipModObject | undefined = await this.getChannelTwitchClipMod(channelId);
         let newConfig: TwitchClipModObject = {
             id: channelId
         }

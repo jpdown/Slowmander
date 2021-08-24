@@ -4,7 +4,7 @@ import { Logger } from "Logger";
 import r from "rethinkdb";
 
 export class DatabaseManager {
-    private _connection: r.Connection;
+    private _connection: r.Connection | undefined;
     private bot: PantherBot;
     private creds: RethinkCredentials;
     private logger: Logger;
@@ -38,7 +38,7 @@ export class DatabaseManager {
         
     }
 
-    public async getConnection(): Promise<r.Connection> {
+    public async getConnection(): Promise<r.Connection | undefined> {
         if(!this._connection) {
             await this.connect();
         }

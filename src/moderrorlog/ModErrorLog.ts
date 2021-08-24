@@ -5,7 +5,7 @@ import { Guild, MessageEmbed, Snowflake, TextChannel, NewsChannel, Permissions }
 export class ModErrorLog {
     public static async log(message: string, guild: Guild, bot: PantherBot): Promise<boolean> {
         //Find mod error log channel
-        let channelId: Snowflake = await bot.configs.guildConfig.getModErrorChannel(guild.id);
+        let channelId: Snowflake | undefined = await bot.configs.guildConfig.getModErrorChannel(guild.id);
         if(!channelId) {
             return(false);
         }
@@ -16,7 +16,7 @@ export class ModErrorLog {
         }
 
         //Make sure we have perms
-        if(!channel.permissionsFor(guild.client.user).has(Permissions.FLAGS.SEND_MESSAGES)) {
+        if(!guild.me || !channel.permissionsFor(guild.me).has(Permissions.FLAGS.SEND_MESSAGES)) {
             return(false);
         }
         
@@ -26,7 +26,7 @@ export class ModErrorLog {
             .setTimestamp(Date.now());
         
         
-        await channel.send(embed);
+        await channel.send({embeds: [embed]});
         return(true);
     }
 }

@@ -5,14 +5,14 @@ import { Snowflake } from "discord.js";
 
 export class LockdownConfig extends DatabaseEntry<LockdownConfigObject> {
     private static readonly TABLE: string = "LockdownConfig";
-    private static readonly DEFAULT_ENTRY: LockdownConfigObject = undefined;
+    private static readonly DEFAULT_ENTRY: LockdownConfigObject | undefined = undefined;
 
     constructor(bot: PantherBot) {
         super(LockdownConfig.TABLE, LockdownConfig.DEFAULT_ENTRY, bot);
     }
 
-    public async getAllLockdownPresets(guildId: Snowflake): Promise<LockdownConfigObject[]> {
-        let presets: LockdownConfigObject[] = await this.getAllMatches("guildID", guildId);
+    public async getAllLockdownPresets(guildId: Snowflake): Promise<LockdownConfigObject[] | undefined> {
+        let presets: LockdownConfigObject[] | undefined = await this.getAllMatches("guildID", guildId);
 
         if(presets) {
             return(presets);
@@ -21,14 +21,14 @@ export class LockdownConfig extends DatabaseEntry<LockdownConfigObject> {
         return(undefined);
     }
 
-    public async getLockdownPreset(guildId: Snowflake, name: string): Promise<LockdownConfigObject> {
-        let guildPresets: LockdownConfigObject[] = await this.getAllLockdownPresets(guildId);
+    public async getLockdownPreset(guildId: Snowflake, name: string): Promise<LockdownConfigObject | undefined> {
+        let guildPresets: LockdownConfigObject[] | undefined = await this.getAllLockdownPresets(guildId);
 
         if(!guildPresets) {
             return(undefined);
         }
 
-        let matchingPreset: LockdownConfigObject = undefined;
+        let matchingPreset: LockdownConfigObject | undefined = undefined;
         for(let preset of guildPresets) {
             if(preset.name === name) {
                 matchingPreset = preset;
@@ -41,7 +41,7 @@ export class LockdownConfig extends DatabaseEntry<LockdownConfigObject> {
 
     public async setLockdownPreset(preset: LockdownConfigObject): Promise<boolean> {
         //Decide if we're updating or inserting
-        let existingPreset: LockdownConfigObject = await this.getLockdownPreset(preset.guildID, preset.name);
+        let existingPreset: LockdownConfigObject | undefined = await this.getLockdownPreset(preset.guildID, preset.name);
         if(existingPreset) {
             return(await this.updateDocument(existingPreset.id, preset));
         }
@@ -52,7 +52,7 @@ export class LockdownConfig extends DatabaseEntry<LockdownConfigObject> {
 
     public async removeLockdownPreset(guildId: Snowflake, name: string): Promise<boolean> {
         //See if preset exists
-        let existingPreset: LockdownConfigObject = await this.getLockdownPreset(guildId, name);
+        let existingPreset: LockdownConfigObject | undefined = await this.getLockdownPreset(guildId, name);
         if(existingPreset) {
             return(await this.removeMatchingDocuments(existingPreset));
         }

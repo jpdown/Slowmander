@@ -5,13 +5,13 @@ import { Snowflake } from "discord.js";
 
 export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
     private static readonly TABLE: string = "GuildConfig";
-    private static readonly DEFAULT_ENTRY: GuildConfigObject = undefined;
+    private static readonly DEFAULT_ENTRY: GuildConfigObject | undefined = undefined;
 
     constructor(bot: PantherBot) {
         super(GuildConfig.TABLE, GuildConfig.DEFAULT_ENTRY, bot);
     }
 
-    public async getPrefix(guildId: Snowflake): Promise<string> {
+    public async getPrefix(guildId: Snowflake): Promise<string | undefined> {
         let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
 
         if(gc) {
@@ -25,7 +25,7 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
         return(await this.updateOrInsertDocument(guildId, {prefix: newPrefix}));
     }
 
-    public async getEventlogChannel(guildId: Snowflake): Promise<string> {
+    public async getEventlogChannel(guildId: Snowflake): Promise<string | undefined> {
         let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
 
         if(gc) {
@@ -39,7 +39,7 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
         return(await this.updateOrInsertDocument(guildId, {eventlogChannel: newChannel}));
     }
 
-    public async getVipRole(guildId: Snowflake): Promise<string> {
+    public async getVipRole(guildId: Snowflake): Promise<string | undefined> {
         let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
 
         if(gc) {
@@ -53,7 +53,7 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
         return(await this.updateOrInsertDocument(guildId, {vipRole: newVipRole}));
     }
 
-    public async getModRole(guildId: Snowflake): Promise<string> {
+    public async getModRole(guildId: Snowflake): Promise<string | undefined> {
         let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
 
         if(gc) {
@@ -67,7 +67,7 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
         return(await this.updateOrInsertDocument(guildId, {modRole: newModRole}));
     }
 
-    public async getAdminRole(guildId: Snowflake): Promise<string> {
+    public async getAdminRole(guildId: Snowflake): Promise<string | undefined> {
         let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
 
         if(gc) {
@@ -81,7 +81,7 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
         return(await this.updateOrInsertDocument(guildId, {adminRole: newAdminRole}));
     }
 
-    public async getModErrorChannel(guildId: Snowflake): Promise<string> {
+    public async getModErrorChannel(guildId: Snowflake): Promise<string | undefined> {
         let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
         
         if(gc) {
@@ -95,7 +95,7 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
         return(await this.updateOrInsertDocument(guildId, {modErrorChannel: newModErrorChannel}));
     }
 
-    public async getVerificationEnabled(guildId: Snowflake): Promise<boolean> {
+    public async getVerificationEnabled(guildId: Snowflake): Promise<boolean | undefined> {
         let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
 
         if(gc) {

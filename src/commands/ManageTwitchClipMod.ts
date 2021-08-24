@@ -202,7 +202,7 @@ class AddTwitchChannel extends Command {
         }
 
         // Get Twitch users
-        let twitchUsers: HelixUser[] = await bot.twitchApiManager.getUserIds(args.slice(1));
+        let twitchUsers: HelixUser[] | null = await bot.twitchApiManager.getUserIds(args.slice(1));
         if (!twitchUsers) {
             await CommandUtils.sendMessage("Unknown issue getting Twitch channels", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
@@ -253,7 +253,7 @@ class DeleteTwitchChannel extends Command {
         }
 
         // Get Twitch users
-        let twitchUsers: HelixUser[] = await bot.twitchApiManager.getUserIds(args.slice(1));
+        let twitchUsers: HelixUser[] | null = await bot.twitchApiManager.getUserIds(args.slice(1));
         if (!twitchUsers) {
             await CommandUtils.sendMessage("Unknown issue getting Twitch channels", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
@@ -300,7 +300,7 @@ class ChannelModInfo extends Command {
         let responseMessage: Message = await CommandUtils.sendMessage("Getting info...", message.channel, bot);
 
         // Get config
-        let config: TwitchClipModObject = await bot.configs.twitchClipModConfig.getChannelTwitchClipMod(channel.id);
+        let config: TwitchClipModObject | undefined = await bot.configs.twitchClipModConfig.getChannelTwitchClipMod(channel.id);
 
         let embed: MessageEmbed = new MessageEmbed();
         embed.setColor(await CommandUtils.getSelfColor(message.channel, bot));
@@ -317,14 +317,16 @@ class ChannelModInfo extends Command {
             embed.addField("Approved Channels Only", config.approvedChannelsOnly ? "True" : "False", true);
 
             if (config.twitchChannels && config.twitchChannels.length > 0) {
-                let twitchUsers: HelixUser[] = await bot.twitchApiManager.getUsersByIds(config.twitchChannels);
+                let twitchUsers: HelixUser[] | null = await bot.twitchApiManager.getUsersByIds(config.twitchChannels);
                 let usernames: string = "";
-                for (let user of twitchUsers) {
-                    if (user) {
-                        usernames += user.displayName + "\n"
+                if (twitchUsers) {
+                    for (let user of twitchUsers) {
+                        if (user) {
+                            usernames += user.displayName + "\n"
+                        }
                     }
+                    embed.addField("Approved Channels", usernames, true);
                 }
-                embed.addField("Approved Channels", usernames, true);
             }
             else {
                 embed.addField("Approved Channels", "None", true);

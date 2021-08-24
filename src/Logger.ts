@@ -87,7 +87,10 @@ export class Logger {
 
     private async logToDiscord(message: string) {
         try {
-            let webhook: WebhookClient = await this.bot.configs.botConfig.getErrorWebhook();
+            let webhook: WebhookClient | undefined = await this.bot.configs.botConfig.getErrorWebhook();
+            if (!webhook) {
+                return;
+            }
             //Split every 1990 chars (to allow for code block plus some)
             let splitMessage: string[] = [];
             let currEnd: number;

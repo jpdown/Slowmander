@@ -5,7 +5,7 @@ import { Message, Snowflake, GuildEmoji, ReactionEmoji } from 'discord.js';
 
 export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {
     private static readonly TABLE = "ReactionRoles";
-    private static readonly DEFAULT_ENTRY: ReactionRoleObject = undefined;
+    private static readonly DEFAULT_ENTRY: ReactionRoleObject | undefined = undefined;
 
     private guildReactionRoleCache: Map<Snowflake, ReactionRoleObject[]>;
 
@@ -15,13 +15,13 @@ export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {
         this.guildReactionRoleCache = new Map<Snowflake, ReactionRoleObject[]>();
     }
 
-    public async getGuildReactionRoles(guildId: Snowflake): Promise<ReactionRoleObject[]> {
+    public async getGuildReactionRoles(guildId: Snowflake): Promise<ReactionRoleObject[] | undefined> {
         if(this.guildReactionRoleCache.has(guildId)) {
             return(this.guildReactionRoleCache.get(guildId));
         }
 
         //Grab from database
-        let reactionRoles: ReactionRoleObject[] = await this.getAllMatches("guildId", guildId);
+        let reactionRoles: ReactionRoleObject[] | undefined = await this.getAllMatches("guildId", guildId);
         if(!reactionRoles) {
             return(undefined);
         }
@@ -32,19 +32,20 @@ export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {
         return(reactionRoles);
     }
 
-    public async getFromReaction(message: Message, emoji: GuildEmoji | ReactionEmoji): Promise<ReactionRoleObject> {
+    public async getFromReaction(message: Message, emoji: GuildEmoji | ReactionEmoji): Promise<ReactionRoleObject | undefined> {
+        if (!message.guild) return undefined;
         return(await this.getReactionRole({guildID: message.guild.id, messageID: message.id, emoteID: emoji.identifier}));
     }
 
-    public async getReactionRole(filter: ReactionRoleFilter): Promise<ReactionRoleObject> {
+    public async getReactionRole(filter: ReactionRoleFilter): Promise<ReactionRoleObject | undefined> {
         //We can only get from message and emoji id, or by name
         if(!(filter.name || (filter.messageID && filter.emoteID))) return(undefined);
 
-        let guildReactionRoles: ReactionRoleObject[] = await this.getGuildReactionRoles(filter.guildID);
+        let guildReactionRoles: ReactionRoleObject[] | undefined = await this.getGuildReactionRoles(filter.guildID);
 
         if(!guildReactionRoles) return(undefined);
 
-        let reactionRole: ReactionRoleObject = undefined;
+        let reactionRole: ReactionRoleObject | undefined = undefined;
         for(let currReactionRole of guildReactionRoles) {
             if((filter.messageID && currReactionRole.messageID === filter.messageID && currReactionRole.emoteID === filter.emoteID) //message and emote id match
                 || filter.name && currReactionRole.name === filter.name) { //name matches
@@ -68,7 +69,7 @@ export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {
                 this.guildReactionRoleCache.set(reactionRole.guildID, []);
             }
 
-            this.guildReactionRoleCache.get(reactionRole.guildID).push(reactionRole);
+            this.guildReactionRoleCache.get(reactionRole.guildID)?.push(reactionRole);
         }
 
         return(this.guildReactionRoleCache);
@@ -76,7 +77,7 @@ export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {
 
     public async addReactionRole(reactionRole: ReactionRoleObject): Promise<boolean> {
         //Check if guild already has a reaction role with this name
-        let guildReactionRoles: ReactionRoleObject[] = await this.getGuildReactionRoles(reactionRole.guildID);
+        let guildReactionRoles: ReactionRoleObject[] | undefined = await this.getGuildReactionRoles(reactionRole.guildID);
 
         if(!guildReactionRoles) {
             //We need to make the cache
@@ -92,20 +93,20 @@ export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {
 
         //Since it doesn't exist, we're good to add it to database and cache
         let result: boolean = await this.insertDocument(reactionRole);
-        if(result) this.guildReactionRoleCache.get(reactionRole.guildID).push(reactionRole);
+        if(result) this.guildReactionRoleCache.get(reactionRole.guildID)?.push(reactionRole);
 
         return(result);
     }
 
-    public async removeReactionRole(guildId: Snowflake, name: string): Promise<ReactionRoleObject> {
+    public async removeReactionRole(guildId: Snowflake, name: string): Promise<ReactionRoleObject | undefined> {
         //Check if we have the reaction role
-        let guildReactionRoles: ReactionRoleObject[] = await this.getGuildReactionRoles(guildId);
+        let guildReactionRoles: ReactionRoleObject[] | undefined = await this.getGuildReactionRoles(guildId);
 
         if(!guildReactionRoles) {
             return(undefined)
         }
 
-        let reactionRoleToDelete: ReactionRoleObject = undefined;
+        let reactionRoleToDelete: ReactionRoleObject | undefined = undefined;
         for(let reactionRole of guildReactionRoles) {
             if(reactionRole.name === name) {
                 reactionRoleToDelete = reactionRole;

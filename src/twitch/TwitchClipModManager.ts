@@ -3,7 +3,7 @@ import { PantherBot } from "Bot";
 import { TwitchClipModObject } from "config/TwitchClipModConfig";
 import { ModErrorLog } from "moderrorlog/ModErrorLog";
 
-import { Message, Permissions } from "discord.js";
+import { GuildChannelResolvable, Message, PartialMessage, Permissions } from "discord.js";
 
 export class TwitchClipModManager {
     private bot: PantherBot;
@@ -19,7 +19,7 @@ export class TwitchClipModManager {
         //Handle partial events
         try {
             if(message.partial) {
-                await message.fetch();
+                message = await message.fetch();
             }
         }
         catch(err) {
@@ -36,7 +36,7 @@ export class TwitchClipModManager {
         }
 
         // See if message in moderated channel
-        let clipModConfig: TwitchClipModObject = await this.bot.configs.twitchClipModConfig.getChannelTwitchClipMod(message.channel.id);
+        let clipModConfig: TwitchClipModObject | undefined = await this.bot.configs.twitchClipModConfig.getChannelTwitchClipMod(message.channel.id);
 
         if (!clipModConfig || !clipModConfig.enabled) {
             return;
@@ -45,7 +45,20 @@ export class TwitchClipModManager {
         await this.checkMessage(message, clipModConfig);
     }
 
-    public async onMessageUpdate(oldMessage: Message, newMessage: Message) {
+    public async onMessageUpdate(oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage) {
+        if (newMessage.partial) {
+            try {
+                newMessage = await newMessage.fetch();
+            }
+            catch(err) {
+                this.logger.error("Error fetching new message.", err);
+                return;
+            }
+        }
+
+        if(!newMessage.guild) {
+            return;
+        }
         if(!newMessage.guild) {
             return;
         }
@@ -59,7 +72,7 @@ export class TwitchClipModManager {
         }
 
         // See if message in moderated channel
-        let clipModConfig: TwitchClipModObject = await this.bot.configs.twitchClipModConfig.getChannelTwitchClipMod(newMessage.channel.id);
+        let clipModConfig: TwitchClipModObject | undefined = await this.bot.configs.twitchClipModConfig.getChannelTwitchClipMod(newMessage.channel.id);
 
         if (!clipModConfig || !clipModConfig.enabled) {
             return;
@@ -71,8 +84,8 @@ export class TwitchClipModManager {
     private async checkMessage(message: Message, config: TwitchClipModObject): Promise<void> {
         let deleteMessage: boolean = false;
         let matchedLinks: number = 0;
-        let clipBroadcaster: string;
-        let clipMatch: RegExpExecArray;
+        let clipBroadcaster: string | null;
+        let clipMatch: RegExpExecArray | null;
 
         // Multiple clips may be in the message, loop until none left or message marked for deletion
         while (!deleteMessage && (clipMatch = this.clipRegex.exec(message.content)) !== null) {
@@ -86,7 +99,7 @@ export class TwitchClipModManager {
                     // Invalid clip
                     deleteMessage = true;
                 }
-                else if (config.approvedChannelsOnly && !config.twitchChannels.includes(clipBroadcaster)) {
+                else if (config.approvedChannelsOnly && !config.twitchChannels?.includes(clipBroadcaster)) {
                     // Not an approved channel
                     deleteMessage = true;
                 }
@@ -104,8 +117,11 @@ export class TwitchClipModManager {
     }
 
     private async deleteMessage(message: Message) {
+        if (!message.guild) {
+            return;
+        }
         // Check for perms
-        if (!message.guild.me.permissionsIn(message.channel).has(Permissions.FLAGS.MANAGE_MESSAGES)) {
+        if (!message.guild.me?.permissionsIn(message.channel as GuildChannelResolvable).has(Permissions.FLAGS.MANAGE_MESSAGES)) {
             await ModErrorLog.log("I do not have permission to delete a message for having an invalid Twitch clip.\n" + message.url,
                 message.guild, this.bot);
             return;

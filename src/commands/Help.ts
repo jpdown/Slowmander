@@ -14,7 +14,7 @@ export class Help extends Command {
             return {sendHelp: false, command: this, message: message};;
         }
 
-        let command: Command = await bot.commandManager.getCommand(<string>args.shift());
+        let command: Command | undefined = await bot.commandManager.getCommand(<string>args.shift());
 
         if(!command) {
             await bot.helpManager.sendFullHelp(message, bot);

@@ -13,15 +13,15 @@ export class BotConfig extends DatabaseEntry<BotConfigObject> {
         errorWebhookToken: ""
     }
 
-    private _defaultPrefix: string;
-    private _defaultColor: string;
-    private _errorWebhook: WebhookClient;
+    private _defaultPrefix: string | undefined;
+    private _defaultColor: string | undefined;
+    private _errorWebhook: WebhookClient | undefined;
 
     constructor(bot: PantherBot) {
         super(BotConfig.TABLE, BotConfig.DEFAULT_ENTRY, bot);
     }
 
-    public async getDefaultPrefix(): Promise<string> {
+    public async getDefaultPrefix(): Promise<string | undefined> {
         if(this._defaultPrefix) {
             return(this._defaultPrefix);
         }
@@ -36,7 +36,7 @@ export class BotConfig extends DatabaseEntry<BotConfigObject> {
         return(undefined);
     }
 
-    public async getDefaultColor(): Promise<string> {
+    public async getDefaultColor(): Promise<string | undefined> {
         if(this._defaultColor) {
             return(this._defaultColor);
         }
@@ -51,17 +51,17 @@ export class BotConfig extends DatabaseEntry<BotConfigObject> {
         return(undefined)
     }
 
-    public async getErrorWebhook(): Promise<WebhookClient> {
+    public async getErrorWebhook(): Promise<WebhookClient | undefined> {
         if(this._errorWebhook) {
             return(this._errorWebhook);
         }
 
         let bc: BotConfigObject = await this.getBotConfigObject();
 
-        if(bc) {
-            let client: WebhookClient = undefined;
+        if(bc && bc.errorWebhookId && bc.errorWebhookToken) {
+            let client: WebhookClient | undefined = undefined;
             try {
-                client = new WebhookClient(bc.errorWebhookId, bc.errorWebhookToken);
+                client = new WebhookClient({id: bc.errorWebhookId, token: bc.errorWebhookToken});
             }
             catch(err) {}
     

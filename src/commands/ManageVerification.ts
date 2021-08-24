@@ -28,7 +28,7 @@ class EnableVerification extends Command {
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         //Check if we have a valid config before enabling
-        let verificationConfig: VerificationConfigObject = await bot.configs.verificationConfig.getVerificationConfig(message.guild!.id);
+        let verificationConfig: VerificationConfigObject | undefined = await bot.configs.verificationConfig.getVerificationConfig(message.guild!.id);
         if(!verificationConfig) {
             await CommandUtils.sendMessage("No config found, please set the config first.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
@@ -97,7 +97,7 @@ class SetVerification extends Command {
 
         //Check if we already have a config, if so we don't need a new message
         let newMessage: boolean = true;
-        let config: VerificationConfigObject = await bot.configs.verificationConfig.getVerificationConfig(message.guild!.id);
+        let config: VerificationConfigObject | undefined = await bot.configs.verificationConfig.getVerificationConfig(message.guild!.id);
         if(config && config.channelID === channel.id) {
             newMessage = false;
         }
@@ -135,7 +135,7 @@ class VerificationStatus extends Command {
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        let verificationConfig: VerificationConfigObject = await bot.configs.verificationConfig.getVerificationConfig(message.guild!.id);
+        let verificationConfig: VerificationConfigObject | undefined = await bot.configs.verificationConfig.getVerificationConfig(message.guild!.id);
         if(!verificationConfig) {
             await CommandUtils.sendMessage("No config found, please set one first.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};

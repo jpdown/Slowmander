@@ -12,29 +12,33 @@ export class Credentials {
     private logger: Logger;
 
     constructor(bot: PantherBot) {
-        this.credentialsObject = undefined;
+        this.credentialsObject = this.loadConfig();
         this.bot = bot;
         this.logger = Logger.getLogger(bot, this);
-        this.loadConfig();
     }
 
-    public loadConfig() {
+    public loadConfig(): CredentialsObject {
         let jsonData: string;
+        let credsObject: CredentialsObject | undefined;
 
         if(fs.existsSync(this.CREDENTIALS_PATH)) {
             try {
                 jsonData = fs.readFileSync(this.CREDENTIALS_PATH).toString();
-                this.credentialsObject = <CredentialsObject>JSON.parse(jsonData);
+                credsObject = <CredentialsObject>JSON.parse(jsonData);
             }
             catch(err) {
                 this.logger.logSync(LogLevel.ERROR, "Error loading main config file.", err);
-                this.credentialsObject = undefined;
+                credsObject = undefined;
             }
         }
 
-        if(this.credentialsObject === undefined) {
-            this.generateConfig();
+        if(credsObject === undefined) {
+            credsObject = this.generateConfig();
+            this.saveConfig();
+            this.logger.logSync(LogLevel.INFO, "Default config generated.");
         }
+
+        return credsObject;
     }
     
     public saveConfig() {
@@ -100,8 +104,8 @@ export class Credentials {
         return this.credentialsObject.twitchSecret;
     }
 
-    private generateConfig() {
-        this.credentialsObject = {
+    private generateConfig(): CredentialsObject {
+        return {
             token: "",
             catApiToken: "",
             owners: [],
@@ -114,10 +118,6 @@ export class Credentials {
             twitchId: "",
             twitchSecret: ""
         };
-
-        this.saveConfig();
-
-        this.logger.logSync(LogLevel.INFO, "Default config generated.");
     }
 }
 

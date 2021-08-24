@@ -7,7 +7,7 @@ import { ClientCredentialsAuthProvider } from "twitch-auth";
 export class TwitchAPIManager {
     private bot: PantherBot;
     private logger: Logger;
-    private client: ApiClient;
+    private client: ApiClient | undefined;
     private clientId: string;
     private clientSecret: string;
 
@@ -31,7 +31,7 @@ export class TwitchAPIManager {
         }
 
         // Get user
-        let twitchUser: HelixUser = await this.client.helix.users.getUserByName(username);
+        let twitchUser: HelixUser | null = await this.client.helix.users.getUserByName(username);
 
         if (twitchUser === null) {
             return null;
@@ -41,7 +41,7 @@ export class TwitchAPIManager {
         }
     }
 
-    public async getUserIds(users: string[]): Promise<HelixUser[]> {
+    public async getUserIds(users: string[]): Promise<HelixUser[] | null> {
         if (this.client === undefined) {
             await this.getClient();
         }
@@ -56,7 +56,7 @@ export class TwitchAPIManager {
         return twitchUsers;
     }
 
-    public async getUsersByIds(userIds: string[]): Promise<HelixUser[]> {
+    public async getUsersByIds(userIds: string[]): Promise<HelixUser[] | null> {
         if (this.client === undefined) {
             await this.getClient();
         }
@@ -83,7 +83,7 @@ export class TwitchAPIManager {
         }
 
         // Get clip
-        let twitchClip: HelixClip = await this.client.helix.clips.getClipById(clipId);
+        let twitchClip: HelixClip | null = await this.client.helix.clips.getClipById(clipId);
 
         if (twitchClip === null) {
             return null;

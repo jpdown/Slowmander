@@ -5,13 +5,13 @@ import { Snowflake } from "discord.js";
 
 export class VerificationConfig extends DatabaseEntry<VerificationConfigObject> {
     private static readonly TABLE: string = "VerificationConfig";
-    private static readonly DEFAULT_ENTRY: VerificationConfigObject = undefined;
+    private static readonly DEFAULT_ENTRY: VerificationConfigObject | undefined = undefined;
 
     constructor(bot: PantherBot) {
         super(VerificationConfig.TABLE, VerificationConfig.DEFAULT_ENTRY, bot);
     }
 
-    public async getVerificationConfig(guildID: Snowflake): Promise<VerificationConfigObject> {
+    public async getVerificationConfig(guildID: Snowflake): Promise<VerificationConfigObject | undefined> {
         return(await this.getDocument(guildID));
     }
 

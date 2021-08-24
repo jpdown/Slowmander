@@ -64,9 +64,9 @@ class ManageLockdownList extends Command {
     }
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
-        let lockdownPresets: LockdownConfigObject[] = await bot.configs.lockdownConfig.getAllLockdownPresets(message.guild!.id);
+        let lockdownPresets: LockdownConfigObject[] | undefined = await bot.configs.lockdownConfig.getAllLockdownPresets(message.guild!.id);
 
-        if(lockdownPresets.length < 1) {
+        if(!lockdownPresets || lockdownPresets.length < 1) {
             await CommandUtils.sendMessage("No presets found.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }
@@ -94,7 +94,7 @@ class ManageLockdownInfo extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let lockdownPreset: LockdownConfigObject = await bot.configs.lockdownConfig.getLockdownPreset(message.guild!.id, args[0]);
+        let lockdownPreset: LockdownConfigObject | undefined = await bot.configs.lockdownConfig.getLockdownPreset(message.guild!.id, args[0]);
 
         if(!lockdownPreset) {
             return {sendHelp: true, command: this, message: message};
@@ -244,7 +244,7 @@ class LockdownHelper {
         }
 
         //Try to get config
-        let lockdownConfig: LockdownConfigObject = await bot.configs.lockdownConfig.getLockdownPreset(message.guild!.id, preset);
+        let lockdownConfig: LockdownConfigObject | undefined = await bot.configs.lockdownConfig.getLockdownPreset(message.guild!.id, preset);
         if(!lockdownConfig) {
             await CommandUtils.sendMessage(`No lockdown config found, please make one with \`${await bot.commandManager.getPrefix(message.guild!.id)}managelockdown\`. The default preset is \`default\`.`, message.channel, bot);
             return false;
@@ -303,14 +303,14 @@ class LockdownHelper {
         //Get mod and admin role (if applicable)
         let guild: Guild = channels[0].guild;
         let modAndAdminRoles: Role[] = [];
-        let modRoleId: Snowflake = await bot.configs.guildConfig.getModRole(guild.id);
+        let modRoleId: Snowflake | undefined = await bot.configs.guildConfig.getModRole(guild.id);
         if(modRoleId) {
             let modRole: Role | null = guild.roles.resolve(modRoleId);
             if(modRole) { 
                 modAndAdminRoles.push(modRole);
             }
         }
-        let adminRoleId: Snowflake = await bot.configs.guildConfig.getAdminRole(guild.id);
+        let adminRoleId: Snowflake | undefined = await bot.configs.guildConfig.getAdminRole(guild.id);
         if(adminRoleId) {
             let adminRole: Role | null = guild.roles.resolve(adminRoleId);
             if(adminRole) { 

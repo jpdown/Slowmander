@@ -195,7 +195,7 @@ class RemoveReactionRole extends Command {
     }
 
     private async removeReactionRole(guildId: Snowflake, name: string, message: Message, bot: PantherBot): Promise<boolean> {
-        let removedReactionRole: ReactionRoleObject = await bot.configs.reactionRoleConfig.removeReactionRole(guildId, name);
+        let removedReactionRole: ReactionRoleObject | undefined = await bot.configs.reactionRoleConfig.removeReactionRole(guildId, name);
 
         if(!removedReactionRole) return(false);
 
@@ -254,9 +254,9 @@ class ListReactionRoles extends Command {
 
     async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
         //Get reactionroles
-        let reactionRoles: ReactionRoleObject[] = await bot.configs.reactionRoleConfig.getGuildReactionRoles(message.guild!.id);
+        let reactionRoles: ReactionRoleObject[] | undefined = await bot.configs.reactionRoleConfig.getGuildReactionRoles(message.guild!.id);
 
-        if(reactionRoles.length < 1) {
+        if(!reactionRoles || reactionRoles.length < 1) {
             await CommandUtils.sendMessage("I have no current reaction roles.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
         }

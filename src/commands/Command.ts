@@ -97,7 +97,7 @@ export abstract class Command {
 
 export interface CommandResult {
     sendHelp: boolean,
-    command: Command,
+    command: Command | null,
     message: Message
 }
 

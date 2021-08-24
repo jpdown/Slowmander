@@ -3,7 +3,7 @@ import { PantherBot } from "Bot";
 import { Logger } from "Logger";
 import { ModErrorLog } from "moderrorlog/ModErrorLog";
 
-import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Permissions } from "discord.js";
+import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Permissions, PartialMessageReaction, PartialUser } from "discord.js";
 
 export class ReactionRoleManager {
     private bot: PantherBot;
@@ -14,14 +14,35 @@ export class ReactionRoleManager {
         this.logger = Logger.getLogger(bot, this);
     }
 
-    public async onMessageReactionAdd(reaction: MessageReaction, user: User) {
+    public async onMessageReactionAdd(reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) {
         try {
             if(reaction.partial) {
-                await reaction.fetch();
+                reaction = await reaction.fetch();
             }
         }
         catch(err) {
             await this.logger.error("Error fetching reaction.", err);
+            return;
+        }
+
+        try {
+            if(reaction.message.partial) {
+                reaction.message = await reaction.message.fetch();
+            }
+        }
+        catch(err) {
+            await this.logger.error("Error fetching reaction message.", err);
+            return;
+        }
+
+        try {
+            if(user.partial) {
+                user = await user.fetch();
+            }
+        }
+        catch(err) {
+            await this.logger.error("Error fetching reaction user.", err);
+            return;
         }
 
         //Ignore bots
@@ -30,29 +51,49 @@ export class ReactionRoleManager {
         }
 
         //Ignore reactions from DMs
-        if(!reaction.message.guild || reaction.message.channel.type === 'dm') {
+        if(!reaction.message.guild || reaction.message.channel.type === 'DM') {
             return;
         }
 
         //Try to grab reaction role
-        let reactionRole: ReactionRoleObject = await this.bot.configs.reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
+        let reactionRole: ReactionRoleObject | undefined = await this.bot.configs.reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
         if(reactionRole === undefined) {
             return;
         }
 
         //Add role to user
-        let member: GuildMember = reaction.message.guild.member(user);
+        let member: GuildMember = await reaction.message.guild.members.fetch(user);
         await this.addUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel)
     }
 
-    public async onMessageReactionRemove(reaction: MessageReaction, user: User) {
+    public async onMessageReactionRemove(reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) {
         try {
             if(reaction.partial) {
-                await reaction.fetch();
+                reaction = await reaction.fetch();
             }
         }
         catch(err) {
             await this.logger.error("Error fetching reaction.", err);
+        }
+
+        try {
+            if(reaction.message.partial) {
+                reaction.message = await reaction.message.fetch();
+            }
+        }
+        catch(err) {
+            await this.logger.error("Error fetching reaction message.", err);
+            return;
+        }
+
+        try {
+            if(user.partial) {
+                user = await user.fetch();
+            }
+        }
+        catch(err) {
+            await this.logger.error("Error fetching reaction user.", err);
+            return;
         }
 
         //Ignore bots
@@ -61,18 +102,18 @@ export class ReactionRoleManager {
         }
 
         //Ignore reactions from DMs
-        if(!reaction.message.guild || reaction.message.channel.type === 'dm') {
+        if(!reaction.message.guild || reaction.message.channel.type === 'DM') {
             return;
         }
 
         //Try to grab reaction role
-        let reactionRole: ReactionRoleObject = await this.bot.configs.reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
+        let reactionRole: ReactionRoleObject | undefined = await this.bot.configs.reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
         if(reactionRole === undefined) {
             return;
         }
 
         //Remove role from user
-        let member: GuildMember = reaction.message.guild.member(user);
+        let member: GuildMember = await reaction.message.guild.members.fetch(user);
         await this.removeUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel)
     }
 
@@ -111,19 +152,14 @@ export class ReactionRoleManager {
 
     private async checkUsers(message: Message, reactionRole: ReactionRoleObject) {
         //Find our reaction
-        let reaction: MessageReaction;
-        for(let currReaction of message.reactions.cache.array()) {
-            if(currReaction.emoji.identifier === reactionRole.emoteID) {
-                reaction = currReaction;
-                break;
-            }
-        }
+        let reaction: MessageReaction | undefined = message.reactions.cache.find(r => r.emoji.identifier === reactionRole.emoteID)
 
-        if(reaction === undefined || reaction === null) {
+        if(reaction === undefined || !message.guild) {
             return;
         }
 
         //Fetch all members of guild
+
         let guildMembers: GuildMember[] = Array.from((await message.guild.members.fetch()).values());
 
         //Get all members who have reacted
@@ -163,10 +199,10 @@ export class ReactionRoleManager {
     }
 
     private async addUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel): Promise<boolean> {
-        let role: Role;
+        let role: Role | undefined = undefined;
         //Add role to user
         try {
-            role = await channel.guild.roles.fetch(reactionRole.roleID);
+            role = await channel.guild.roles.fetch(reactionRole.roleID) ?? undefined;
             if(role) {
                 await member.roles.add(role);
             }
@@ -186,10 +222,10 @@ export class ReactionRoleManager {
     }
 
     private async removeUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel): Promise<boolean> {
-        let role: Role;
+        let role: Role | undefined;
         //Remove role from user
         try {
-            role = await channel.guild.roles.fetch(reactionRole.roleID);
+            role = await channel.guild.roles.fetch(reactionRole.roleID) ?? undefined;
             if(role) {
                 await member.roles.remove(role);
             }
@@ -208,20 +244,20 @@ export class ReactionRoleManager {
         return(true);
     }
 
-    private async issueAddingOrRemoving(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel, role: Role, adding: boolean, err: any) {
+    private async issueAddingOrRemoving(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel, role: Role | undefined, adding: boolean, err: any) {
         let messageToSend: string;
         if(adding) {
-            messageToSend = `There was an error adding the role "${role.name}" to ${member.toString()}.`;
+            messageToSend = `There was an error adding the role "${role?.name}" to ${member.toString()}.`;
         }
         else {
-            messageToSend = `There was an error removing the role "${role.name}" from ${member.toString()}.`;
+            messageToSend = `There was an error removing the role "${role?.name}" from ${member.toString()}.`;
         }
         //If no manage roles
-        if(!channel.guild.me.hasPermission(Permissions.FLAGS.MANAGE_ROLES)) {
+        if(!channel.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
             await ModErrorLog.log(messageToSend + " I do not have the Manage Roles permission.", member.guild, this.bot);
         }
         //If role hierarchy
-        else if(channel.guild.me.roles.highest.comparePositionTo(role) < 0) {
+        else if(role && channel.guild.me.roles.highest.comparePositionTo(role) < 0) {
             await ModErrorLog.log(messageToSend + " Incorrect hierarchy, my top role is not above.", member.guild, this.bot)
         }
         else {

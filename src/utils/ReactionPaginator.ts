@@ -3,7 +3,7 @@ import { Command } from "commands/Command";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { PantherBot } from "Bot";
 
-import { MessageReaction, Message, MessageEmbed, User, ReactionCollector, TextBasedChannels } from "discord.js";
+import { MessageReaction, Message, MessageEmbed, User, ReactionCollector, TextBasedChannels, GuildMember } from "discord.js";
 
 export class ReactionPaginator {
     public static readonly NEXT_PAGE: string = "➡️";
@@ -13,7 +13,7 @@ export class ReactionPaginator {
     private numPerPage: number;
     private currPage: number;
     private title: string;
-    private message: Message;
+    private message: Message | undefined;
     private channel: TextBasedChannels;
     private bot: PantherBot;
     private command: Command;
@@ -44,7 +44,7 @@ export class ReactionPaginator {
 
             reactionCollector.on("collect", this.onReaction.bind(this));
             reactionCollector.on("end", async (collected) => {
-                await this.message.delete();
+                await this.message?.delete();
             })
         }
 
@@ -60,13 +60,13 @@ export class ReactionPaginator {
             case ReactionPaginator.NEXT_PAGE:
                 if(this.currPage + 1 < this.numPages) {
                     this.currPage++;
-                    await this.message.edit({embeds: [await this.generateEmbed()]});
+                    await this.message?.edit({embeds: [await this.generateEmbed()]});
                 }
                 break;
             case ReactionPaginator.PREV_PAGE:
                 if(this.currPage > 0) {
                     this.currPage--;
-                    await this.message.edit({embeds: [await this.generateEmbed()]});
+                    await this.message?.edit({embeds: [await this.generateEmbed()]});
                 }
                 break;
         }
@@ -90,10 +90,13 @@ export class ReactionPaginator {
     }
 
     private async checkPerms(reaction: MessageReaction, user: User): Promise<boolean> {
-        let hasPerms: boolean;
+        let hasPerms: boolean = false;
 
         if(reaction.message.guild) {
-            hasPerms = await PermissionsHelper.checkPermsAndDM(reaction.message.guild.members.cache.get(user.id), this.command, this.bot);
+            let member: GuildMember | undefined = reaction.message.guild.members.cache.get(user.id);
+            if (member) {
+                hasPerms = await PermissionsHelper.checkPermsAndDM(member, this.command, this.bot);
+            }
         }
         else {
             hasPerms = await PermissionsHelper.checkPermsAndDM(user, this.command, this.bot);

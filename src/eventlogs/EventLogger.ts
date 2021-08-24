@@ -1,7 +1,7 @@
 import { PantherBot } from "Bot";
 import { Logger } from "Logger";
 
-import { GuildMember, Message, Collection, Snowflake, Guild, User, Client, TextChannel, MessageEmbed, NewsChannel } from "discord.js";
+import { GuildMember, Message, Collection, Snowflake, Client, TextChannel, MessageEmbed, NewsChannel, GuildBan, PartialGuildMember, PartialMessage } from "discord.js";
 
 export class EventLogger {
     private bot: PantherBot;
@@ -25,7 +25,7 @@ export class EventLogger {
     }
 
     public async onGuildMemberAdd(member: GuildMember) {
-        let channel: TextChannel | NewsChannel = await this.getLogChannel(member.guild.id);
+        let channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(member.guild.id);
 
         if(!channel) {
             return;
@@ -39,18 +39,28 @@ export class EventLogger {
             .setThumbnail(avatarUrl)
             .setDescription(member.user.toString() + " " + member.user.username + "#" + member.user.discriminator)
             .setFooter("ID: " + member.user.id)
-            .setTimestamp(member.joinedAt)
+            .setTimestamp(member.joinedAt ?? undefined)
             .setColor("GREEN");
         
         //Send message
-        await channel.send(embed);
+        await channel.send({embeds: [embed]});
     }
 
-    public async onGuildMemberRemove(member: GuildMember) {
-        let channel: TextChannel | NewsChannel = await this.getLogChannel(member.guild.id);
+    public async onGuildMemberRemove(member: GuildMember | PartialGuildMember) {
+        let channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(member.guild.id);
 
         if(!channel) {
             return;
+        }
+
+        if (member.partial) {
+            try {
+                member = await member.fetch();
+            }
+            catch(err) {
+                this.logger.error("Error fetching removed member.", err)
+                return;
+            }
         }
 
         let avatarUrl: string = member.user.displayAvatarURL({size: 4096, format: "png", dynamic: true});
@@ -65,59 +75,72 @@ export class EventLogger {
             .setColor("RED");
         
         //Send message
-        await channel.send(embed);
+        await channel.send({embeds: [embed]});
     }
 
-    public async onGuildBanAdd(guild: Guild, user: User) {
-        let channel: TextChannel | NewsChannel = await this.getLogChannel(guild.id);
+    public async onGuildBanAdd(ban: GuildBan) {
+        let channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(ban.guild.id);
+
+        if (ban.partial) {
+            try {
+                ban = await ban.fetch();
+            }
+            catch(err) {
+                this.logger.error("Error fetching guild ban.", err);
+            }
+        }
 
         if(!channel) {
             return;
         }
 
-        let avatarUrl: string = user.displayAvatarURL({size: 4096, format: "png", dynamic: true});
+        let avatarUrl: string = ban.user.displayAvatarURL({size: 4096, format: "png", dynamic: true});
 
         //Build embed
         let embed: MessageEmbed = new MessageEmbed()
             .setAuthor("Member Banned", avatarUrl)
             .setThumbnail(avatarUrl)
-            .setDescription(user.toString() + " " + user.username + "#" + user.discriminator)
-            .setFooter("ID: " + user.id)
+            .setDescription(ban.user.toString() + " " + ban.user.username + "#" + ban.user.discriminator)
+            .setFooter("ID: " + ban.user.id)
             .setTimestamp(Date.now())
             .setColor("RED");
+
+        if (ban.reason) {
+            embed.addField("Reason", ban.reason);
+        }
         
         //Send message
-        await channel.send(embed);
+        await channel.send({embeds: [embed]});
     }
 
-    public async onGuildBanRemove(guild: Guild, user: User) {
-        let channel: TextChannel | NewsChannel = await this.getLogChannel(guild.id);
+    public async onGuildBanRemove(ban: GuildBan) {
+        let channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(ban.guild.id);
 
         if(!channel) {
             return;
         }
 
-        let avatarUrl: string = user.displayAvatarURL({size: 4096, format: "png", dynamic: true});
+        let avatarUrl: string = ban.user.displayAvatarURL({size: 4096, format: "png", dynamic: true});
 
         //Build embed
         let embed: MessageEmbed = new MessageEmbed()
             .setAuthor("Member Unbanned", avatarUrl)
             .setThumbnail(avatarUrl)
-            .setDescription(user.toString() + " " + user.username + "#" + user.discriminator)
-            .setFooter("ID: " + user.id)
+            .setDescription(ban.user.toString() + " " + ban.user.username + "#" + ban.user.discriminator)
+            .setFooter("ID: " + ban.user.id)
             .setTimestamp(Date.now())
             .setColor("GREEN");
         
         //Send message
-        await channel.send(embed);
+        await channel.send({embeds: [embed]});
     }
 
-    public async onMessageDelete(message: Message) {
+    public async onMessageDelete(message: Message | PartialMessage) {
         if(message.partial || !message.guild || message.author.bot) {
             return;
         }
 
-        let channel: TextChannel | NewsChannel = await this.getLogChannel(message.guild.id);
+        let channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(message.guild.id);
 
         if(!channel) {
             return;
@@ -135,16 +158,16 @@ export class EventLogger {
             .setColor("RED");
         
         //Send message
-        await channel.send(embed);
+        await channel.send({embeds: [embed]});
     }
 
-    public async onMessageDeleteBulk(messages: Collection<Snowflake, Message>) {
-        let firstMessage: Message = messages.first();
-        if(!firstMessage.guild) {
+    public async onMessageDeleteBulk(messages: Collection<Snowflake, Message | PartialMessage>) {
+        let firstMessage: Message | PartialMessage | undefined = messages.first();
+        if(!firstMessage || !firstMessage.guild) {
             return;
         }
 
-        let channel: TextChannel | NewsChannel = await this.getLogChannel(firstMessage.guild.id);
+        let channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(firstMessage.guild.id);
 
         if(!channel) {
             return;
@@ -152,21 +175,30 @@ export class EventLogger {
 
         //Build embed
         let embed: MessageEmbed = new MessageEmbed()
-            .setAuthor(firstMessage.guild.name, firstMessage.guild.iconURL({size: 4096, format: "png", dynamic: true}))
+            .setAuthor(firstMessage.guild.name, firstMessage.guild.iconURL({size: 4096, format: "png", dynamic: true}) ?? undefined)
             .setDescription(`**Bulk delete in ${firstMessage.channel.toString()}, ${messages.size} messages deleted**`)
             .setTimestamp(Date.now())
             .setColor("AQUA");
         
         //Send message
-        await channel.send(embed);
+        await channel.send({embeds: [embed]});
     }
 
-    public async onMessageUpdate(oldMessage: Message, newMessage: Message) {
+    public async onMessageUpdate(oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage) {
+        if (newMessage.partial) {
+            try {
+                newMessage = await newMessage.fetch();
+            }
+            catch(err) {
+                this.logger.error("Error fetching new message.", err);
+                return;
+            }
+        }
         if(!newMessage.guild) {
             return;
         }
 
-        let channel: TextChannel | NewsChannel = await this.getLogChannel(newMessage.guild.id);
+        let channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(newMessage.guild.id);
 
         if(!channel || newMessage.author.bot) {
             return;
@@ -187,14 +219,14 @@ export class EventLogger {
             .setTimestamp(Date.now())
             .setColor("AQUA");
         
-        if(oldMessage) {
+        if(oldMessage && !oldMessage.partial) {
             embed.addField("Before", oldMessage.content, false);
         }
 
         embed.addField("After", newMessage.content, false);
         
         //Send message
-        await channel.send(embed);
+        await channel.send({embeds: [embed]});
     }
 
     public async setEventlogChannel(guildId: string, channelId: string) {
@@ -204,13 +236,10 @@ export class EventLogger {
         return(result)
     }
 
-    private async getLogChannel(guildId: string): Promise<TextChannel | NewsChannel> {
-        let channelId: Snowflake;
+    private async getLogChannel(guildId: string): Promise<TextChannel | NewsChannel | undefined> {
+        let channelId: Snowflake | undefined = this.channelMap.get(guildId);
 
-        if(this.channelMap.has(guildId)) {
-            channelId = this.channelMap.get(guildId);
-        }
-        else {
+        if (!channelId) {
             try {
                 channelId = await this.bot.configs.guildConfig.getEventlogChannel(guildId);
                 if(channelId) {
@@ -222,7 +251,7 @@ export class EventLogger {
             }
         }
 
-        let channel: TextChannel | NewsChannel;
+        let channel: TextChannel | NewsChannel | undefined = undefined;
 
         try {
             if(channelId) {

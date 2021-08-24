@@ -3,7 +3,7 @@ import { Logger } from "Logger";
 import { VerificationConfigObject } from "config/VerificationConfig";
 import { ModErrorLog } from "moderrorlog/ModErrorLog";
 
-import { GuildMember, MessageReaction, User, Role, Permissions, Guild } from "discord.js";
+import { GuildMember, MessageReaction, User, Role, Permissions, Guild, PartialMessageReaction, PartialUser } from "discord.js";
 
 export class VerificationManager {
     private bot: PantherBot;
@@ -30,14 +30,39 @@ export class VerificationManager {
         }
     }
 
-    public async onMessageReactionAdd(reaction: MessageReaction, user: User) {
+    public async onMessageReactionAdd(reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) {
         try {
             if(reaction.partial) {
-                await reaction.fetch();
+                reaction = await reaction.fetch();
             }
         }
         catch(err) {
             await this.logger.error("Error fetching reaction.", err);
+            return;
+        }
+
+        try {
+            if(reaction.message.partial) {
+                reaction.message = await reaction.message.fetch();
+            }
+        }
+        catch(err) {
+            await this.logger.error("Error fetching reaction message.", err);
+            return;
+        }
+
+        try {
+            if(user.partial) {
+                user = await user.fetch();
+            }
+        }
+        catch(err) {
+            await this.logger.error("Error fetching reaction user.", err);
+            return;
+        }
+
+        if (!reaction.message.guild || !reaction.message.guild.me) { 
+            return;
         }
 
         //Check if guild has verification enabled
@@ -51,14 +76,14 @@ export class VerificationManager {
         }
 
         //Ignore reactions from DMs
-        if(!reaction.message.guild || reaction.message.channel.type === 'dm') {
+        if(!reaction.message.guild || reaction.message.channel.type === 'DM') {
             return;
         }
 
-        let member: GuildMember = reaction.message.guild.member(user);
+        let member: GuildMember = await reaction.message.guild.members.fetch(user);
 
         //Grab verification config
-        let verificationConfig: VerificationConfigObject = await this.getVerificationConfig(member.guild);
+        let verificationConfig: VerificationConfigObject | undefined = await this.getVerificationConfig(member.guild);
         if(!verificationConfig) {
             await ModErrorLog.log("Verification is enabled but I do not have a config. Please set a config. Disabling verification.", member.guild, this.bot);
             await this.bot.configs.guildConfig.setVerificationEnabled(member.guild.id, false);
@@ -101,9 +126,14 @@ export class VerificationManager {
         }
     }
 
-    private async applyRole(member: GuildMember, adding: boolean): Promise<boolean> {
+    private async applyRole(member: GuildMember, adding: boolean) {
+        // If we're not in guild, give up
+        if (!member.guild.me) {
+            return;
+        }
+
         //Grab verification config
-        let verificationConfig: VerificationConfigObject = await this.getVerificationConfig(member.guild);
+        let verificationConfig: VerificationConfigObject | undefined = await this.getVerificationConfig(member.guild);
         if(!verificationConfig) {
             await ModErrorLog.log("Verification was enabled but I do not have a config. Please set a config. Disabling verification.", member.guild, this.bot);
             await this.bot.configs.guildConfig.setVerificationEnabled(member.guild.id, false);
@@ -111,7 +141,7 @@ export class VerificationManager {
         }
 
         //Find role in guild
-        let role: Role = member.guild.roles.resolve(verificationConfig.roleID);
+        let role: Role | null = member.guild.roles.resolve(verificationConfig.roleID);
         //If role not found, disable verification
         if(!role) {
             await ModErrorLog.log("Verification was enabled but role was unable to be found, disabling verification.", member.guild, this.bot);
@@ -121,7 +151,7 @@ export class VerificationManager {
 
         //Verify we have permissions
         //If no manage roles
-        if(!member.guild.me.hasPermission(Permissions.FLAGS.MANAGE_ROLES)) {
+        if(!member.guild.me.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
             await ModErrorLog.log("Verification is enabled but I do not have the Manage Roles permission.", member.guild, this.bot);
         }
         //If role hierarchy messed up
@@ -138,9 +168,9 @@ export class VerificationManager {
         }
     }
 
-    private async getVerificationConfig(guild: Guild): Promise<VerificationConfigObject> {
+    private async getVerificationConfig(guild: Guild): Promise<VerificationConfigObject | undefined> {
         //Grab verification config
-        let verificationConfig: VerificationConfigObject = await this.bot.configs.verificationConfig.getVerificationConfig(guild.id);
+        let verificationConfig: VerificationConfigObject | undefined = await this.bot.configs.verificationConfig.getVerificationConfig(guild.id);
         //If we couldn't get verification config, we should disable verification
         if(!verificationConfig) {
             await ModErrorLog.log("Verification was enabled but no config was found, disabling verification.", guild, this.bot);
