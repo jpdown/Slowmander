@@ -36,7 +36,7 @@ class EnableClipModeration extends Command {
         }
 
         // Parse channel
-        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        let channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
         if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
@@ -75,7 +75,7 @@ class DisableClipModeration extends Command {
         }
 
         // Parse channel
-        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        let channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
         if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
@@ -110,7 +110,7 @@ class EnableApprovedChannels extends Command {
         }
 
         // Parse Discord channel
-        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        let channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
         if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
@@ -148,7 +148,7 @@ class DisableApprovedChannels extends Command {
         }
 
         // Parse Discord channel
-        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        let channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
         if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
@@ -185,7 +185,7 @@ class AddTwitchChannel extends Command {
         }
 
         // Parse Discord channel
-        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        let channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
         if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
@@ -236,7 +236,7 @@ class DeleteTwitchChannel extends Command {
         }
 
         // Parse Discord channel
-        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        let channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
         if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }
@@ -287,7 +287,7 @@ class ChannelModInfo extends Command {
         }
 
         // Parse channel
-        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        let channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
         if (!channel || channel.type === "DM") {
             return {sendHelp: true, command: this, message: message};
         }

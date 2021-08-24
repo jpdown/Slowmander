@@ -109,23 +109,23 @@ export class CommandUtils {
         return(snowflake);
     }
 
-    static async parseRole(potentialRole: string, guild: Guild): Promise<Role | undefined> {
-        let parsedRole: Role | undefined = undefined;
-        let snowflake: Snowflake | undefined = await CommandUtils.parseRoleID(potentialRole, guild);
+    static async parseRole(potentialRole: string, guild: Guild): Promise<Role | null> {
+        let parsedRole: Role | null = null;
+        let snowflake: Snowflake | null = await CommandUtils.parseRoleID(potentialRole, guild);
 
         if(snowflake) {
-            parsedRole = await guild.roles.fetch(snowflake) ?? undefined;
+            parsedRole = await guild.roles.fetch(snowflake);
         }
         
-        if(!parsedRole || parsedRole === null) {
+        if(!parsedRole) {
             parsedRole = await CommandUtils.parseRoleByName(potentialRole, guild);
         }
 
         return(parsedRole);
     }
 
-    static async parseRoleByName(potentialRole: string, guild: Guild): Promise<Role | undefined> {
-        let parsedRole: Role | undefined = undefined;
+    static async parseRoleByName(potentialRole: string, guild: Guild): Promise<Role | null> {
+        let parsedRole: Role | null = null;
         let roleCache: Collection<Snowflake, Role> = guild.roles.cache;
 
         if(potentialRole === "everyone") {
@@ -143,25 +143,25 @@ export class CommandUtils {
         return(parsedRole);
     }
 
-    static async parseRoleID(potentialRole: string, guild: Guild): Promise<Snowflake | undefined> {
-        let snowflake: Snowflake | undefined = potentialRole;
+    static async parseRoleID(potentialRole: string, guild: Guild): Promise<Snowflake | null> {
+        let snowflake: Snowflake | null = potentialRole;
         if(snowflake.startsWith("<@&") && snowflake.endsWith(">")) {
             snowflake = snowflake.substring(3, snowflake.length - 1);
         }
 
         if(!await CommandUtils.verifySnowflake(snowflake)) {
-            snowflake = undefined;
+            snowflake = null;
         }
         
         return(snowflake);
     }
 
-    static async parseTextChannel(potentialChannel: string, client: Client): Promise<TextBasedChannels | undefined> {
-        let channel: Channel | undefined = await CommandUtils.parseChannel(potentialChannel, client);
-        let parsedTextChannel: TextBasedChannels | undefined = undefined;
+    static async parseTextChannel(potentialChannel: string, client: Client): Promise<TextBasedChannels | null> {
+        let channel: Channel | null = await CommandUtils.parseChannel(potentialChannel, client);
+        let parsedTextChannel: TextBasedChannels | null = null;
 
-        if(channel === undefined) {
-            return(undefined);
+        if(!channel) {
+            return(null);
         }
 
         if (channel.isText()) {
@@ -171,13 +171,13 @@ export class CommandUtils {
         return(parsedTextChannel);
     }
 
-    static async parseChannel(potentialChannel: string, client: Client): Promise<Channel | undefined> {
-        let parsedChannel: Channel | undefined = undefined;
+    static async parseChannel(potentialChannel: string, client: Client): Promise<Channel | null> {
+        let parsedChannel: Channel | null = null;
 
         try {
             let snowflake = await CommandUtils.parseChannelID(potentialChannel);
             if(snowflake) {
-                parsedChannel = await client.channels.fetch(snowflake) ?? undefined;
+                parsedChannel = await client.channels.fetch(snowflake);
             }
         }
         catch(err) {}
@@ -204,19 +204,19 @@ export class CommandUtils {
         return(snowflake);
     }
 
-    static async parseEmote(potentialEmote: string, client: Client): Promise<GuildEmoji | undefined> {
-        let parsedEmote: GuildEmoji | undefined = undefined;
+    static async parseEmote(potentialEmote: string, client: Client): Promise<GuildEmoji | null> {
+        let parsedEmote: GuildEmoji | null = null;
 
         try {
             let snowflake: Snowflake | undefined = await CommandUtils.parseEmoteID(potentialEmote);
             if(snowflake) {
-                parsedEmote = client.emojis.resolve(snowflake) ?? undefined;
+                parsedEmote = client.emojis.resolve(snowflake);
             }
         }
         catch(err) {}
         
         if(!parsedEmote) {
-            parsedEmote = await CommandUtils.parseEmoteByName(potentialEmote, client);
+            parsedEmote = await CommandUtils.parseEmoteByName(potentialEmote, client) ?? null;
         }
         return(parsedEmote);
     }

@@ -195,7 +195,7 @@ class ManageLockdownSet extends Command {
         let result: boolean = true;
         let parsedIDs: string[] = [];
         for(let givenRole of splitRoles) {
-            let parsedRole: Role | undefined = await CommandUtils.parseRole(givenRole, guild);
+            let parsedRole: Role | null = await CommandUtils.parseRole(givenRole, guild);
             //Make sure valid role
             if(!parsedRole) {
                 result = false;

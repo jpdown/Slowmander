@@ -77,7 +77,7 @@ class AddReactionRole extends Command {
     private async parseArgs(args: string[], message: Message, bot: PantherBot): Promise<ReactionRoleParsedArgs | undefined> {
         let channel: TextChannel | NewsChannel;
         let reactionMessage: Message;
-        let role: Role | undefined;
+        let role: Role | null;
         let name: string;
 
         //Parse message link

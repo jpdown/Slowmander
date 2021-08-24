@@ -118,9 +118,9 @@ class SetVipRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let role: Role | undefined = await CommandUtils.parseRole(args.join(" "), message.guild!);
+        let role: Role | null = await CommandUtils.parseRole(args.join(" "), message.guild!);
 
-        if(role === undefined) {
+        if(role === null) {
             return {sendHelp: true, command: this, message: message};
         }
 
@@ -147,9 +147,9 @@ class SetModRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let role: Role | undefined = await CommandUtils.parseRole(args.join(" "), message.guild!);
+        let role: Role | null = await CommandUtils.parseRole(args.join(" "), message.guild!);
 
-        if(role === undefined) {
+        if(role === null) {
             return {sendHelp: true, command: this, message: message};
         }
 
@@ -176,9 +176,9 @@ class SetAdminRole extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let role: Role | undefined = await CommandUtils.parseRole(args.join(" "), message.guild!);
+        let role: Role | null = await CommandUtils.parseRole(args.join(" "), message.guild!);
 
-        if(role === undefined) {
+        if(role === null) {
             return {sendHelp: true, command: this, message: message};
         }
 
@@ -205,9 +205,9 @@ class SetEventLogChannel extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let channel: Channel | undefined = await CommandUtils.parseChannel(args.join(" "), message.client);
+        let channel: Channel | null = await CommandUtils.parseChannel(args.join(" "), message.client);
 
-        if(channel === undefined || !(channel as TextChannel)) {
+        if(channel === null || !(channel as TextChannel)) {
             return {sendHelp: true, command: this, message: message};
         }
 
@@ -236,9 +236,9 @@ class SetModErrorLogChannel extends Command {
             return {sendHelp: true, command: this, message: message};
         }
 
-        let channel: Channel | undefined = await CommandUtils.parseChannel(args.join(" "), message.client);
+        let channel: Channel | null = await CommandUtils.parseChannel(args.join(" "), message.client);
 
-        if(channel === undefined || !(channel as TextChannel)) {
+        if(channel === null || !(channel as TextChannel)) {
             return {sendHelp: true, command: this, message: message};
         }
 

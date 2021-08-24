@@ -27,10 +27,10 @@ export class Say extends Command {
 
         let lastChannel: number = 0;
         let channelList: TextBasedChannels[] = [];
-        let currChannel: TextBasedChannels | undefined;
+        let currChannel: TextBasedChannels | null;
         for(lastChannel = 0; lastChannel < args.length; lastChannel++) {
             currChannel = await CommandUtils.parseTextChannel(args[lastChannel], message.client);
-            if(currChannel === undefined) {
+            if(currChannel === null) {
                 break;
             }
 

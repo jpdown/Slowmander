@@ -132,9 +132,9 @@ export class Members extends Command {
         }
 
         //Get role
-        let role: Role | undefined = await CommandUtils.parseRole(args.join(" "), message.guild!);
+        let role: Role | null = await CommandUtils.parseRole(args.join(" "), message.guild!);
 
-        if(role === undefined) {
+        if(!role) {
             return {sendHelp: true, command: this, message: message};
         }
 

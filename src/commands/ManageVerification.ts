@@ -75,7 +75,7 @@ class SetVerification extends Command {
         }
 
         //Parse input
-        let channel: TextBasedChannels | undefined = await CommandUtils.parseTextChannel(args[0], message.client);
+        let channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
         if(!channel || channel.type === "DM" || channel.guild.id != message.guild!.id) {
             await CommandUtils.sendMessage("Invalid channel specified, verification config not saved.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};
@@ -87,7 +87,7 @@ class SetVerification extends Command {
             return {sendHelp: false, command: this, message: message};
         }
 
-        let role: Role | undefined = await CommandUtils.parseRole(args[1], message.guild!);
+        let role: Role | null = await CommandUtils.parseRole(args[1], message.guild!);
         if(!role) {
             await CommandUtils.sendMessage("Invalid role specified, verification config not saved.", message.channel, bot);
             return {sendHelp: false, command: this, message: message};

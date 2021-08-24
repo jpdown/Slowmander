@@ -199,10 +199,10 @@ export class ReactionRoleManager {
     }
 
     private async addUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel): Promise<boolean> {
-        let role: Role | undefined = undefined;
+        let role: Role | null = null;
         //Add role to user
         try {
-            role = await channel.guild.roles.fetch(reactionRole.roleID) ?? undefined;
+            role = await channel.guild.roles.fetch(reactionRole.roleID);
             if(role) {
                 await member.roles.add(role);
             }
@@ -222,10 +222,10 @@ export class ReactionRoleManager {
     }
 
     private async removeUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel): Promise<boolean> {
-        let role: Role | undefined;
+        let role: Role | null = null;
         //Remove role from user
         try {
-            role = await channel.guild.roles.fetch(reactionRole.roleID) ?? undefined;
+            role = await channel.guild.roles.fetch(reactionRole.roleID);
             if(role) {
                 await member.roles.remove(role);
             }
@@ -244,7 +244,7 @@ export class ReactionRoleManager {
         return(true);
     }
 
-    private async issueAddingOrRemoving(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel, role: Role | undefined, adding: boolean, err: any) {
+    private async issueAddingOrRemoving(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel, role: Role | null, adding: boolean, err: any) {
         let messageToSend: string;
         if(adding) {
             messageToSend = `There was an error adding the role "${role?.name}" to ${member.toString()}.`;
