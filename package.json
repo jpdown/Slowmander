@@ -1,7 +1,7 @@
 {
-  "name": "pantherbot-discord-js",
+  "name": "slowmander",
   "version": "1.0.0",
-  "description": "PantherBot-Discord with discord.js",
+  "description": "Discord bot written with TypeScript and discord.js",
   "main": "Bot.js",
   "dependencies": {
     "@types/node-fetch": "^2.5.12",
@@ -23,14 +23,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jpdown/PantherBot-Discord-JS.git"
+    "url": "git+https://github.com/jpdown/Slowmander.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/jpdown/PantherBot-Discord-JS/issues"
+    "url": "https://github.com/jpdown/Slowmander/issues"
   },
-  "homepage": "https://github.com/jpdown/PantherBot-Discord-JS#readme",
+  "homepage": "https://github.com/jpdown/Slowmander#readme",
   "devDependencies": {
     "@tsconfig/node16": "^1.0.2",
     "@types/better-sqlite3": "^7.4.0"
