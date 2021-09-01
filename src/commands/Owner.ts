@@ -138,7 +138,7 @@ class SetDefaultPrefix extends Command {
 
         let prefix: string = args.join(" ");
 
-        let result: boolean = await bot.configs.botConfig.setDefaultPrefix(prefix);
+        let result: boolean = await bot.config.setPrefix(prefix);
 
         if(result) {
             await CommandUtils.sendMessage(`Default prefix set to ${prefix} successfully.`, message.channel, bot);
@@ -246,7 +246,7 @@ class SetErrorLogWebhook extends Command {
         }
 
         //Set webhook
-        let result: boolean = await bot.configs.botConfig.setErrorWebhook(webhook);
+        let result: boolean = await bot.config.setErrorWebhook(webhook);
 
         if(result) {
             await CommandUtils.sendMessage("Log webhook set successfully.", message.channel, bot);

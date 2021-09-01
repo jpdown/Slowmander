@@ -1,6 +1,5 @@
 import { PantherBot } from 'Bot';
 import { LogLevel, Logger } from 'Logger';
-import { RethinkCredentials } from 'config/DatabaseManager';
 
 import * as fs from 'fs';
 
@@ -8,12 +7,10 @@ export class Credentials {
     readonly CREDENTIALS_PATH: string = "./data/credentials.json";
 
     private credentialsObject: CredentialsObject;
-    private bot: PantherBot;
     private logger: Logger;
 
     constructor(bot: PantherBot) {
         this.credentialsObject = this.loadConfig();
-        this.bot = bot;
         this.logger = Logger.getLogger(bot, this);
     }
 
@@ -27,7 +24,7 @@ export class Credentials {
                 credsObject = <CredentialsObject>JSON.parse(jsonData);
             }
             catch(err) {
-                this.logger.logSync(LogLevel.ERROR, "Error loading main config file.", err);
+                this.logger.logSync(LogLevel.ERROR, "Error loading main credentials file.", err);
                 credsObject = undefined;
             }
         }
@@ -35,7 +32,7 @@ export class Credentials {
         if(credsObject === undefined) {
             credsObject = this.generateConfig();
             this.saveConfig();
-            this.logger.logSync(LogLevel.INFO, "Default config generated.");
+            this.logger.logSync(LogLevel.INFO, "Default credentials generated.");
         }
 
         return credsObject;
@@ -49,7 +46,7 @@ export class Credentials {
             fs.writeFileSync(this.CREDENTIALS_PATH, jsonData);
         }
         catch(err) {
-            this.logger.logSync(LogLevel.ERROR, "Error saving main config file.", err);
+            this.logger.logSync(LogLevel.ERROR, "Error saving main credentials file.", err);
         }
     }
 
@@ -81,17 +78,6 @@ export class Credentials {
         return(this.credentialsObject.owners);
     }
 
-    public get rethinkCreds(): RethinkCredentials {
-        return({
-            rethinkHost: this.credentialsObject.rethinkHost,
-            rethinkPort: this.credentialsObject.rethinkPort,
-            rethinkUser: this.credentialsObject.rethinkUser,
-            rethinkPass: this.credentialsObject.rethinkPass,
-            rethinkDb: this.credentialsObject.rethinkDb,
-            rethinkCert: this.credentialsObject.rethinkCert
-        })
-    }
-
     public get catApiToken(): string {
         return(this.credentialsObject.catApiToken);
     }
@@ -107,30 +93,18 @@ export class Credentials {
     private generateConfig(): CredentialsObject {
         return {
             token: "",
-            catApiToken: "",
             owners: [],
-            rethinkHost: "localhost",
-            rethinkPort: 28015,
-            rethinkUser: "admin",
-            rethinkPass: "",
-            rethinkDb: "pantherbot",
-            rethinkCert: "",
+            catApiToken: "",
             twitchId: "",
             twitchSecret: ""
         };
     }
 }
 
-interface CredentialsObject {
+type CredentialsObject = {
     token: string,
-    catApiToken: "",
     owners: string[],
-    rethinkHost: string,
-    rethinkPort: number,
-    rethinkUser: string,
-    rethinkPass: string,
-    rethinkDb: string,
-    rethinkCert: string,
+    catApiToken: "",
     twitchId: string,
     twitchSecret: string
 }

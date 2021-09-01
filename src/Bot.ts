@@ -11,10 +11,12 @@ import { TwitchAPIManager } from 'twitch/TwitchAPIManager';
 import { TwitchClipModManager } from 'twitch/TwitchClipModManager';
 
 import {Client, Snowflake} from 'discord.js';
+import { Config } from 'config/Config';
 
 export class PantherBot {
     private _client: Client;
     private _credentials: Credentials;
+    private _config: Config;
     private _configManager: ConfigManager;
     private _databaseManager: DatabaseManager;
     private _commandManager: CommandManager;
@@ -35,6 +37,7 @@ export class PantherBot {
         partials: ['MESSAGE', 'REACTION']});
         this.logger = Logger.getLogger(this,this);
         this._credentials = new Credentials(this);
+        this._config = new Config(this);
         this._databaseManager = new DatabaseManager(this, this._credentials.rethinkCreds);
         this._commandManager = new CommandManager(this);
         this._helpManager = new HelpManager;
@@ -88,6 +91,10 @@ export class PantherBot {
 
     public get catApiToken(): string {
         return(this._credentials.catApiToken)
+    }
+
+    public get config(): Config {
+        return this._config;
     }
 
     public get configs(): ConfigManager {

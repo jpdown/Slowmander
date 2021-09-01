@@ -12,7 +12,7 @@ export class CommandUtils {
 
         //If no color or color is black, we want default color
         if(!color || color === 0) {
-            color = <ColorResolvable> await bot.configs.botConfig.getDefaultColor();
+            color = bot.config.color;
         }
 
         return(color);

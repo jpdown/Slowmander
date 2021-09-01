@@ -1,4 +1,3 @@
-import { BotConfig } from "config/BotConfig";
 import { PantherBot } from "Bot";
 import { GuildConfig } from "config/GuildConfig";
 import { ReactionRoleConfig } from "config/ReactionRoleConfig";
@@ -7,7 +6,6 @@ import { VerificationConfig } from "config/VerificationConfig";
 import { TwitchClipModConfig } from "config/TwitchClipModConfig";
 
 export class ConfigManager {
-    private _botConfig: BotConfig;
     private _guildConfig: GuildConfig;
     private _reactionRoleConfig: ReactionRoleConfig
     private _lockdownConfig: LockdownConfig;
@@ -17,16 +15,11 @@ export class ConfigManager {
 
     constructor(bot: PantherBot) {
         this._bot = bot;
-        this._botConfig = new BotConfig(bot);
         this._guildConfig = new GuildConfig(bot);
         this._reactionRoleConfig = new ReactionRoleConfig(bot);
         this._lockdownConfig = new LockdownConfig(bot);
         this._verificationConfig = new VerificationConfig(bot);
         this._twitchClipModConfig = new TwitchClipModConfig(bot);
-    }
-
-    public get botConfig() {
-        return(this._botConfig);
     }
 
     public get guildConfig() {
