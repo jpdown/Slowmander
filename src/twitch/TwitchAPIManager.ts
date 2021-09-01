@@ -1,17 +1,17 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { Logger } from "Logger";
 
 import { ApiClient, HelixClip, HelixUser } from "twitch";
 import { ClientCredentialsAuthProvider } from "twitch-auth";
 
 export class TwitchAPIManager {
-    private bot: PantherBot;
+    private bot: Bot;
     private logger: Logger;
     private client: ApiClient | undefined;
     private clientId: string;
     private clientSecret: string;
 
-    constructor(bot: PantherBot, clientId: string, clientSecret: string) {
+    constructor(bot: Bot, clientId: string, clientSecret: string) {
         this.bot = bot;
         this.logger = Logger.getLogger(bot, this);
         this.client = undefined;

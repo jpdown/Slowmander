@@ -1,4 +1,4 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { DatabaseEntry, DatabaseObject } from 'config/DatabaseEntry';
 
 import { Message, Snowflake, GuildEmoji, ReactionEmoji } from 'discord.js';
@@ -9,7 +9,7 @@ export class ReactionRoleConfig extends DatabaseEntry<ReactionRoleObject> {
 
     private guildReactionRoleCache: Map<Snowflake, ReactionRoleObject[]>;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super(ReactionRoleConfig.TABLE, ReactionRoleConfig.DEFAULT_ENTRY, bot);
 
         this.guildReactionRoleCache = new Map<Snowflake, ReactionRoleObject[]>();

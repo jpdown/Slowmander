@@ -1,16 +1,16 @@
 import { Logger } from "Logger";
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { TwitchClipModObject } from "config/TwitchClipModConfig";
 import { ModErrorLog } from "moderrorlog/ModErrorLog";
 
 import { GuildChannelResolvable, Message, PartialMessage, Permissions } from "discord.js";
 
 export class TwitchClipModManager {
-    private bot: PantherBot;
+    private bot: Bot;
     private logger: Logger;
     private clipRegex: RegExp = /(?:https:\/\/clips\.twitch\.tv\/|https:\/\/www.twitch.tv\/\S+\/clip\/)([^?\s]+)/gi;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         this.bot = bot;
         this.logger = Logger.getLogger(bot, this);
     }

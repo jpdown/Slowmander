@@ -1,4 +1,4 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { DatabaseEntry, DatabaseObject } from "config/DatabaseEntry";
 
 import { Snowflake } from "discord.js";
@@ -7,7 +7,7 @@ export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
     private static readonly TABLE: string = "GuildConfig";
     private static readonly DEFAULT_ENTRY: GuildConfigObject | undefined = undefined;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super(GuildConfig.TABLE, GuildConfig.DEFAULT_ENTRY, bot);
     }
 

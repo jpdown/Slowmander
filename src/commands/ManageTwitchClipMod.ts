@@ -1,5 +1,5 @@
 import {Command, PermissionLevel, CommandResult} from 'commands/Command';
-import { PantherBot } from 'Bot';
+import { Bot } from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 import { CommandGroup } from 'commands/CommandGroup';
 import { TwitchClipModObject } from 'config/TwitchClipModConfig';
@@ -8,13 +8,13 @@ import {Message, Permissions, MessageEmbed, TextBasedChannels} from 'discord.js'
 import { HelixUser } from 'twitch/lib';
 
 export class ManageTwitchClipMod extends CommandGroup {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("twitchclip", "Manages Twitch Clip moderation", bot, {runsInDm: false});
 
         this.registerSubCommands(bot);
     }
 
-    protected registerSubCommands(bot: PantherBot): void {
+    protected registerSubCommands(bot: Bot): void {
         this.registerSubCommand(new EnableClipModeration(this, bot));
         this.registerSubCommand(new DisableClipModeration(this, bot));
         this.registerSubCommand(new EnableApprovedChannels(this, bot));
@@ -26,11 +26,11 @@ export class ManageTwitchClipMod extends CommandGroup {
 }
 
 class EnableClipModeration extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("enable", PermissionLevel.Admin, "Enables Twitch clip moderation settings for a channel", bot, {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR})
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if (args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -65,11 +65,11 @@ class EnableClipModeration extends Command {
 }
 
 class DisableClipModeration extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("disable", PermissionLevel.Admin, "Disables Twitch clip moderation settings for a channel", bot, {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR})
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if (args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -100,11 +100,11 @@ class DisableClipModeration extends Command {
 }
 
 class EnableApprovedChannels extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("enableapproved", PermissionLevel.Admin, "Enables only allowing approved channels", bot, {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR})
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if (args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -138,11 +138,11 @@ class EnableApprovedChannels extends Command {
 }
 
 class DisableApprovedChannels extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("disableapproved", PermissionLevel.Admin, "Disables only allowing approved channels", bot, {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR})
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if (args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -175,11 +175,11 @@ class DisableApprovedChannels extends Command {
     }
 }
 class AddTwitchChannel extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("addchannel", PermissionLevel.Admin, "Adds a Twitch channel(s) to approved channels", bot, {usage: "<channel> <twitch channel..>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR})
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if (args.length < 2) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -226,11 +226,11 @@ class AddTwitchChannel extends Command {
 }
 
 class DeleteTwitchChannel extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("delchannel", PermissionLevel.Admin, "Deletes a Twitch channel(s) from approved channels", bot, {usage: "<channel> <twitch channel..>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR})
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if (args.length < 2) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -277,11 +277,11 @@ class DeleteTwitchChannel extends Command {
 }
 
 class ChannelModInfo extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("info", PermissionLevel.Admin, "Gives info about clip moderation in a channel", bot, {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR})
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if (args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }

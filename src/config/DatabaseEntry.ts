@@ -1,15 +1,15 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { Logger } from "Logger";
 
 import r from "rethinkdb";
 
 export abstract class DatabaseEntry<T extends DatabaseObject> {
     protected readonly TABLE: string;
-    protected bot: PantherBot;
+    protected bot: Bot;
     protected logger: Logger;
     protected defaultEntry: DatabaseObject | undefined;
 
-    constructor(table: string, defaultEntry: DatabaseObject | undefined, bot: PantherBot) {
+    constructor(table: string, defaultEntry: DatabaseObject | undefined, bot: Bot) {
         this.TABLE = table;
         this.defaultEntry = defaultEntry;
         this.bot = bot;

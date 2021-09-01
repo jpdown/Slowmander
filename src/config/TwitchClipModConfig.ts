@@ -1,4 +1,4 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { DatabaseEntry, DatabaseObject } from 'config/DatabaseEntry';
 
 import { Snowflake } from "discord.js";
@@ -9,7 +9,7 @@ export class TwitchClipModConfig extends DatabaseEntry<TwitchClipModObject> {
 
     private clipModConfigCache: Map<Snowflake, TwitchClipModObject | undefined>;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super(TwitchClipModConfig.TABLE, TwitchClipModConfig.DEFAULT_ENTRY, bot);
 
         this.clipModConfigCache = new Map<Snowflake, TwitchClipModObject>();

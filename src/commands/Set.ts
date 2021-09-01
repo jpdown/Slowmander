@@ -1,19 +1,19 @@
 import { CommandGroup } from "commands/CommandGroup";
 import { Command, CommandResult } from "commands/Command";
 import { PermissionLevel } from "commands/Command";
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { CommandUtils } from "utils/CommandUtils";
 
 import { Message, GuildMember, Role, TextChannel, Channel, Permissions } from "discord.js";
 
 export class Set extends CommandGroup {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("set", "Sets various bot parameters", bot);
 
         this.registerSubCommands(bot);
     }
 
-    protected registerSubCommands(bot: PantherBot): void {
+    protected registerSubCommands(bot: Bot): void {
         this.registerSubCommand(new SetNickname(this, bot));
         this.registerSubCommand(new SetGuildPrefix(this, bot));
         this.registerSubCommand(new SetVipRole(this, bot));
@@ -25,11 +25,11 @@ export class Set extends CommandGroup {
 }
 
 class SetNickname extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("nickname", PermissionLevel.Mod, "Sets bot or another member's nickname", bot, {usage: "[member] <new nickname>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.MANAGE_NICKNAMES, aliases: ["nick"]});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         let member: GuildMember | undefined;
         let newNickname: string;
         if(args.length > 0) {
@@ -61,7 +61,7 @@ class SetNickname extends Command {
         return {sendHelp: false, command: this, message: message};
     }
 
-    private async checkPerms(member: GuildMember, message: Message, bot: PantherBot): Promise<boolean> {
+    private async checkPerms(member: GuildMember, message: Message, bot: Bot): Promise<boolean> {
         if(member.id === member.client.user!.id && !member.permissions.has(Permissions.FLAGS.CHANGE_NICKNAME)) {
             await CommandUtils.sendMessage("Setting nickname failed: I'm missing permission to change my own nickname.", message.channel, bot);
             return(false);
@@ -84,11 +84,11 @@ class SetNickname extends Command {
 }
 
 class SetGuildPrefix extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("prefix", PermissionLevel.Admin, "Sets prefix in guild", bot, {usage: "<prefix>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -109,11 +109,11 @@ class SetGuildPrefix extends Command {
 }
 
 class SetVipRole extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("viprole", PermissionLevel.Admin, "Sets bot's vip role", bot, {usage: "<role>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -138,11 +138,11 @@ class SetVipRole extends Command {
 }
 
 class SetModRole extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("modrole", PermissionLevel.Admin, "Sets bot's mod role", bot, {usage: "<role>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -167,11 +167,11 @@ class SetModRole extends Command {
 }
 
 class SetAdminRole extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("adminrole", PermissionLevel.Admin, "Sets bot's admin role", bot, {usage: "<role>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -196,11 +196,11 @@ class SetAdminRole extends Command {
 }
 
 class SetEventLogChannel extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("eventlog", PermissionLevel.Admin, "Sets bot eventlog channel", bot, {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -227,11 +227,11 @@ class SetEventLogChannel extends Command {
 }
 
 class SetModErrorLogChannel extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("moderror", PermissionLevel.Admin, "Sets mod error log channel", bot, {usage: "<channel>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }

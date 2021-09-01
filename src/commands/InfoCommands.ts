@@ -1,5 +1,5 @@
 import {Command, PermissionLevel, CommandResult} from 'commands/Command';
-import { PantherBot } from 'Bot';
+import { Bot } from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 import { PermissionsHelper } from 'utils/PermissionsHelper';
 import { ReactionPaginator } from 'utils/ReactionPaginator';
@@ -10,11 +10,11 @@ import * as process from "process";
 import * as os from "os";
 
 export class Whois extends Command {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("whois", PermissionLevel.Everyone, "Gets information on a member", bot, {usage: "[member]", runsInDm: false, aliases: ["who"]});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         let member: GuildMember = <GuildMember>message.member;
 
         if(args.length > 0) {
@@ -94,11 +94,11 @@ export class Whois extends Command {
 }
 
 export class Roles extends Command {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("roles", PermissionLevel.Mod, "Gets list of roles", bot, {runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ["rolelist"]});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         //Roles list
         await message.guild!.roles.fetch(); //Fetch all roles (just to be sure)
         let rolesList: Collection<Snowflake, Role> = message.guild!.roles.cache.clone();
@@ -122,11 +122,11 @@ export class Roles extends Command {
 }
 
 export class Members extends Command {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("members", PermissionLevel.Mod, "Gets list of members for given role", bot, {usage: "<role>", runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ["rolemembers"]});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -157,11 +157,11 @@ export class Members extends Command {
 }
 
 export class Avatar extends Command {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("avatar", PermissionLevel.Everyone, "Gets avatar for given user", bot, {usage: "<user>"});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -187,11 +187,11 @@ export class Avatar extends Command {
 }
 
 export class Stats extends Command {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("stats", PermissionLevel.Everyone, "Gets bot statistics", bot, {aliases: ["statistics"]});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         let embed: MessageEmbed = new MessageEmbed()
             .setColor(await CommandUtils.getSelfColor(message.channel, bot))
             .addField("RAM Usage", Math.floor(process.memoryUsage().rss / 1048576) + "MB", true)

@@ -1,5 +1,5 @@
 import {Command, PermissionLevel, CommandResult} from 'commands/Command';
-import { PantherBot } from 'Bot';
+import { Bot } from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 
 import {Message, MessageEmbed, TextChannel} from 'discord.js';
@@ -10,11 +10,11 @@ export class WelcomeMessages extends Command {
     private readonly MESSAGE_TWO_ID: string = "702747244733923338";
     private readonly MESSAGE_THREE_ID: string = "702747245446955108";
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("welcome", PermissionLevel.Owner, "Edits welcome messages", bot);
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         let channel: TextChannel = <TextChannel> message.client.channels.resolve(this.CHANNEL_ID);
         let messageOne: Message = await channel.messages.fetch(this.MESSAGE_ONE_ID);
         let messageTwo: Message = await channel.messages.fetch(this.MESSAGE_TWO_ID);

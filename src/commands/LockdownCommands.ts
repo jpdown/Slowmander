@@ -1,6 +1,6 @@
 import {Command, PermissionLevel, CommandResult} from 'commands/Command';
 import {CommandGroup} from 'commands/CommandGroup'
-import { PantherBot } from 'Bot';
+import { Bot } from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 import { LockdownConfigObject } from 'config/LockdownConfig';
 import { ReactionPaginator } from 'utils/ReactionPaginator';
@@ -8,11 +8,11 @@ import { ReactionPaginator } from 'utils/ReactionPaginator';
 import {Message, MessageEmbed, Permissions, CategoryChannel, GuildChannel, Role, User, TextChannel, NewsChannel, Guild, Snowflake, ThreadChannel, GuildMember} from 'discord.js';
 
 export class Lockdown extends Command {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("lockdown", PermissionLevel.Mod, "Locks down guild", bot, {usage: "[preset]", requiredPerm: Permissions.FLAGS.MANAGE_CHANNELS, runsInDm: false});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         try {
             await LockdownHelper.lockUnlock(bot, message, args, true);
         }
@@ -26,11 +26,11 @@ export class Lockdown extends Command {
 }
 
 export class Unlock extends Command {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("unlock", PermissionLevel.Mod, "Unlocks guild", bot, {usage: "[preset]", requiredPerm: Permissions.FLAGS.MANAGE_CHANNELS, runsInDm: false});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         try {
             await LockdownHelper.lockUnlock(bot, message, args, false);
         }
@@ -44,13 +44,13 @@ export class Unlock extends Command {
 }
 
 export class ManageLockdown extends CommandGroup {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("managelockdown", "Manages lockdown presets", bot, {runsInDm: false});
 
         this.registerSubCommands(bot);
     }
 
-    protected registerSubCommands(bot: PantherBot): void {
+    protected registerSubCommands(bot: Bot): void {
         this.registerSubCommand(new ManageLockdownList(this, bot));
         this.registerSubCommand(new ManageLockdownInfo(this, bot));
         this.registerSubCommand(new ManageLockdownSet(this, bot));
@@ -59,11 +59,11 @@ export class ManageLockdown extends CommandGroup {
 }
 
 class ManageLockdownList extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("list", PermissionLevel.Mod, "Lists lockdown presets", bot, {requiredPerm: Permissions.FLAGS.MANAGE_CHANNELS, runsInDm: false, group: group});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         let lockdownPresets: LockdownConfigObject[] | undefined = await bot.configs.lockdownConfig.getAllLockdownPresets(message.guild!.id);
 
         if(!lockdownPresets || lockdownPresets.length < 1) {
@@ -85,11 +85,11 @@ class ManageLockdownList extends Command {
 }
 
 class ManageLockdownInfo extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("info", PermissionLevel.Mod, "Gives information on specific lockdown preset", bot, {usage: "<preset>", requiredPerm: Permissions.FLAGS.MANAGE_CHANNELS, runsInDm: false, group: group});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -121,11 +121,11 @@ class ManageLockdownInfo extends Command {
 }
 
 class ManageLockdownSet extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("set", PermissionLevel.Mod, "Sets lockdown preset channels and roles", bot, {usage: "<preset> <channel,...> <role,...> <grant/neutral>", requiredPerm: Permissions.FLAGS.MANAGE_CHANNELS, runsInDm: false, group: group});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 4) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -210,11 +210,11 @@ class ManageLockdownSet extends Command {
 }
 
 class ManageLockdownRemove extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("remove", PermissionLevel.Mod, "Removes given lockdown preset", bot, {usage: "<preset>", requiredPerm: Permissions.FLAGS.MANAGE_CHANNELS, runsInDm: false, group: group, aliases: ["rem", "del", "delete"]});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -236,7 +236,7 @@ class LockdownHelper {
     static readonly LOCK_MESSAGE = "🔒 Channel has been locked down."
     static readonly UNLOCK_MESSAGE = "🔓 Channel has been unlocked."
 
-    static async lockUnlock(bot: PantherBot, message: Message, args: string[], lock: boolean): Promise<boolean> {
+    static async lockUnlock(bot: Bot, message: Message, args: string[], lock: boolean): Promise<boolean> {
         let preset: string = "default";
 
         if(args.length > 0) {
@@ -279,7 +279,7 @@ class LockdownHelper {
         return true;
     }
 
-    static async updateChannelPerms(channels: GuildChannel[], roles: Role[], lock: boolean, grant: boolean, executor: User, preset: string, bot: PantherBot): Promise<boolean> {
+    static async updateChannelPerms(channels: GuildChannel[], roles: Role[], lock: boolean, grant: boolean, executor: User, preset: string, bot: Bot): Promise<boolean> {
         let reason: string = `${executor.username}#${executor.discriminator} performed ${preset} `;
 
         let zeroPerms: Permissions = new Permissions(0n);
@@ -335,7 +335,7 @@ class LockdownHelper {
         return(true)
     }
 
-    static async trySendMessage(channel: GuildChannel, lock: boolean, bot: PantherBot): Promise<boolean> {
+    static async trySendMessage(channel: GuildChannel, lock: boolean, bot: Bot): Promise<boolean> {
         //if not a channel we can send messages in
         if(!channel.isText() && channel.type !== "GUILD_CATEGORY") {
             return(false);

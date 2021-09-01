@@ -13,7 +13,7 @@ import { TwitchClipModManager } from 'twitch/TwitchClipModManager';
 import {Client, Snowflake} from 'discord.js';
 import { Config } from 'config/Config';
 
-export class PantherBot {
+export class Bot {
     private _client: Client;
     private _credentials: Credentials;
     private _config: Config;
@@ -49,7 +49,7 @@ export class PantherBot {
         this._reactionRoleManager = new ReactionRoleManager(this);
         
         this._client.on('ready', async () => {
-            await this.logger.info(`Welcome to PantherBot-Discord-JS! Logged in as ${this._client.user!.tag} in ${this._client.guilds.cache.size} guild(s).`);
+            await this.logger.info(`Welcome to Slowmander! Logged in as ${this._client.user!.tag} in ${this._client.guilds.cache.size} guild(s).`);
         })
     }
     
@@ -130,6 +130,6 @@ export class PantherBot {
     }
 }
 
-let bot = new PantherBot;
+let bot = new Bot;
 
 bot.run();

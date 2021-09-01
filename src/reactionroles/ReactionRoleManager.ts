@@ -1,15 +1,15 @@
 import { ReactionRoleObject } from "config/ReactionRoleConfig";
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { Logger } from "Logger";
 import { ModErrorLog } from "moderrorlog/ModErrorLog";
 
 import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Permissions, PartialMessageReaction, PartialUser } from "discord.js";
 
 export class ReactionRoleManager {
-    private bot: PantherBot;
+    private bot: Bot;
     private logger: Logger;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         this.bot = bot;
         this.logger = Logger.getLogger(bot, this);
     }

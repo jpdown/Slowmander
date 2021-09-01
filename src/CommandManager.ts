@@ -1,6 +1,6 @@
 import { Command, CommandResult } from "commands/Command";
 import * as commands from "commands";
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { CommandUtils } from "utils/CommandUtils";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { CommandGroup } from "commands/CommandGroup";
@@ -11,10 +11,10 @@ import { Message, MessageEmbed, PartialMessage, Snowflake } from "discord.js";
 export class CommandManager {
     private commandMap: Map<string, Command>;
     private prefixMap: Map<Snowflake, string>;
-    private bot: PantherBot;
+    private bot: Bot;
     private logger: Logger;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         this.bot = bot;
         this.logger = Logger.getLogger(bot, this);
         this.commandMap = new Map<string, Command>();
@@ -81,7 +81,7 @@ export class CommandManager {
         }
     }
 
-    public async parseSubCommand(group: CommandGroup, args: string[], message: Message, bot: PantherBot): Promise<CommandResult> {
+    public async parseSubCommand(group: CommandGroup, args: string[], message: Message, bot: Bot): Promise<CommandResult> {
         //Find command
         let command: Command | undefined = await this.getCommandHelper(args.shift(), group.subCommands);
         //If command not found, exit

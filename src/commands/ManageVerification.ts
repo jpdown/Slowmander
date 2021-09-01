@@ -1,5 +1,5 @@
 import {Command, PermissionLevel, CommandResult} from 'commands/Command';
-import { PantherBot } from 'Bot';
+import { Bot } from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 import { CommandGroup } from 'commands/CommandGroup';
 import { VerificationConfigObject } from 'config/VerificationConfig';
@@ -7,13 +7,13 @@ import { VerificationConfigObject } from 'config/VerificationConfig';
 import {Message, MessageEmbed, Permissions, Role, GuildEmoji, ReactionEmoji, TextBasedChannels, GuildMember} from 'discord.js';
 
 export class ManageVerification extends CommandGroup {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("verification", "Manages lockdown presets", bot, {runsInDm: false});
 
         this.registerSubCommands(bot);
     }
 
-    protected registerSubCommands(bot: PantherBot): void {
+    protected registerSubCommands(bot: Bot): void {
         this.registerSubCommand(new EnableVerification(this, bot));
         this.registerSubCommand(new DisableVerification(this, bot));
         this.registerSubCommand(new SetVerification(this, bot));
@@ -22,11 +22,11 @@ export class ManageVerification extends CommandGroup {
 }
 
 class EnableVerification extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("enable", PermissionLevel.Admin, "Enables verification", bot, {group: group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR})
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         //Check if we have a valid config before enabling
         let verificationConfig: VerificationConfigObject | undefined = await bot.configs.verificationConfig.getVerificationConfig(message.guild!.id);
         if(!verificationConfig) {
@@ -47,11 +47,11 @@ class EnableVerification extends Command {
 }
 
 class DisableVerification extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("disable", PermissionLevel.Admin, "Disables verification", bot, {group: group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR})
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         let result = await bot.configs.guildConfig.setVerificationEnabled(message.guild!.id, false);
         if(result) {
             await CommandUtils.sendMessage("Verification successfully disabled.", message.channel, bot);
@@ -65,11 +65,11 @@ class DisableVerification extends Command {
 }
 
 class SetVerification extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("set", PermissionLevel.Admin, "Sets verification options", bot, {usage: "<channel> <role> <remove reaction true/false>", group: group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR})
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 3) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -130,11 +130,11 @@ class SetVerification extends Command {
 }
 
 class VerificationStatus extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("status", PermissionLevel.Mod, "Gives verification status", bot, {group: group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR, aliases: ["info"]})
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         let verificationConfig: VerificationConfigObject | undefined = await bot.configs.verificationConfig.getVerificationConfig(message.guild!.id);
         if(!verificationConfig) {
             await CommandUtils.sendMessage("No config found, please set one first.", message.channel, bot);

@@ -1,9 +1,9 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 
 import { Guild, MessageEmbed, Snowflake, TextChannel, NewsChannel, Permissions } from "discord.js";
 
 export class ModErrorLog {
-    public static async log(message: string, guild: Guild, bot: PantherBot): Promise<boolean> {
+    public static async log(message: string, guild: Guild, bot: Bot): Promise<boolean> {
         //Find mod error log channel
         let channelId: Snowflake | undefined = await bot.configs.guildConfig.getModErrorChannel(guild.id);
         if(!channelId) {

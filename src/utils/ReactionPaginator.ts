@@ -1,7 +1,7 @@
 import { CommandUtils } from "utils/CommandUtils";
 import { Command } from "commands/Command";
 import { PermissionsHelper } from "utils/PermissionsHelper";
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 
 import { MessageReaction, Message, MessageEmbed, User, ReactionCollector, TextBasedChannels, GuildMember } from "discord.js";
 
@@ -15,11 +15,11 @@ export class ReactionPaginator {
     private title: string;
     private message: Message | undefined;
     private channel: TextBasedChannels;
-    private bot: PantherBot;
+    private bot: Bot;
     private command: Command;
     private numPages: number;
 
-    constructor(elements: string[], numPerPage: number, title: string, channel: TextBasedChannels, bot: PantherBot, command: Command) {
+    constructor(elements: string[], numPerPage: number, title: string, channel: TextBasedChannels, bot: Bot, command: Command) {
         this.elements = elements;
         this.numPerPage = numPerPage;
         this.currPage = 0;

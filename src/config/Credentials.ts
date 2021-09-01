@@ -1,4 +1,4 @@
-import { PantherBot } from 'Bot';
+import { Bot } from 'Bot';
 import { LogLevel, Logger } from 'Logger';
 
 import * as fs from 'fs';
@@ -9,7 +9,7 @@ export class Credentials {
     private credentialsObject: CredentialsObject;
     private logger: Logger;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         this.credentialsObject = this.loadConfig();
         this.logger = Logger.getLogger(bot, this);
     }

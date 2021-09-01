@@ -1,15 +1,13 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { Logger } from "Logger";
 
 import r from "rethinkdb";
 
 export class DatabaseManager {
-    private _connection: r.Connection | undefined;
-    private bot: PantherBot;
-    private creds: RethinkCredentials;
+    private bot: Bot;
     private logger: Logger;
 
-    constructor(bot: PantherBot, rethinkCreds: RethinkCredentials) {
+    constructor(bot: Bot, rethinkCreds: RethinkCredentials) {
         this.bot = bot;
         this.logger = Logger.getLogger(bot, this);
         this.creds = rethinkCreds

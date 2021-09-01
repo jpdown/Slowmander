@@ -1,4 +1,4 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { Command, PermissionLevel } from "commands/Command";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { CommandUtils } from "utils/CommandUtils";
@@ -7,7 +7,7 @@ import { CommandGroup } from "commands/CommandGroup";
 import { Message, MessageEmbed, GuildMember, User, Permissions } from "discord.js";
 
 export class HelpManager {
-    public async sendCommandHelp(command: Command, message: Message, bot: PantherBot, extraArgs?: string[]) {
+    public async sendCommandHelp(command: Command, message: Message, bot: Bot, extraArgs?: string[]) {
         //If we need to grab a subcommand, do so
         if(extraArgs) {
             command = await this.getSubCommand(command, extraArgs, message, bot);
@@ -63,7 +63,7 @@ export class HelpManager {
         await message.channel.send({ embeds: [embed], reply: {messageReference: message} });
     }
 
-    public async sendFullHelp(message: Message, bot: PantherBot) {
+    public async sendFullHelp(message: Message, bot: Bot) {
         let commandList: Command[] = await bot.commandManager.getAllCommands();
         let helpMessage: string = "";
         let isDm: boolean;
@@ -86,7 +86,7 @@ export class HelpManager {
         await message.channel.send({ embeds: [embed], reply: {messageReference: message} });
     }
 
-    private async getSubCommand(command: Command, extraArgs: string[], message: Message, bot: PantherBot): Promise<Command> {
+    private async getSubCommand(command: Command, extraArgs: string[], message: Message, bot: Bot): Promise<Command> {
         let subCommand: Command | undefined = undefined;
 
         for(let i: number = 0; i < extraArgs.length; i++) {
@@ -104,7 +104,7 @@ export class HelpManager {
         return(command);
     }
 
-    private async getSubCommandsWithPerms(user: User | GuildMember, group: CommandGroup, bot: PantherBot): Promise<Command[]> {
+    private async getSubCommandsWithPerms(user: User | GuildMember, group: CommandGroup, bot: Bot): Promise<Command[]> {
         let subCommands: Command[] = Array.from(group.subCommands.values());
         let subCommandsWithPerms: Command[] = [];
 

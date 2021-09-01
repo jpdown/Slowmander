@@ -1,7 +1,7 @@
 import { CommandGroup } from "commands/CommandGroup";
 import { Command, CommandResult } from "commands/Command";
 import { PermissionLevel } from "commands/Command";
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { ReactionRoleObject } from "config/ReactionRoleConfig";
 import { ReactionPaginator } from "utils/ReactionPaginator"
 import { CommandUtils } from "utils/CommandUtils";
@@ -9,13 +9,13 @@ import { CommandUtils } from "utils/CommandUtils";
 import { Message, Role, TextChannel, NewsChannel, Permissions, ReactionEmoji, MessageReaction, GuildEmoji, Snowflake, GuildChannelResolvable } from "discord.js";
 
 export class ReactionRoleManagement extends CommandGroup {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("reactionrole", "Manages reaction roles", bot, {runsInDm: false});
 
         this.registerSubCommands(bot);
     }
 
-    protected registerSubCommands(bot: PantherBot): void {
+    protected registerSubCommands(bot: Bot): void {
         this.registerSubCommand(new AddReactionRole(this, bot));
         this.registerSubCommand(new RemoveReactionRole(this, bot));
         this.registerSubCommand(new ListReactionRoles(this, bot));
@@ -23,11 +23,11 @@ export class ReactionRoleManagement extends CommandGroup {
 }
 
 class AddReactionRole extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("add", PermissionLevel.Admin, "Adds a reaction role", bot, {usage: "<message link> <role> <name>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 3) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -74,7 +74,7 @@ class AddReactionRole extends Command {
         return {sendHelp: false, command: this, message: message};
     }
 
-    private async parseArgs(args: string[], message: Message, bot: PantherBot): Promise<ReactionRoleParsedArgs | undefined> {
+    private async parseArgs(args: string[], message: Message, bot: Bot): Promise<ReactionRoleParsedArgs | undefined> {
         let channel: TextChannel | NewsChannel;
         let reactionMessage: Message;
         let role: Role | null;
@@ -121,7 +121,7 @@ class AddReactionRole extends Command {
         return({channel: channel, reactionMessage: reactionMessage, role: role, name: name});
     }
 
-    private async checkPerms(role: Role, reactionMessage: Message, message: Message, bot: PantherBot): Promise<boolean> {
+    private async checkPerms(role: Role, reactionMessage: Message, message: Message, bot: Bot): Promise<boolean> {
         if (!role.guild.me || !reactionMessage.guild?.me || !(reactionMessage.channel as GuildChannelResolvable)) {
             return false;
         }
@@ -144,7 +144,7 @@ class AddReactionRole extends Command {
         return true;
     }
 
-    private async addReactionRole(reactionRole: ReactionRoleObject, reactionMessage: Message, message: Message, bot: PantherBot): Promise<boolean> {
+    private async addReactionRole(reactionRole: ReactionRoleObject, reactionMessage: Message, message: Message, bot: Bot): Promise<boolean> {
         let dbResult: boolean = await bot.configs.reactionRoleConfig.addReactionRole(reactionRole);
         if(!dbResult) {
             await CommandUtils.sendMessage("Adding reaction role failed.", message.channel, bot);
@@ -166,11 +166,11 @@ class AddReactionRole extends Command {
 }
 
 class RemoveReactionRole extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("remove", PermissionLevel.Admin, "Removes a reaction role", bot, {usage: "<name>", runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR, aliases: ["del", "delete"]});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
 
@@ -194,7 +194,7 @@ class RemoveReactionRole extends Command {
         return {sendHelp: false, command: this, message: message};
     }
 
-    private async removeReactionRole(guildId: Snowflake, name: string, message: Message, bot: PantherBot): Promise<boolean> {
+    private async removeReactionRole(guildId: Snowflake, name: string, message: Message, bot: Bot): Promise<boolean> {
         let removedReactionRole: ReactionRoleObject | undefined = await bot.configs.reactionRoleConfig.removeReactionRole(guildId, name);
 
         if(!removedReactionRole) return(false);
@@ -213,7 +213,7 @@ class RemoveReactionRole extends Command {
         return(true);
     }
 
-    private async getReaction(reactionRole: ReactionRoleObject, bot: PantherBot): Promise<MessageReaction | undefined> {
+    private async getReaction(reactionRole: ReactionRoleObject, bot: Bot): Promise<MessageReaction | undefined> {
         let channel: TextChannel | NewsChannel;
         let reactionMessage: Message;
         let reaction: MessageReaction | undefined;
@@ -248,11 +248,11 @@ class RemoveReactionRole extends Command {
 }
 
 class ListReactionRoles extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("list", PermissionLevel.Admin, "Gets list of reaction roles", bot, {runsInDm: false, group: group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         //Get reactionroles
         let reactionRoles: ReactionRoleObject[] | undefined = await bot.configs.reactionRoleConfig.getGuildReactionRoles(message.guild!.id);
 

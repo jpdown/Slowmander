@@ -1,4 +1,4 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 
 import { WebhookClient } from "discord.js";
 import * as fs from "fs";
@@ -8,17 +8,17 @@ export class Logger {
     private readonly FILE_LOG_LEVEL = LogLevel.INFO;
     private readonly DISCORD_LOG_LEVEL = LogLevel.WARNING;
 
-    private readonly LOG_PATH = "./logs/pantherbot.log"
+    private readonly LOG_PATH = "./logs/slowmander.log"
 
-    private bot: PantherBot;
+    private bot: Bot;
     private className: string;
 
-    constructor(bot: PantherBot, className: string) {
+    constructor(bot: Bot, className: string) {
         this.bot = bot;
         this.className = className
     }
 
-    public static getLogger(bot: PantherBot, object: any): Logger {
+    public static getLogger(bot: Bot, object: any): Logger {
         return(new Logger(bot, object.constructor.name));
     }
 

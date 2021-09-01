@@ -1,4 +1,4 @@
-import {PantherBot} from 'Bot';
+import {Bot} from 'Bot';
 import { CommandGroup } from 'commands/CommandGroup';
 import { Logger } from 'Logger';
 
@@ -25,7 +25,7 @@ export abstract class Command {
     protected _group?: CommandGroup;
     protected logger: Logger;
 
-    constructor(name: string, permLevel: PermissionLevel, desc: string, bot: PantherBot, params?: CommandParameters) {
+    constructor(name: string, permLevel: PermissionLevel, desc: string, bot: Bot, params?: CommandParameters) {
         this._name = name;
         this._permLevel = permLevel;
         this._desc = desc;
@@ -42,7 +42,7 @@ export abstract class Command {
         this.logger = Logger.getLogger(bot, this);
     }
 
-    abstract run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult>;
+    abstract run(bot: Bot, message: Message, args: string[]): Promise<CommandResult>;
 
     public get name(): string {
         return(this._name);

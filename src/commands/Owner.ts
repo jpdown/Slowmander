@@ -1,19 +1,19 @@
 import { CommandGroup } from "commands/CommandGroup";
 import { Command, CommandResult } from "commands/Command";
 import { PermissionLevel } from "commands/Command";
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { CommandUtils } from "utils/CommandUtils";
 
 import { Message, User, ActivityOptions, WebhookClient } from "discord.js";
 
 export class Owner extends CommandGroup {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("owner", "Owner commands (you know this already)", bot);
 
         this.registerSubCommands(bot);
     }
 
-    protected registerSubCommands(bot: PantherBot): void {
+    protected registerSubCommands(bot: Bot): void {
         this.registerSubCommand(new SetUsername(this, bot));
         this.registerSubCommand(new SetAvatar(this, bot));
         this.registerSubCommand(new AddOwner(this, bot));
@@ -27,11 +27,11 @@ export class Owner extends CommandGroup {
 }
 
 class SetUsername extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("name", PermissionLevel.Owner, "Sets bot username.", bot, {usage: "<username>", group: group, longDesc: "Minimum username length is 2 characters.", aliases: ["username"]});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         let newUsername: string = args.join(" ");
 
         if(newUsername.length < 2) {
@@ -52,11 +52,11 @@ class SetUsername extends Command {
 }
 
 class SetAvatar extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("avatar", PermissionLevel.Owner, "Sets bot avatar", bot, {usage: "<image url>", group: group});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -73,11 +73,11 @@ class SetAvatar extends Command {
 }
 
 class AddOwner extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("addowner", PermissionLevel.Owner, "Adds a bot owner", bot, {usage: "<owner>", group: group});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -100,11 +100,11 @@ class AddOwner extends Command {
 }
 
 class RemoveOwner extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("removeowner", PermissionLevel.Owner, "Removes a bot owner", bot, {usage: "<owner>", group: group, aliases: ["delowner"]});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -127,11 +127,11 @@ class RemoveOwner extends Command {
 }
 
 class SetDefaultPrefix extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("prefix", PermissionLevel.Owner, "Sets bot default prefix", bot, {usage: "<prefix>", group: group});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -152,11 +152,11 @@ class SetDefaultPrefix extends Command {
 }
 
 class SetStatus extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("status", PermissionLevel.Owner, "Sets bot status", bot, {usage: "<online, away/idle, dnd, invis/offline>", group: group});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -189,11 +189,11 @@ class SetStatus extends Command {
 class SetActivity extends Command {
     private readonly STREAMING_URL: string = "https://twitch.tv/jpdown";
 
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("activity", PermissionLevel.Owner, "Sets bot activity", bot, {usage: "<playing, streaming, listening, watching, clear> <activity string>", group: group, aliases: ["presence"]});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1 || (args.length < 2 && args[0] !== "clear")) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -231,11 +231,11 @@ class SetActivity extends Command {
 }
 
 class SetErrorLogWebhook extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("errorwebhook", PermissionLevel.Owner, "Sets bot error log webhook", bot, {usage: "<webhook url>", group: group});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }
@@ -260,11 +260,11 @@ class SetErrorLogWebhook extends Command {
 }
 
 class GetInviteLink extends Command {
-    constructor(group: CommandGroup, bot: PantherBot) {
+    constructor(group: CommandGroup, bot: Bot) {
         super("getinvite", PermissionLevel.Owner, "Gets invite link (wow you're lazy)", bot, {group: group});
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         let invite = await message.client.generateInvite({ scopes: ["applications.commands", "bot"], permissions: [
             "ADD_REACTIONS", "BAN_MEMBERS", "CHANGE_NICKNAME", "EMBED_LINKS", "KICK_MEMBERS", "MANAGE_CHANNELS", "MANAGE_MESSAGES",
             "MANAGE_NICKNAMES", "MANAGE_ROLES", "MANAGE_THREADS", "MANAGE_WEBHOOKS", "READ_MESSAGE_HISTORY", "SEND_MESSAGES",

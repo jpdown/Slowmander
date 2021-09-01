@@ -1,14 +1,14 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { Logger } from "Logger";
 
 import { GuildMember, Message, Collection, Snowflake, Client, TextChannel, MessageEmbed, NewsChannel, GuildBan, PartialGuildMember, PartialMessage } from "discord.js";
 
 export class EventLogger {
-    private bot: PantherBot;
+    private bot: Bot;
     private logger: Logger;
     private channelMap: Map<Snowflake, string>;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         this.bot = bot;
         this.logger = Logger.getLogger(bot, this);
         this.channelMap = new Map<Snowflake, string>();

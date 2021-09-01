@@ -1,12 +1,12 @@
 import { Command, PermissionLevel, CommandResult, CommandParameters } from "commands/Command";
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 
 import { Message, PermissionResolvable, Permissions } from "discord.js";
 
 export abstract class CommandGroup extends Command {
     protected _subCommands: Map<string, Command>;
 
-    constructor(name: string, desc: string, bot: PantherBot, params?: CommandParameters) {
+    constructor(name: string, desc: string, bot: Bot, params?: CommandParameters) {
         if(!params) {
             params = <CommandParameters>{};
         }
@@ -15,7 +15,7 @@ export abstract class CommandGroup extends Command {
         this._subCommands = new Map<string, Command>();
     }
 
-    public async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         return await bot.commandManager.parseSubCommand(this, args, message, bot);
     }
 
@@ -66,5 +66,5 @@ export abstract class CommandGroup extends Command {
         }
     }
 
-    protected abstract registerSubCommands(bot: PantherBot): void;
+    protected abstract registerSubCommands(bot: Bot): void;
 }

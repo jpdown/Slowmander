@@ -1,5 +1,5 @@
 import {Command, PermissionLevel, CommandResult} from 'commands/Command';
-import { PantherBot } from 'Bot';
+import { Bot } from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 import { Logger } from 'Logger';
 
@@ -11,11 +11,11 @@ export class Cat extends Command {
     private readonly API: string = "https://api.thecatapi.com/v1/images/search";
     private apiToken?: string;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("cat", PermissionLevel.Everyone, "Gives a random cat image", bot, {aliases: ["kitty", "meow"]});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(!this.apiToken) {
             if(bot.catApiToken === "") {
                 CommandUtils.sendMessage("I don't have an API token.", message.channel, bot);
@@ -51,11 +51,11 @@ export class Cat extends Command {
 export class Dog extends Command {
     private readonly API: string = "https://dog.ceo/api/breeds/image/random";
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("dog", PermissionLevel.Everyone, "Gives a random dog image", bot, {aliases: ["woof", "bark"]});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         let sentMessage: Message = await CommandUtils.sendMessage("Looking for a dog...", message.channel, bot, message);
         let dogJson: DogAPIResp;
         let dogImage: string | undefined = undefined;
@@ -96,11 +96,11 @@ export class Dog extends Command {
 export class DadJoke extends Command {
     private readonly API: string = "https://icanhazdadjoke.com/";
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("dadjoke", PermissionLevel.Everyone, "Gives a random dad joke", bot, {aliases: ["dad"]});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         let sentMessage: Message = await CommandUtils.sendMessage("Looking for a dad joke...", message.channel, bot, message);
         let dadJokeMessage: string = "";
         let embed: MessageEmbed;
@@ -108,7 +108,7 @@ export class DadJoke extends Command {
         try {
             let headers = {
                 "Accept": "text/plain",
-                "User-Agent": "PantherBot-discord.js"
+                "User-Agent": "Slowmander"
             }
 
             dadJokeMessage = await (await fetch(this.API, { method: "get", headers: headers })).text();
@@ -136,7 +136,7 @@ export class DadJoke extends Command {
 }
 
 class CatAPIHelper {
-    public static async getImage(user: User, bot: PantherBot, api: string, token: string): Promise<string | undefined> {
+    public static async getImage(user: User, bot: Bot, api: string, token: string): Promise<string | undefined> {
         let imageUrl: string | undefined = undefined;
 
         let headers = {

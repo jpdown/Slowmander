@@ -1,4 +1,4 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { DatabaseEntry, DatabaseObject } from "config/DatabaseEntry";
 
 import { Snowflake } from "discord.js";
@@ -7,7 +7,7 @@ export class VerificationConfig extends DatabaseEntry<VerificationConfigObject> 
     private static readonly TABLE: string = "VerificationConfig";
     private static readonly DEFAULT_ENTRY: VerificationConfigObject | undefined = undefined;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super(VerificationConfig.TABLE, VerificationConfig.DEFAULT_ENTRY, bot);
     }
 

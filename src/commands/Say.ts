@@ -1,15 +1,15 @@
 import {Command, PermissionLevel, CommandResult} from 'commands/Command';
-import { PantherBot } from 'Bot';
+import { Bot } from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 
 import {Message, TextBasedChannels} from 'discord.js';
 
 export class Say extends Command {
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         super("say", PermissionLevel.Owner, "Sends a message as the bot", bot, {usage: "[channel/user]... <message>"});
     }
 
-    async run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult> {
+    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
         if(args.length < 1) {
             return {sendHelp: true, command: this, message: message};
         }

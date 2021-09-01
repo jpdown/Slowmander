@@ -1,4 +1,4 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { Logger } from "Logger";
 import { VerificationConfigObject } from "config/VerificationConfig";
 import { ModErrorLog } from "moderrorlog/ModErrorLog";
@@ -6,10 +6,10 @@ import { ModErrorLog } from "moderrorlog/ModErrorLog";
 import { GuildMember, MessageReaction, User, Role, Permissions, Guild, PartialMessageReaction, PartialUser } from "discord.js";
 
 export class VerificationManager {
-    private bot: PantherBot;
+    private bot: Bot;
     private logger: Logger;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         this.bot = bot;
         this.logger = Logger.getLogger(bot, this);
     }

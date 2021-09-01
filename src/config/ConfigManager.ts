@@ -1,4 +1,4 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { GuildConfig } from "config/GuildConfig";
 import { ReactionRoleConfig } from "config/ReactionRoleConfig";
 import { LockdownConfig } from "config/LockdownConfig";
@@ -11,9 +11,9 @@ export class ConfigManager {
     private _lockdownConfig: LockdownConfig;
     private _verificationConfig: VerificationConfig;
     private _twitchClipModConfig: TwitchClipModConfig;
-    private _bot: PantherBot;
+    private _bot: Bot;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         this._bot = bot;
         this._guildConfig = new GuildConfig(bot);
         this._reactionRoleConfig = new ReactionRoleConfig(bot);

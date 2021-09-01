@@ -1,12 +1,12 @@
 import { PermissionLevel } from "commands/Command";
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 import { Command } from "commands/Command";
 
 import { User, GuildMember, Collection, Snowflake, Role, Permissions } from "discord.js";
 
 export class PermissionsHelper {
     
-    public static async checkPermsAndDM(user: User | GuildMember, command: Command, bot: PantherBot): Promise<boolean> {
+    public static async checkPermsAndDM(user: User | GuildMember, command: Command, bot: Bot): Promise<boolean> {
         let permLevel: PermissionLevel;
         let hasPerm: boolean = false;
         let inDm: boolean = false;
@@ -22,7 +22,7 @@ export class PermissionsHelper {
         return((permLevel >= command.permLevel || hasPerm) && (!inDm || command.runsInDm));
     }
 
-    public static async getUserPermLevel(user: User, bot: PantherBot): Promise<PermissionLevel> {
+    public static async getUserPermLevel(user: User, bot: Bot): Promise<PermissionLevel> {
         if(bot.owners.includes(user.id)) {
             return(PermissionLevel.Owner);
         }
@@ -31,7 +31,7 @@ export class PermissionsHelper {
         }
     }
 
-    public static async getMemberPermLevel(member: GuildMember, bot: PantherBot): Promise<PermissionLevel> {
+    public static async getMemberPermLevel(member: GuildMember, bot: Bot): Promise<PermissionLevel> {
         let roleList: Collection<Snowflake, Role> = member.roles.cache;
         let tempRole: string | undefined = undefined;
 

@@ -1,9 +1,9 @@
-import { PantherBot } from "Bot";
+import { Bot } from "Bot";
 
 import { ColorResolvable, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, Message, MessageReaction, ReactionEmoji, MessageEmbed, TextBasedChannels, MessageOptions } from "discord.js";
 
 export class CommandUtils {
-    static async getSelfColor(channel: TextBasedChannels, bot: PantherBot): Promise<ColorResolvable> {
+    static async getSelfColor(channel: TextBasedChannels, bot: Bot): Promise<ColorResolvable> {
         let color: ColorResolvable | undefined;
 
         if(channel.type !== "DM") {
@@ -302,7 +302,7 @@ export class CommandUtils {
         }
     }
 
-    static async getEmote(message: Message, bot: PantherBot): Promise<ReactionEmoji | GuildEmoji | undefined> {
+    static async getEmote(message: Message, bot: Bot): Promise<ReactionEmoji | GuildEmoji | undefined> {
         //Ask for emote
         let sentMessage: Message = await CommandUtils.sendMessage("Please react on this message with the emote you would like to use.", message.channel, bot);
         let reactions: Collection<string, MessageReaction> = await sentMessage.awaitReactions({filter: (reaction, user) => user.id === message.author.id, time:60000, max: 1});
@@ -322,7 +322,7 @@ export class CommandUtils {
         return(emote);
     }
 
-    static async sendMessage(message: string, channel: TextBasedChannels, bot: PantherBot, repliedMessage?: Message): Promise<Message> {
+    static async sendMessage(message: string, channel: TextBasedChannels, bot: Bot, repliedMessage?: Message): Promise<Message> {
         let messageSent: Message;
 
         let embed: MessageEmbed = new MessageEmbed()
