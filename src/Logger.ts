@@ -87,7 +87,7 @@ export class Logger {
 
     private async logToDiscord(message: string) {
         try {
-            let webhook: WebhookClient | undefined = await this.bot.configs.botConfig.getErrorWebhook();
+            let webhook: WebhookClient | null = this.bot.config.errorWebhook;
             if (!webhook) {
                 return;
             }

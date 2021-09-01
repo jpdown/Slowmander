@@ -131,7 +131,7 @@ export class CommandManager {
         }
 
         try {
-            return(await this.bot.configs.botConfig.getDefaultPrefix());
+            return this.bot.config.prefix;
         }
         catch(err) {
             await this.logger.error("Error getting default prefix", err);
