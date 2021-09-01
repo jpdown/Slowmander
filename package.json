@@ -5,12 +5,11 @@
   "main": "Bot.js",
   "dependencies": {
     "@types/node-fetch": "^2.5.12",
-    "@types/rethinkdb": "^2.3.17",
     "@types/ws": "^7.4.7",
+    "better-sqlite3": "^7.4.3",
     "bufferutil": "^4.0.3",
     "discord.js": "^13.0.1",
     "node-fetch": "^2.6.1",
-    "rethinkdb": "^2.4.2",
     "twitch": "^4.6.5",
     "typescript": "^3.9.10",
     "utf-8-validate": "^5.0.5",
