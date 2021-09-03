@@ -1,242 +1,246 @@
-import {Command, PermissionLevel, CommandResult} from 'commands/Command';
+import { Command, PermissionLevel, CommandResult } from 'commands/Command';
 import { Bot } from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 import { PermissionsHelper } from 'utils/PermissionsHelper';
 import { ReactionPaginator } from 'utils/ReactionPaginator';
 
-import {Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client} from 'discord.js';
+import {
+  Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client,
+} from 'discord.js';
 
-import * as process from "process";
-import * as os from "os";
+import { memoryUsage, uptime as process_uptime } from 'process';
+import { loadavg } from 'os';
 
 export class Whois extends Command {
-    constructor(bot: Bot) {
-        super("whois", PermissionLevel.Everyone, "Gets information on a member", bot, {usage: "[member]", runsInDm: false, aliases: ["who"]});
+  constructor(bot: Bot) {
+    super('whois', PermissionLevel.Everyone, 'Gets information on a member', bot, { usage: '[member]', runsInDm: false, aliases: ['who'] });
+  }
+
+  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+    let member: GuildMember = <GuildMember>message.member;
+
+    if (args.length > 0) {
+      const parsedMember: GuildMember | undefined = await CommandUtils.parseMember(args.join(' '), message.guild!);
+      if (parsedMember) {
+        member = parsedMember;
+      }
     }
 
-    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-        let member: GuildMember = <GuildMember>message.member;
+    // Get member avatar
+    const avatarUrl: string = member.user.displayAvatarURL({ format: 'png', dynamic: true, size: 4096 });
 
-        if(args.length > 0) {
-            let parsedMember: GuildMember | undefined = await CommandUtils.parseMember(args.join(" "), message.guild!);
-            if(parsedMember) {
-                member = parsedMember;
-            }
-        }
+    // Build embed
+    const embed: MessageEmbed = new MessageEmbed()
+      .setAuthor(`${member.user.username}#${member.user.discriminator}`, avatarUrl, avatarUrl)
+      .setThumbnail(avatarUrl)
+      .setColor(member.displayColor)
+      .setDescription(member.toString())
+      .setFooter(`ID: ${member.id}`, avatarUrl)
+      .setTimestamp(Date.now());
 
-        //Get member avatar
-        let avatarUrl: string = member.user.displayAvatarURL({format: "png", dynamic: true, size: 4096});
-
-        //Build embed
-        let embed: MessageEmbed = new MessageEmbed()
-            .setAuthor(member.user.username + "#" + member.user.discriminator, avatarUrl, avatarUrl)
-            .setThumbnail(avatarUrl)
-            .setColor(member.displayColor)
-            .setDescription(member.toString())
-            .setFooter(`ID: ${member.id}`, avatarUrl)
-            .setTimestamp(Date.now());
-        
-        //If we have a nickname, add field
-        if(member.nickname) {
-            embed.addField("Nickname", member.nickname, false);
-        }
-
-        //Time related portions
-        embed.addField("Registered", member.user.createdAt.toUTCString(), true);
-        if (member.joinedAt) {
-            embed.addField("Joined", member.joinedAt.toUTCString(), true);
-        }
-        if(member.premiumSince) {
-            embed.addField("Boosted", member.premiumSince.toUTCString(), true);
-        }
-
-        //Join pos
-        embed.addField("Join Position", (await this.getJoinPos(member)).toString(), false);
-
-        //Roles list
-        let rolesList: Collection<Snowflake, Role> = member.roles.cache.clone();
-        rolesList.sort((a, b) => b.position - a.position);
-        rolesList.delete(message.guild!.roles.everyone.id);
-        if(rolesList.size > 0) {
-            let rolesStr: string = "";
-            for (let role of rolesList.values()) {
-                rolesStr += role.name + ", ";
-            }
-
-            embed.addField(`Roles (${rolesList.size})`, rolesStr.slice(0, -2), false);
-        }
-
-        //Bot permission
-        let permLevel: PermissionLevel = await PermissionsHelper.getMemberPermLevel(member, bot);
-        if(permLevel > PermissionLevel.Everyone) {
-            embed.addField("Bot Permission", PermissionLevel[permLevel], false);
-        }
-
-        //Send
-        await message.channel.send({ embeds: [embed], reply: {messageReference: message} });
-
-        return {sendHelp: false, command: this, message: message};
+    // If we have a nickname, add field
+    if (member.nickname) {
+      embed.addField('Nickname', member.nickname, false);
     }
 
-    private async getJoinPos(member: GuildMember): Promise<number> {
-        //Get all members
-        let allMembers: Collection<Snowflake, GuildMember> = await member.guild.members.fetch();
-        //Iterate, keeping track of join time
-        let joinPos: number = 1;
-        for(let [currSnowflake, currMember] of allMembers) {
-            if((currMember.joinedTimestamp ?? Number.MAX_VALUE) < (member.joinedTimestamp ?? Number.MAX_VALUE)) {
-                joinPos++;
-            }
-        }
-
-        return(joinPos);
+    // Time related portions
+    embed.addField('Registered', member.user.createdAt.toUTCString(), true);
+    if (member.joinedAt) {
+      embed.addField('Joined', member.joinedAt.toUTCString(), true);
     }
+    if (member.premiumSince) {
+      embed.addField('Boosted', member.premiumSince.toUTCString(), true);
+    }
+
+    // Join pos
+    embed.addField('Join Position', (await this.getJoinPos(member)).toString(), false);
+
+    // Roles list
+    const rolesList: Collection<Snowflake, Role> = member.roles.cache.clone();
+    rolesList.sort((a, b) => b.position - a.position);
+    rolesList.delete(message.guild!.roles.everyone.id);
+    if (rolesList.size > 0) {
+      let rolesStr = '';
+      for (const role of rolesList.values()) {
+        rolesStr += `${role.name}, `;
+      }
+
+      embed.addField(`Roles (${rolesList.size})`, rolesStr.slice(0, -2), false);
+    }
+
+    // Bot permission
+    const permLevel: PermissionLevel = await PermissionsHelper.getMemberPermLevel(member, bot);
+    if (permLevel > PermissionLevel.Everyone) {
+      embed.addField('Bot Permission', PermissionLevel[permLevel], false);
+    }
+
+    // Send
+    await message.channel.send({ embeds: [embed], reply: { messageReference: message } });
+
+    return { sendHelp: false, command: this, message };
+  }
+
+  private async getJoinPos(member: GuildMember): Promise<number> {
+    // Get all members
+    const allMembers: Collection<Snowflake, GuildMember> = await member.guild.members.fetch();
+    // Iterate, keeping track of join time
+    let joinPos = 1;
+    for (const [currSnowflake, currMember] of allMembers) {
+      if ((currMember.joinedTimestamp ?? Number.MAX_VALUE) < (member.joinedTimestamp ?? Number.MAX_VALUE)) {
+        joinPos++;
+      }
+    }
+
+    return joinPos;
+  }
 }
 
 export class Roles extends Command {
-    constructor(bot: Bot) {
-        super("roles", PermissionLevel.Mod, "Gets list of roles", bot, {runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ["rolelist"]});
+  constructor(bot: Bot) {
+    super('roles', PermissionLevel.Mod, 'Gets list of roles', bot, { runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ['rolelist'] });
+  }
+
+  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+    // Roles list
+    await message.guild!.roles.fetch(); // Fetch all roles (just to be sure)
+    const rolesList: Collection<Snowflake, Role> = message.guild!.roles.cache.clone();
+    rolesList.sort((a, b) => b.position - a.position);
+    rolesList.delete(message.guild!.roles.everyone.id);
+
+    // List of strings
+    const stringList: string[] = [];
+    for (const role of rolesList.values()) {
+      stringList.push(`${role.toString()} - ${role.members.size} members.`);
     }
 
-    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-        //Roles list
-        await message.guild!.roles.fetch(); //Fetch all roles (just to be sure)
-        let rolesList: Collection<Snowflake, Role> = message.guild!.roles.cache.clone();
-        rolesList.sort((a, b) => b.position - a.position);
-        rolesList.delete(message.guild!.roles.everyone.id);
+    // Make paginator
+    const paginator: ReactionPaginator = new ReactionPaginator(stringList, 10,
+      `Roles in ${message.guild!.name}`, message.channel, bot, this);
 
-        //List of strings
-        let stringList: string[] = [];
-        for(let role of rolesList.values()) {
-            stringList.push(role.toString() + " - " + role.members.size + " members.");
-        }
+    await paginator.postMessage();
 
-        //Make paginator
-        let paginator: ReactionPaginator = new ReactionPaginator(stringList, 10, 
-            "Roles in " + message.guild!.name, message.channel, bot, this);
-
-        let paginatedMessage = await paginator.postMessage();
-
-        return {sendHelp: false, command: this, message: message};
-    }
+    return { sendHelp: false, command: this, message };
+  }
 }
 
 export class Members extends Command {
-    constructor(bot: Bot) {
-        super("members", PermissionLevel.Mod, "Gets list of members for given role", bot, {usage: "<role>", runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ["rolemembers"]});
+  constructor(bot: Bot) {
+    super('members', PermissionLevel.Mod, 'Gets list of members for given role', bot, {
+      usage: '<role>', runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ['rolemembers'],
+    });
+  }
+
+  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+    if (args.length < 1) {
+      return { sendHelp: true, command: this, message };
     }
 
-    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-        if(args.length < 1) {
-            return {sendHelp: true, command: this, message: message};
-        }
+    // Get role
+    const role: Role | null = await CommandUtils.parseRole(args.join(' '), message.guild!);
 
-        //Get role
-        let role: Role | null = await CommandUtils.parseRole(args.join(" "), message.guild!);
-
-        if(!role) {
-            return {sendHelp: true, command: this, message: message};
-        }
-
-        let memberList: Collection<Snowflake, GuildMember> = role.members;
-
-        //List of strings
-        let stringList: string[] = [];
-        for(let member of memberList.values()) {
-            stringList.push("**" + member.user.username + "#" + member.user.discriminator + "** - " + member.id);
-        }
-
-        //Make paginator
-        let paginator: ReactionPaginator = new ReactionPaginator(stringList, 10, 
-            "Members of " + role.name, message.channel, bot, this);
-
-        let paginatedMessage = await paginator.postMessage();
-
-        return {sendHelp: false, command: this, message: message};
+    if (!role) {
+      return { sendHelp: true, command: this, message };
     }
+
+    const memberList: Collection<Snowflake, GuildMember> = role.members;
+
+    // List of strings
+    const stringList: string[] = [];
+    for (const member of memberList.values()) {
+      stringList.push(`**${member.user.username}#${member.user.discriminator}** - ${member.id}`);
+    }
+
+    // Make paginator
+    const paginator: ReactionPaginator = new ReactionPaginator(stringList, 10,
+      `Members of ${role.name}`, message.channel, bot, this);
+
+    await paginator.postMessage();
+
+    return { sendHelp: false, command: this, message };
+  }
 }
 
 export class Avatar extends Command {
-    constructor(bot: Bot) {
-        super("avatar", PermissionLevel.Everyone, "Gets avatar for given user", bot, {usage: "<user>"});
+  constructor(bot: Bot) {
+    super('avatar', PermissionLevel.Everyone, 'Gets avatar for given user', bot, { usage: '<user>' });
+  }
+
+  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+    if (args.length < 1) {
+      return { sendHelp: true, command: this, message };
     }
 
-    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-        if(args.length < 1) {
-            return {sendHelp: true, command: this, message: message};
-        }
+    // Get user
+    const user: User | undefined = await CommandUtils.parseUser(args.join(' '), message.client);
 
-        //Get user
-        let user: User | undefined = await CommandUtils.parseUser(args.join(" "), message.client);
-
-        if(user === undefined) {
-            return {sendHelp: true, command: this, message: message};
-        }
-
-        //Build the embed
-        let avatarUrl: string = user.displayAvatarURL({size: 4096, format: "png", dynamic: true});
-        let embed: MessageEmbed = new MessageEmbed()
-            .setColor(await CommandUtils.getSelfColor(message.channel, bot))
-            .setImage(avatarUrl)
-            .setAuthor(user.username + "#" + user.discriminator, avatarUrl, avatarUrl);
-        
-        await message.channel.send({embeds: [embed]});
-
-        return {sendHelp: false, command: this, message: message};
+    if (user === undefined) {
+      return { sendHelp: true, command: this, message };
     }
+
+    // Build the embed
+    const avatarUrl: string = user.displayAvatarURL({ size: 4096, format: 'png', dynamic: true });
+    const embed: MessageEmbed = new MessageEmbed()
+      .setColor(await CommandUtils.getSelfColor(message.channel, bot))
+      .setImage(avatarUrl)
+      .setAuthor(`${user.username}#${user.discriminator}`, avatarUrl, avatarUrl);
+
+    await message.channel.send({ embeds: [embed] });
+
+    return { sendHelp: false, command: this, message };
+  }
 }
 
 export class Stats extends Command {
-    constructor(bot: Bot) {
-        super("stats", PermissionLevel.Everyone, "Gets bot statistics", bot, {aliases: ["statistics"]});
+  constructor(bot: Bot) {
+    super('stats', PermissionLevel.Everyone, 'Gets bot statistics', bot, { aliases: ['statistics'] });
+  }
+
+  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+    const embed: MessageEmbed = new MessageEmbed()
+      .setColor(await CommandUtils.getSelfColor(message.channel, bot))
+      .addField('RAM Usage', `${Math.floor(memoryUsage().rss / 1048576)} MB`, true)
+      .addField('Load', this.getLoadString(), true)
+      .addField('Uptime', this.getFormattedUptime(), true)
+      .addField('User Count', this.getUserCount(message.client).toString(), true)
+      .addField('Guild Count', message.client.guilds.cache.size.toString(), true)
+      .addField('Channel Count', message.client.channels.cache.size.toString(), true);
+    if (message.client.user) {
+      embed.setAuthor(`${message.client.user.username}#${message.client.user.discriminator}`, message.client.user.displayAvatarURL({ format: 'png', dynamic: true, size: 4096 }));
     }
 
-    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-        let embed: MessageEmbed = new MessageEmbed()
-            .setColor(await CommandUtils.getSelfColor(message.channel, bot))
-            .addField("RAM Usage", Math.floor(process.memoryUsage().rss / 1048576) + "MB", true)
-            .addField("Load",await this.getLoadString(), true)
-            .addField("Uptime", await this.getFormattedUptime(), true)
-            .addField("User Count", await (await this.getUserCount(message.client)).toString(), true)
-            .addField("Guild Count", message.client.guilds.cache.size.toString(), true)
-            .addField("Channel Count", message.client.channels.cache.size.toString(), true);
-        if (message.client.user) {
-            embed.setAuthor(message.client.user.username + "#" + message.client.user.discriminator, message.client.user.displayAvatarURL({format: "png", dynamic: true, size: 4096}));
-        }
-        
-        await message.channel.send({embeds: [embed]});
+    await message.channel.send({ embeds: [embed] });
 
-        return {sendHelp: false, command: this, message: message};
+    return { sendHelp: false, command: this, message };
+  }
+
+  private getFormattedUptime(): string {
+    let uptime: number = process_uptime();
+    const days: number = Math.floor(uptime / 86400);
+    uptime -= days * 86400;
+
+    const hours: number = Math.floor(uptime / 3600);
+    uptime -= hours * 3600;
+
+    const minutes: number = Math.floor(uptime / 60);
+    uptime -= minutes * 60;
+
+    const seconds: number = Math.floor(uptime);
+
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  }
+
+  private getUserCount(client: Client): number {
+    return client.users.cache.size;
+  }
+
+  private getLoadString(): string {
+    const load: number[] = loadavg();
+    let loadString = '';
+
+    for (const num of load) {
+      loadString += `${num.toFixed(2)} `;
     }
 
-    private async getFormattedUptime(): Promise<string> {
-        let uptime: number = process.uptime();
-        let days: number = Math.floor(uptime / 86400);
-        uptime = uptime - (days * 86400);
-
-        let hours: number = Math.floor(uptime / 3600);
-        uptime = uptime - (hours * 3600);
-
-        let minutes: number = Math.floor(uptime / 60);
-        uptime = uptime - minutes * 60;
-
-        let seconds: number = Math.floor(uptime);
-
-        return(`${days}d ${hours}h ${minutes}m ${seconds}s`);        
-    }
-
-    private async getUserCount(client: Client): Promise<number> {
-        return(client.users.cache.size);
-    }
-
-    private async getLoadString(): Promise<string> {
-        let load: number[] = os.loadavg();
-        let loadString: string = "";
-
-        for(let num of load) {
-            loadString += num.toFixed(2) + " ";
-        }
-
-        return(loadString.slice(0, loadString.length - 1));
-    }
+    return loadString.slice(0, loadString.length - 1);
+  }
 }

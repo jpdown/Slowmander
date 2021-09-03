@@ -1,80 +1,77 @@
-import { PermissionLevel } from "commands/Command";
-import { Bot } from "Bot";
-import { Command } from "commands/Command";
+import { PermissionLevel, Command } from 'commands/Command';
+import { Bot } from 'Bot';
 
-import { User, GuildMember, Collection, Snowflake, Role, Permissions } from "discord.js";
+import {
+  User, GuildMember, Collection, Snowflake, Role, Permissions,
+} from 'discord.js';
 
 export class PermissionsHelper {
-    
-    public static async checkPermsAndDM(user: User | GuildMember, command: Command, bot: Bot): Promise<boolean> {
-        let permLevel: PermissionLevel;
-        let hasPerm: boolean = false;
-        let inDm: boolean = false;
-        if(!(user as GuildMember).guild) {
-            permLevel = await PermissionsHelper.getUserPermLevel(user as User, bot);
-            inDm = true;
-        }
-        else {
-            permLevel = await PermissionsHelper.getMemberPermLevel(user as GuildMember, bot);
-            hasPerm = await PermissionsHelper.checkHasPerm(user as GuildMember, command);
-        }
-        
-        return((permLevel >= command.permLevel || hasPerm) && (!inDm || command.runsInDm));
+  public static async checkPermsAndDM(user: User | GuildMember, command: Command, bot: Bot): Promise<boolean> {
+    let permLevel: PermissionLevel;
+    let hasPerm = false;
+    let inDm = false;
+    if (!(user as GuildMember).guild) {
+      permLevel = await PermissionsHelper.getUserPermLevel(user as User, bot);
+      inDm = true;
+    } else {
+      permLevel = await PermissionsHelper.getMemberPermLevel(user as GuildMember, bot);
+      hasPerm = await PermissionsHelper.checkHasPerm(user as GuildMember, command);
     }
 
-    public static async getUserPermLevel(user: User, bot: Bot): Promise<PermissionLevel> {
-        if(bot.owners.includes(user.id)) {
-            return(PermissionLevel.Owner);
-        }
-        else {
-            return(PermissionLevel.Everyone);
-        }
+    return (permLevel >= command.permLevel || hasPerm) && (!inDm || command.runsInDm);
+  }
+
+  public static async getUserPermLevel(user: User, bot: Bot): Promise<PermissionLevel> {
+    if (bot.owners.includes(user.id)) {
+      return PermissionLevel.Owner;
     }
 
-    public static async getMemberPermLevel(member: GuildMember, bot: Bot): Promise<PermissionLevel> {
-        let roleList: Collection<Snowflake, Role> = member.roles.cache;
-        let tempRole: string | undefined = undefined;
+    return PermissionLevel.Everyone;
+  }
 
-        if(bot.owners.includes(member.user.id)) {
-            return(PermissionLevel.Owner);
-        }
-        else if((tempRole = await bot.configs.guildConfig.getAdminRole(member.guild.id)) && roleList.has(tempRole)
+  public static async getMemberPermLevel(member: GuildMember, bot: Bot): Promise<PermissionLevel> {
+    const roleList: Collection<Snowflake, Role> = member.roles.cache;
+    let tempRole: string | undefined;
+
+    if (bot.owners.includes(member.user.id)) {
+      return PermissionLevel.Owner;
+    }
+    if ((tempRole = await bot.configs.guildConfig.getAdminRole(member.guild.id)) && roleList.has(tempRole)
             || member.guild.ownerId === member.id) {
-                return(PermissionLevel.Admin)
-        }
-        else if((tempRole = await bot.configs.guildConfig.getModRole(member.guild.id)) && roleList.has(tempRole)) {
-            return(PermissionLevel.Mod)
-        }
-        else if((tempRole = await bot.configs.guildConfig.getVipRole(member.guild.id)) && roleList.has(tempRole)) {
-            return(PermissionLevel.VIP)
-        }
-        else if(member.guild.id != "326543379955580929") { //Shitty disable commands in acai's discord
-            return(PermissionLevel.Everyone);
-        }
-        else {
-            return(PermissionLevel.Disabled);
-        }
+      return PermissionLevel.Admin;
+    }
+    if ((tempRole = await bot.configs.guildConfig.getModRole(member.guild.id)) && roleList.has(tempRole)) {
+      return PermissionLevel.Mod;
+    }
+    if ((tempRole = await bot.configs.guildConfig.getVipRole(member.guild.id)) && roleList.has(tempRole)) {
+      return PermissionLevel.VIP;
+    }
+    if (member.guild.id != '326543379955580929') { // Shitty disable commands in acai's discord
+      return PermissionLevel.Everyone;
     }
 
-    public static async getString(perms: Permissions): Promise<string> {
-        let permsStrings: string[] = [];
+    return PermissionLevel.Disabled;
+  }
 
-        if(perms.has(Permissions.FLAGS.ADMINISTRATOR)) {
-            permsStrings.push("ADMINISTRATOR");
-            perms = perms.remove(Permissions.FLAGS.ADMINISTRATOR)
-        }
-        for(let perm of perms.toArray()) {
-            permsStrings.push(perm.toString());
-        }
+  public static async getString(perms: Permissions): Promise<string> {
+    const permsStrings: string[] = [];
 
-        return(permsStrings.join(", "));
+    if (perms.has(Permissions.FLAGS.ADMINISTRATOR)) {
+      permsStrings.push('ADMINISTRATOR');
+      perms = perms.remove(Permissions.FLAGS.ADMINISTRATOR);
+    }
+    for (const perm of perms.toArray()) {
+      permsStrings.push(perm.toString());
     }
 
-    private static async checkHasPerm(member: GuildMember, command: Command) {
-        if(command.requiredPerm) {
-            return(member.permissions.any(command.requiredPerm))
-        }
+    return permsStrings.join(', ');
+  }
 
-        return(false);
+  private static async checkHasPerm(member: GuildMember, command: Command) {
+    if (command.requiredPerm) {
+      return member.permissions.any(command.requiredPerm);
     }
+
+    return false;
+  }
 }

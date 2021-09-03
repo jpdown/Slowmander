@@ -1,127 +1,127 @@
-import { Bot } from "Bot";
-import { DatabaseEntry, DatabaseObject } from "config/DatabaseEntry";
+import { Bot } from 'Bot';
+import { DatabaseEntry, DatabaseObject } from 'config/DatabaseEntry';
 
-import { Snowflake } from "discord.js";
+import { Snowflake } from 'discord.js';
 
 export class GuildConfig extends DatabaseEntry<GuildConfigObject> {
-    private static readonly TABLE: string = "GuildConfig";
-    private static readonly DEFAULT_ENTRY: GuildConfigObject | undefined = undefined;
+  private static readonly TABLE: string = 'GuildConfig';
 
-    constructor(bot: Bot) {
-        super(GuildConfig.TABLE, GuildConfig.DEFAULT_ENTRY, bot);
+  private static readonly DEFAULT_ENTRY: GuildConfigObject | undefined = undefined;
+
+  constructor(bot: Bot) {
+    super(GuildConfig.TABLE, GuildConfig.DEFAULT_ENTRY, bot);
+  }
+
+  public async getPrefix(guildId: Snowflake): Promise<string | undefined> {
+    const gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+    if (gc) {
+      return gc.prefix;
     }
 
-    public async getPrefix(guildId: Snowflake): Promise<string | undefined> {
-        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+    return undefined;
+  }
 
-        if(gc) {
-            return(gc.prefix);
-        }
+  public async setPrefix(guildId: Snowflake, newPrefix: string): Promise<boolean> {
+    return this.updateOrInsertDocument(guildId, { prefix: newPrefix });
+  }
 
-        return(undefined);
+  public async getEventlogChannel(guildId: Snowflake): Promise<string | undefined> {
+    const gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+    if (gc) {
+      return gc.eventlogChannel;
     }
 
-    public async setPrefix(guildId: Snowflake, newPrefix: string): Promise<boolean> {
-        return(await this.updateOrInsertDocument(guildId, {prefix: newPrefix}));
+    return undefined;
+  }
+
+  public async setEventlogChannel(guildId: Snowflake, newChannel: string): Promise<boolean> {
+    return this.updateOrInsertDocument(guildId, { eventlogChannel: newChannel });
+  }
+
+  public async getVipRole(guildId: Snowflake): Promise<string | undefined> {
+    const gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+    if (gc) {
+      return gc.vipRole;
     }
 
-    public async getEventlogChannel(guildId: Snowflake): Promise<string | undefined> {
-        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+    return undefined;
+  }
 
-        if(gc) {
-            return(gc.eventlogChannel);
-        }
+  public async setVipRole(guildId: Snowflake, newVipRole: string): Promise<boolean> {
+    return this.updateOrInsertDocument(guildId, { vipRole: newVipRole });
+  }
 
-        return(undefined);
+  public async getModRole(guildId: Snowflake): Promise<string | undefined> {
+    const gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+    if (gc) {
+      return gc.modRole;
     }
 
-    public async setEventlogChannel(guildId: Snowflake, newChannel: string): Promise<boolean> {
-        return(await this.updateOrInsertDocument(guildId, {eventlogChannel: newChannel}));
+    return undefined;
+  }
+
+  public async setModRole(guildId: Snowflake, newModRole: string): Promise<boolean> {
+    return this.updateOrInsertDocument(guildId, { modRole: newModRole });
+  }
+
+  public async getAdminRole(guildId: Snowflake): Promise<string | undefined> {
+    const gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+    if (gc) {
+      return gc.adminRole;
     }
 
-    public async getVipRole(guildId: Snowflake): Promise<string | undefined> {
-        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+    return undefined;
+  }
 
-        if(gc) {
-            return(gc.vipRole);
-        }
+  public async setAdminRole(guildId: Snowflake, newAdminRole: string): Promise<boolean> {
+    return this.updateOrInsertDocument(guildId, { adminRole: newAdminRole });
+  }
 
-        return(undefined);
+  public async getModErrorChannel(guildId: Snowflake): Promise<string | undefined> {
+    const gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+    if (gc) {
+      return gc.modErrorChannel;
     }
 
-    public async setVipRole(guildId: Snowflake, newVipRole: string): Promise<boolean> {
-        return(await this.updateOrInsertDocument(guildId, {vipRole: newVipRole}));
+    return undefined;
+  }
+
+  public async setModErrorChannel(guildId: Snowflake, newModErrorChannel: string): Promise<boolean> {
+    return this.updateOrInsertDocument(guildId, { modErrorChannel: newModErrorChannel });
+  }
+
+  public async getVerificationEnabled(guildId: Snowflake): Promise<boolean | undefined> {
+    const gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+
+    if (gc) {
+      return gc.verificationEnabled;
     }
 
-    public async getModRole(guildId: Snowflake): Promise<string | undefined> {
-        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
+    return undefined;
+  }
 
-        if(gc) {
-            return(gc.modRole);
-        }
+  public async setVerificationEnabled(guildId: Snowflake, newVerificationEnabled: boolean): Promise<boolean> {
+    return this.updateOrInsertDocument(guildId, { verificationEnabled: newVerificationEnabled });
+  }
 
-        return(undefined);
-    }
-
-    public async setModRole(guildId: Snowflake, newModRole: string): Promise<boolean> {
-        return(await this.updateOrInsertDocument(guildId, {modRole: newModRole}));
-    }
-
-    public async getAdminRole(guildId: Snowflake): Promise<string | undefined> {
-        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
-
-        if(gc) {
-            return(gc.adminRole);
-        }
-
-        return(undefined);
-    }
-
-    public async setAdminRole(guildId: Snowflake, newAdminRole: string): Promise<boolean> {
-        return(await this.updateOrInsertDocument(guildId, {adminRole: newAdminRole}));
-    }
-
-    public async getModErrorChannel(guildId: Snowflake): Promise<string | undefined> {
-        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
-        
-        if(gc) {
-            return(gc.modErrorChannel);
-        }
-        
-        return(undefined);
-    }
-    
-    public async setModErrorChannel(guildId: Snowflake, newModErrorChannel: string): Promise<boolean> {
-        return(await this.updateOrInsertDocument(guildId, {modErrorChannel: newModErrorChannel}));
-    }
-
-    public async getVerificationEnabled(guildId: Snowflake): Promise<boolean | undefined> {
-        let gc: GuildConfigObject = await this.getGuildConfigObject(guildId);
-
-        if(gc) {
-            return(gc.verificationEnabled);
-        }
-
-        return(undefined);
-    }
-
-    public async setVerificationEnabled(guildId: Snowflake, newVerificationEnabled: boolean): Promise<boolean> {
-        return(await this.updateOrInsertDocument(guildId, {verificationEnabled: newVerificationEnabled}));
-    }
-    
-    private async getGuildConfigObject(guildId: string): Promise<GuildConfigObject> {
-        return(<GuildConfigObject> await this.getDocument(guildId));
-    }
+  private async getGuildConfigObject(guildId: string): Promise<GuildConfigObject> {
+    return <GuildConfigObject> await this.getDocument(guildId);
+  }
 }
 
-
 interface GuildConfigObject extends DatabaseObject {
-    id?: string,
-    prefix?: string,
-    eventlogChannel?: string,
-    vipRole?: string,
-    modRole?: string,
-    adminRole?: string,
-    verificationEnabled?: boolean
-    modErrorChannel?: string
+  id?: string;
+  prefix?: string;
+  eventlogChannel?: string;
+  vipRole?: string;
+  modRole?: string;
+  adminRole?: string;
+  verificationEnabled?: boolean;
+  modErrorChannel?: string;
 }

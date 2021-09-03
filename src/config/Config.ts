@@ -1,116 +1,116 @@
 import { Bot } from 'Bot';
 import { LogLevel, Logger } from 'Logger';
 
-import * as fs from 'fs';
+import {
+  existsSync, readFileSync, mkdirSync, writeFileSync,
+} from 'fs';
 import { WebhookClient } from 'discord.js';
 
 export class Config {
-    readonly CONFIG_PATH: string = "./data/config.json";
+  readonly CONFIG_PATH: string = './data/config.json';
 
-    private configObject: ConfigObject;
-    private logger: Logger;
+  private configObject: ConfigObject;
 
-    constructor(bot: Bot) {
-        this.configObject = this.loadConfig();
-        this.logger = Logger.getLogger(bot, this);
+  private logger: Logger;
+
+  constructor(bot: Bot) {
+    this.configObject = this.loadConfig();
+    this.logger = Logger.getLogger(bot, this);
+  }
+
+  public loadConfig(): ConfigObject {
+    let jsonData: string;
+    let configObject: ConfigObject | undefined;
+
+    if (existsSync(this.CONFIG_PATH)) {
+      try {
+        jsonData = readFileSync(this.CONFIG_PATH).toString();
+        configObject = <ConfigObject>JSON.parse(jsonData);
+      } catch (err) {
+        this.logger.logSync(LogLevel.ERROR, 'Error loading main config file.', err);
+        configObject = undefined;
+      }
     }
 
-    public loadConfig(): ConfigObject {
-        let jsonData: string;
-        let configObject: ConfigObject | undefined;
-
-        if(fs.existsSync(this.CONFIG_PATH)) {
-            try {
-                jsonData = fs.readFileSync(this.CONFIG_PATH).toString();
-                configObject = <ConfigObject>JSON.parse(jsonData);
-            }
-            catch(err) {
-                this.logger.logSync(LogLevel.ERROR, "Error loading main config file.", err);
-                configObject = undefined;
-            }
-        }
-
-        if(configObject === undefined) {
-            configObject = this.generateConfig();
-            this.saveConfig();
-            this.logger.logSync(LogLevel.INFO, "Default config generated.");
-        }
-
-        return configObject;
-    }
-    
-    public saveConfig(): boolean {
-        if(!fs.existsSync("data"))
-            fs.mkdirSync("data");
-        try {
-            let jsonData: string = JSON.stringify(this.configObject);
-            fs.writeFileSync(this.CONFIG_PATH, jsonData);
-            return true;
-        }
-        catch(err) {
-            this.logger.logSync(LogLevel.ERROR, "Error saving main config file.", err);
-            return false;
-        }
+    if (configObject === undefined) {
+      configObject = this.generateConfig();
+      this.saveConfig();
+      this.logger.logSync(LogLevel.INFO, 'Default config generated.');
     }
 
-    public async setErrorWebhook(newWebhook: WebhookClient): Promise<boolean> {
-        let oldWebhookId = this.configObject.errorWebhookId;
-        let oldWebhookToken = this.configObject.errorWebhookToken;
+    return configObject;
+  }
 
-        this.configObject.errorWebhookId = newWebhook.id;
-        this.configObject.errorWebhookToken = newWebhook.token;
+  public saveConfig(): boolean {
+    if (!existsSync('data')) mkdirSync('data');
+    try {
+      const jsonData: string = JSON.stringify(this.configObject);
+      writeFileSync(this.CONFIG_PATH, jsonData);
+      return true;
+    } catch (err) {
+      this.logger.logSync(LogLevel.ERROR, 'Error saving main config file.', err);
+      return false;
+    }
+  }
 
-        if (!this.saveConfig()) {
-            this.configObject.errorWebhookId = oldWebhookId;
-            this.configObject.errorWebhookToken = oldWebhookToken;
-            return false;
-        }
+  public async setErrorWebhook(newWebhook: WebhookClient): Promise<boolean> {
+    const oldWebhookId = this.configObject.errorWebhookId;
+    const oldWebhookToken = this.configObject.errorWebhookToken;
 
-        return true;
+    this.configObject.errorWebhookId = newWebhook.id;
+    this.configObject.errorWebhookToken = newWebhook.token;
+
+    if (!this.saveConfig()) {
+      this.configObject.errorWebhookId = oldWebhookId;
+      this.configObject.errorWebhookToken = oldWebhookToken;
+      return false;
     }
 
-    public async setPrefix(newPrefix: string): Promise<boolean> {
-        let oldPrefix = this.configObject.prefix;
+    return true;
+  }
 
-        this.configObject.prefix = newPrefix;
+  public async setPrefix(newPrefix: string): Promise<boolean> {
+    const oldPrefix = this.configObject.prefix;
 
-        if (!this.saveConfig()) {
-            this.configObject.prefix = oldPrefix;
-            return false;
-        }
+    this.configObject.prefix = newPrefix;
 
-        return true;
+    if (!this.saveConfig()) {
+      this.configObject.prefix = oldPrefix;
+      return false;
     }
 
-    public get prefix(): string {
-        return this.configObject.prefix;
+    return true;
+  }
+
+  public get prefix(): string {
+    return this.configObject.prefix;
+  }
+
+  public get color(): number {
+    return this.configObject.color;
+  }
+
+  public get errorWebhook(): WebhookClient | null {
+    if (!this.configObject.errorWebhookId || !this.configObject.errorWebhookToken) {
+      return null;
     }
 
-    public get color(): number {
-        return this.configObject.color;
-    }
+    return new WebhookClient({ id: this.configObject.errorWebhookId, token: this.configObject.errorWebhookToken });
+  }
 
-    public get errorWebhook(): WebhookClient | null {
-        if (!this.configObject.errorWebhookId || !this.configObject.errorWebhookToken) {
-            return null;
-        }
-
-        return new WebhookClient({id: this.configObject.errorWebhookId, token: this.configObject.errorWebhookToken});
-    }
-
-    private generateConfig(): ConfigObject {
-        return {
-            prefix: "!",
-            color: 42239,
-            errorWebhookId: null,
-            errorWebhookToken: null
-        };
-    }
+  private generateConfig(): ConfigObject {
+    return {
+      prefix: '!',
+      color: 42239,
+      errorWebhookId: null,
+      errorWebhookToken: null,
+    };
+  }
 }
 
 type ConfigObject = {
-    prefix: string,
-    color: number,
-    errorWebhookId: string | null,
-    errorWebhookToken: string | null
-}
+  prefix: string;
+  color: number;
+  errorWebhookId: string | null;
+  errorWebhookToken: string | null;
+};

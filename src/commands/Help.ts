@@ -1,33 +1,32 @@
-import {Command, PermissionLevel, CommandResult} from 'commands/Command';
+import { Command, PermissionLevel, CommandResult } from 'commands/Command';
 import { Bot } from 'Bot';
 
-import {Message} from 'discord.js';
+import { Message } from 'discord.js';
 
-export class Help extends Command {    
-    constructor(bot: Bot) {
-        super("help", PermissionLevel.Everyone, "You're using it!", bot, {usage: "[command]", aliases: ["h"]});
+export class Help extends Command {
+  constructor(bot: Bot) {
+    super('help', PermissionLevel.Everyone, "You're using it!", bot, { usage: '[command]', aliases: ['h'] });
+  }
+
+  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+    if (args.length === 0) {
+      await bot.helpManager.sendFullHelp(message, bot);
+      return { sendHelp: false, command: this, message };
     }
 
-    async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-        if(args.length === 0) {
-            await bot.helpManager.sendFullHelp(message, bot);
-            return {sendHelp: false, command: this, message: message};;
-        }
+    const command: Command | undefined = bot.commandManager.getCommand(<string>args.shift());
 
-        let command: Command | undefined = await bot.commandManager.getCommand(<string>args.shift());
-
-        if(!command) {
-            await bot.helpManager.sendFullHelp(message, bot);
-            return {sendHelp: false, command: this, message: message};
-        }
-
-        if(args.length > 0) {
-            await bot.helpManager.sendCommandHelp(command, message, bot, args);
-        }
-        else {
-            await bot.helpManager.sendCommandHelp(command, message, bot);
-        }
-
-        return {sendHelp: false, command: this, message: message};
+    if (!command) {
+      await bot.helpManager.sendFullHelp(message, bot);
+      return { sendHelp: false, command: this, message };
     }
+
+    if (args.length > 0) {
+      await bot.helpManager.sendCommandHelp(command, message, bot, args);
+    } else {
+      await bot.helpManager.sendCommandHelp(command, message, bot);
+    }
+
+    return { sendHelp: false, command: this, message };
+  }
 }
