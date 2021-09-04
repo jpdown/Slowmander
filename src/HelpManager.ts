@@ -1,4 +1,4 @@
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 import { Command, PermissionLevel } from 'commands/Command';
 import { PermissionsHelper } from 'utils/PermissionsHelper';
 import { CommandUtils } from 'utils/CommandUtils';

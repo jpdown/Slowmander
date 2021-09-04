@@ -1,27 +1,15 @@
-import { CommandGroup } from 'commands/CommandGroup';
+/* eslint-disable max-classes-per-file */
+import CommandGroup from 'commands/CommandGroup';
 import { Command, CommandResult, PermissionLevel } from 'commands/Command';
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 import { ReactionRoleObject } from 'config/ReactionRoleConfig';
-import { ReactionPaginator } from 'utils/ReactionPaginator';
-import { CommandUtils } from 'utils/CommandUtils';
+import ReactionPaginator from 'utils/ReactionPaginator';
+import CommandUtils from 'utils/CommandUtils';
 
 import {
-  Message, Role, TextChannel, NewsChannel, Permissions, ReactionEmoji, MessageReaction, GuildEmoji, Snowflake, GuildChannelResolvable,
+  Message, Role, TextChannel, NewsChannel, Permissions, ReactionEmoji,
+  MessageReaction, GuildEmoji, Snowflake, GuildChannelResolvable,
 } from 'discord.js';
-
-export class ReactionRoleManagement extends CommandGroup {
-  constructor(bot: Bot) {
-    super('reactionrole', 'Manages reaction roles', bot, { runsInDm: false });
-
-    this.registerSubCommands(bot);
-  }
-
-  protected registerSubCommands(bot: Bot): void {
-    this.registerSubCommand(new AddReactionRole(this, bot));
-    this.registerSubCommand(new RemoveReactionRole(this, bot));
-    this.registerSubCommand(new ListReactionRoles(this, bot));
-  }
-}
 
 class AddReactionRole extends Command {
   constructor(group: CommandGroup, bot: Bot) {
@@ -35,17 +23,20 @@ class AddReactionRole extends Command {
       return { sendHelp: true, command: this, message };
     }
 
-    const reactionRoleParsedArgs: ReactionRoleParsedArgs | undefined = await this.parseArgs(args, message, bot);
+    const reactionRoleParsedArgs = await AddReactionRole.parseArgs(args, message, bot);
     if (!reactionRoleParsedArgs) {
       return { sendHelp: false, command: this, message };
     }
 
     if (await bot.configs.reactionRoleConfig.guildHasReactionRoleName(message.guild!.id, reactionRoleParsedArgs.name)) {
-      await CommandUtils.sendMessage(`Adding reaction role failed. Reaction role ${reactionRoleParsedArgs.name} already exists.`, message.channel, bot);
+      await CommandUtils.sendMessage(
+        `Adding reaction role failed. Reaction role ${reactionRoleParsedArgs.name} already exists.`,
+        message.channel, bot,
+      );
       return { sendHelp: false, command: this, message };
     }
 
-    if (!await this.checkPerms(reactionRoleParsedArgs.role, reactionRoleParsedArgs.reactionMessage, message, bot)) {
+    if (!await AddReactionRole.checkPerms(reactionRoleParsedArgs.role, reactionRoleParsedArgs.reactionMessage, message, bot)) {
       return { sendHelp: false, command: this, message };
     }
 
@@ -64,8 +55,11 @@ class AddReactionRole extends Command {
       name: reactionRoleParsedArgs.name,
     };
 
+    // eslint-disable-next-line max-len
     if (await bot.configs.reactionRoleConfig.guildHasReactionRoleEmote(reactionRoleObject.guildID, reactionRoleObject.emoteID, reactionRoleObject.messageID)) {
-      await CommandUtils.sendMessage(`Adding reaction role failed. Reaction role with emote ${await CommandUtils.makeEmoteFromId(reactionRoleObject.emoteID, message) ?? reactionRoleObject.emoteID} already exists.`, message.channel, bot);
+      await CommandUtils.sendMessage(`Adding reaction role failed. Reaction role with emote ${
+        await CommandUtils.makeEmoteFromId(reactionRoleObject.emoteID, message) ?? reactionRoleObject.emoteID
+      } already exists.`, message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
 
@@ -77,7 +71,7 @@ class AddReactionRole extends Command {
     return { sendHelp: false, command: this, message };
   }
 
-  private async parseArgs(args: string[], message: Message, bot: Bot): Promise<ReactionRoleParsedArgs | undefined> {
+  private static async parseArgs(args: string[], message: Message, bot: Bot): Promise<ReactionRoleParsedArgs | undefined> {
     let reactionMessage: Message;
 
     // Parse message link
@@ -122,7 +116,7 @@ class AddReactionRole extends Command {
     };
   }
 
-  private async checkPerms(role: Role, reactionMessage: Message, message: Message, bot: Bot): Promise<boolean> {
+  private static async checkPerms(role: Role, reactionMessage: Message, message: Message, bot: Bot): Promise<boolean> {
     if (!role.guild.me || !reactionMessage.guild?.me || !(reactionMessage.channel as GuildChannelResolvable)) {
       return false;
     }
@@ -133,12 +127,18 @@ class AddReactionRole extends Command {
     }
     // If role below us
     if (role.comparePositionTo(role.guild.me.roles.highest) > 0) {
-      await CommandUtils.sendMessage('Adding reaction role failed. Invalid hierarchy, my highest role is below the given role.', message.channel, bot);
+      await CommandUtils.sendMessage(
+        'Adding reaction role failed. Invalid hierarchy, my highest role is below the given role.',
+        message.channel, bot,
+      );
       return false;
     }
     // If we can't react in the channel
     if (!reactionMessage.guild.me.permissionsIn(reactionMessage.channel as GuildChannelResolvable).has(Permissions.FLAGS.ADD_REACTIONS)) {
-      await CommandUtils.sendMessage(`Adding reaction role failed. I do not have reaction perms in ${reactionMessage.channel.toString()}`, message.channel, bot);
+      await CommandUtils.sendMessage(
+        `Adding reaction role failed. I do not have reaction perms in ${reactionMessage.channel.toString()}`,
+        message.channel, bot,
+      );
       return false;
     }
 
@@ -158,7 +158,9 @@ class AddReactionRole extends Command {
       return true;
     } catch (err) {
       await CommandUtils.sendMessage('Adding reaction role failed. Unexpected error while reacting to message.', message.channel, bot);
-      await this.logger.warning(`Error reacting to message ${reactionMessage.id} in channel ${reactionMessage.channel.id} in guild ${reactionMessage.guild?.id}`, err);
+      await this.logger.warning(
+        `Error reacting to message ${reactionMessage.id} in channel ${reactionMessage.channel.id} in guild ${reactionMessage.guild?.id}`, err,
+      );
       await bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
       return false;
     }
@@ -236,7 +238,10 @@ class RemoveReactionRole extends Command {
         reaction = await reaction.fetch();
       }
     } catch (err) {
-      await this.logger.warning(`Error getting reaction ${reactionRole.name} ${reactionRole.emoteID} from message,channel,guild ${reactionRole.messageID}.${reactionRole.channelID},${reactionRole.guildID}`);
+      await this.logger.warning(
+        // eslint-disable-next-line max-len
+        `Error getting reaction ${reactionRole.name} ${reactionRole.emoteID} from message,channel,guild ${reactionRole.messageID}.${reactionRole.channelID},${reactionRole.guildID}`,
+      );
       reaction = undefined;
     }
     return reaction;
@@ -245,10 +250,13 @@ class RemoveReactionRole extends Command {
 
 class ListReactionRoles extends Command {
   constructor(group: CommandGroup, bot: Bot) {
-    super('list', PermissionLevel.Admin, 'Gets list of reaction roles', bot, { runsInDm: false, group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR });
+    super(
+      'list', PermissionLevel.Admin, 'Gets list of reaction roles', bot,
+      { runsInDm: false, group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR },
+    );
   }
 
-  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+  async run(bot: Bot, message: Message): Promise<CommandResult> {
     // Get reactionroles
     const reactionRoles: ReactionRoleObject[] | undefined = await bot.configs.reactionRoleConfig.getGuildReactionRoles(message.guild!.id);
 
@@ -286,6 +294,20 @@ class ListReactionRoles extends Command {
     const paginatedMessage = await paginator.postMessage();
 
     return { sendHelp: false, command: this, message };
+  }
+}
+
+export class ReactionRoleManagement extends CommandGroup {
+  constructor(bot: Bot) {
+    super('reactionrole', 'Manages reaction roles', bot, { runsInDm: false });
+
+    this.registerSubCommands(bot);
+  }
+
+  protected registerSubCommands(bot: Bot): void {
+    this.registerSubCommand(new AddReactionRole(this, bot));
+    this.registerSubCommand(new RemoveReactionRole(this, bot));
+    this.registerSubCommand(new ListReactionRoles(this, bot));
   }
 }
 

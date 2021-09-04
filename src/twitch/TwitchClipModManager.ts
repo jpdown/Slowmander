@@ -1,5 +1,5 @@
 import { Logger } from 'Logger';
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 import { TwitchClipModObject } from 'config/TwitchClipModConfig';
 import { ModErrorLog } from 'moderrorlog/ModErrorLog';
 
@@ -7,7 +7,7 @@ import {
   GuildChannelResolvable, Message, PartialMessage, Permissions,
 } from 'discord.js';
 
-export class TwitchClipModManager {
+export default class TwitchClipModManager {
   private bot: Bot;
 
   private logger: Logger;

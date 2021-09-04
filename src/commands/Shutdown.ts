@@ -1,5 +1,5 @@
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 
 import { Message } from 'discord.js';

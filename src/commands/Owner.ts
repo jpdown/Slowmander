@@ -1,31 +1,12 @@
-import { CommandGroup } from 'commands/CommandGroup';
+/* eslint-disable max-classes-per-file */
+import CommandGroup from 'commands/CommandGroup';
 import { Command, CommandResult, PermissionLevel } from 'commands/Command';
-import { Bot } from 'Bot';
-import { CommandUtils } from 'utils/CommandUtils';
+import Bot from 'Bot';
+import CommandUtils from 'utils/CommandUtils';
 
 import {
   Message, User, ActivityOptions, WebhookClient,
 } from 'discord.js';
-
-export class Owner extends CommandGroup {
-  constructor(bot: Bot) {
-    super('owner', 'Owner commands (you know this already)', bot);
-
-    this.registerSubCommands(bot);
-  }
-
-  protected registerSubCommands(bot: Bot): void {
-    this.registerSubCommand(new SetUsername(this, bot));
-    this.registerSubCommand(new SetAvatar(this, bot));
-    this.registerSubCommand(new AddOwner(this, bot));
-    this.registerSubCommand(new RemoveOwner(this, bot));
-    this.registerSubCommand(new SetDefaultPrefix(this, bot));
-    this.registerSubCommand(new SetStatus(this, bot));
-    this.registerSubCommand(new SetActivity(this, bot));
-    this.registerSubCommand(new SetErrorLogWebhook(this, bot));
-    this.registerSubCommand(new GetInviteLink(this, bot));
-  }
-}
 
 class SetUsername extends Command {
   constructor(group: CommandGroup, bot: Bot) {
@@ -188,7 +169,10 @@ class SetActivity extends Command {
   private readonly STREAMING_URL: string = 'https://twitch.tv/jpdown';
 
   constructor(group: CommandGroup, bot: Bot) {
-    super('activity', PermissionLevel.Owner, 'Sets bot activity', bot, { usage: '<playing, streaming, listening, watching, clear> <activity string>', group, aliases: ['presence'] });
+    super(
+      'activity', PermissionLevel.Owner, 'Sets bot activity', bot,
+      { usage: '<playing, streaming, listening, watching, clear> <activity string>', group, aliases: ['presence'] },
+    );
   }
 
   public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
@@ -261,7 +245,7 @@ class GetInviteLink extends Command {
     super('getinvite', PermissionLevel.Owner, "Gets invite link (wow you're lazy)", bot, { group });
   }
 
-  public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+  public async run(bot: Bot, message: Message): Promise<CommandResult> {
     const invite = message.client.generateInvite({
       scopes: ['applications.commands', 'bot'],
       permissions: [
@@ -274,5 +258,26 @@ class GetInviteLink extends Command {
     await CommandUtils.sendMessage(`[Invite Link](${invite})`, message.channel, bot);
 
     return { sendHelp: false, command: this, message };
+  }
+}
+
+// eslint-disable-next-line import/prefer-default-export
+export class Owner extends CommandGroup {
+  constructor(bot: Bot) {
+    super('owner', 'Owner commands (you know this already)', bot);
+
+    this.registerSubCommands(bot);
+  }
+
+  protected registerSubCommands(bot: Bot): void {
+    this.registerSubCommand(new SetUsername(this, bot));
+    this.registerSubCommand(new SetAvatar(this, bot));
+    this.registerSubCommand(new AddOwner(this, bot));
+    this.registerSubCommand(new RemoveOwner(this, bot));
+    this.registerSubCommand(new SetDefaultPrefix(this, bot));
+    this.registerSubCommand(new SetStatus(this, bot));
+    this.registerSubCommand(new SetActivity(this, bot));
+    this.registerSubCommand(new SetErrorLogWebhook(this, bot));
+    this.registerSubCommand(new GetInviteLink(this, bot));
   }
 }

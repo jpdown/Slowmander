@@ -1,9 +1,10 @@
 import {
   Command, PermissionLevel, CommandResult, CommandParameters,
 } from 'commands/Command';
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 
 import { Message, PermissionResolvable, Permissions } from 'discord.js';
+import CommandManager from 'CommandManager';
 
 export default abstract class CommandGroup extends Command {
   protected readonly subCommands: Map<string, Command>;
@@ -16,7 +17,7 @@ export default abstract class CommandGroup extends Command {
   }
 
   public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-    return bot.commandManager.parseSubCommand(this, args, message, bot);
+    return CommandManager.parseSubCommand(this, args, message, bot);
   }
 
   public getSubCommand(arg: string): Command | undefined {
@@ -36,28 +37,28 @@ export default abstract class CommandGroup extends Command {
   }
 
   public get requiredPerm(): PermissionResolvable | undefined {
-    let perms: Permissions | undefined = new Permissions();
+    const perms: Permissions = new Permissions();
     let numWithPerms = 0;
 
-    for (const subCommand of this._subCommands.values()) {
+    this.subCommands.forEach((subCommand) => {
       if (subCommand.requiredPerm && !perms.any(subCommand.requiredPerm)) {
         perms.add(subCommand.requiredPerm);
-        numWithPerms++;
+        numWithPerms += 1;
       }
-    }
+    });
 
     if (numWithPerms === 0) {
-      perms = undefined;
+      return undefined;
     }
 
     return perms;
   }
 
   protected registerSubCommand(command: Command): void {
-    this._subCommands.set(command.name, command);
-    for (const alias of command.aliases) {
-      this._subCommands.set(alias, command);
-    }
+    this.subCommands.set(command.name, command);
+    command.aliases.forEach((alias) => {
+      this.subCommands.set(alias, command);
+    });
   }
 
   protected abstract registerSubCommands(bot: Bot): void;

@@ -1,10 +1,10 @@
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 
 import {
   Guild, MessageEmbed, Snowflake, TextChannel, NewsChannel, Permissions,
 } from 'discord.js';
 
-export class ModErrorLog {
+export default class ModErrorLog {
   public static async log(message: string, guild: Guild, bot: Bot): Promise<boolean> {
     // Find mod error log channel
     const channelId: Snowflake | undefined = await bot.configs.guildConfig.getModErrorChannel(guild.id);

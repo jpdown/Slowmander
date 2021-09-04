@@ -1,4 +1,4 @@
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 import CommandGroup from 'commands/CommandGroup';
 import { Logger } from 'Logger';
 
@@ -25,7 +25,12 @@ export abstract class Command {
     return this._permLevel;
   }
 
-  public readonly requiredPerm?: PermissionResolvable;
+  private readonly _requiredPerm?: PermissionResolvable | undefined;
+
+  public get requiredPerm(): PermissionResolvable | undefined {
+    // eslint-disable-next-line no-underscore-dangle
+    return this._requiredPerm;
+  }
 
   public readonly desc: string;
 
@@ -46,7 +51,8 @@ export abstract class Command {
     this.desc = desc;
 
     this.aliases = params.aliases ? params.aliases : [];
-    this.requiredPerm = params.requiredPerm;
+    // eslint-disable-next-line no-underscore-dangle
+    this._requiredPerm = params.requiredPerm;
     this.longDesc = params.longDesc ? params.longDesc : '';
     this.usage = params.usage ? params.usage : '';
     this.runsInDm = params.runsInDm !== undefined ? params.runsInDm : true;

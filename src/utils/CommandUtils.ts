@@ -1,10 +1,10 @@
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 
 import {
   ColorResolvable, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, Message, MessageReaction, ReactionEmoji, MessageEmbed, TextBasedChannels, MessageOptions,
 } from 'discord.js';
 
-export class CommandUtils {
+export default class CommandUtils {
   static async getSelfColor(channel: TextBasedChannels, bot: Bot): Promise<ColorResolvable> {
     let color: ColorResolvable | undefined;
 

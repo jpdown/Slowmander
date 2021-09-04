@@ -1,4 +1,4 @@
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 import { DatabaseEntry, DatabaseObject } from 'config/DatabaseEntry';
 
 import { Snowflake } from 'discord.js';

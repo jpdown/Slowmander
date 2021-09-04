@@ -1,0 +1,128 @@
+import Bot from 'Bot';
+
+import { Permissions, Message } from 'discord.js';
+
+export default class LockdownHelper {
+  static readonly PERMISSION = Permissions.FLAGS.SEND_MESSAGES;
+
+  static readonly LOCK_MESSAGE = '🔒 Channel has been locked down.';
+
+  static readonly UNLOCK_MESSAGE = '🔓 Channel has been unlocked.';
+
+  static async lockUnlock(bot: Bot, message: Message, args: string[], lock: boolean): Promise<boolean> {
+    let preset = 'default';
+
+    if (args.length > 0) {
+      preset = args[0];
+    }
+
+    // Try to get config
+    const lockdownConfig: LockdownConfigObject | undefined = await bot.configs.lockdownConfig.getLockdownPreset(message.guild!.id, preset);
+    if (!lockdownConfig) {
+      await CommandUtils.sendMessage(`No lockdown config found, please make one with \`${await bot.commandManager.getPrefix(message.guild?.id)}managelockdown\`. The default preset is \`default\`.`, message.channel, bot);
+      return false;
+    }
+
+    // Make lists
+    const channels: GuildChannel[] = [];
+    for (const channelId of lockdownConfig.channelIDs) {
+      const parsedChannel: GuildChannel | ThreadChannel | null = message.guild!.channels.resolve(channelId);
+      if (parsedChannel && (parsedChannel as GuildChannel)) {
+        channels.push(<GuildChannel>parsedChannel);
+      }
+    }
+
+    const roles: Role[] = [];
+    for (const roleId of lockdownConfig.roleIDs) {
+      const parsedRole: Role | null = message.guild!.roles.resolve(roleId);
+      if (parsedRole) {
+        roles.push(parsedRole);
+      }
+    }
+
+    // Try to lockdown server
+    const result: boolean = await LockdownHelper.updateChannelPerms(channels, roles, lock, lockdownConfig.grant, message.author, preset, bot);
+    if (!result) {
+      await CommandUtils.sendMessage(`Missing permissions to ${lock ? 'lock' : 'unlock'} server.`, message.channel, bot);
+    } else {
+      await CommandUtils.sendMessage(`Server ${lock ? 'locked' : 'unlocked'} successfully.`, message.channel, bot);
+    }
+
+    return true;
+  }
+
+  static async updateChannelPerms(channels: GuildChannel[], roles: Role[], lock: boolean, grant: boolean, executor: User, preset: string, bot: Bot): Promise<boolean> {
+    let reason = `${executor.username}#${executor.discriminator} performed ${preset} `;
+
+    const zeroPerms: Permissions = new Permissions(0n);
+    let neutralPerms: Permissions = zeroPerms;
+    let grantedPerms: Permissions = zeroPerms;
+    let revokedPerms: Permissions = zeroPerms;
+    if (lock) {
+      revokedPerms = new Permissions(this.PERMISSION);
+      reason += 'lockdown';
+    } else {
+      if (grant) {
+        grantedPerms = new Permissions(this.PERMISSION);
+      } else {
+        neutralPerms = new Permissions(this.PERMISSION);
+      }
+      reason += 'unlock';
+    }
+
+    // Get mod and admin role (if applicable)
+    const { guild } = channels[0];
+    const modAndAdminRoles: Role[] = [];
+    const modRoleId: Snowflake | undefined = await bot.configs.guildConfig.getModRole(guild.id);
+    if (modRoleId) {
+      const modRole: Role | null = guild.roles.resolve(modRoleId);
+      if (modRole) {
+        modAndAdminRoles.push(modRole);
+      }
+    }
+    const adminRoleId: Snowflake | undefined = await bot.configs.guildConfig.getAdminRole(guild.id);
+    if (adminRoleId) {
+      const adminRole: Role | null = guild.roles.resolve(adminRoleId);
+      if (adminRole) {
+        modAndAdminRoles.push(adminRole);
+      }
+    }
+
+    for (const channel of channels) {
+      if (await CommandUtils.updateChannelPerms(channel, roles, [], grantedPerms, revokedPerms, neutralPerms, reason)) {
+        await CommandUtils.updateChannelPerms(channel, modAndAdminRoles, [channel.client.user!], new Permissions(this.PERMISSION), zeroPerms, zeroPerms, reason);
+        await this.trySendMessage(channel, lock, bot);
+      } else {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static async trySendMessage(channel: GuildChannel, lock: boolean, bot: Bot): Promise<boolean> {
+    // if not a channel we can send messages in
+    if (!channel.isText() && channel.type !== 'GUILD_CATEGORY') {
+      return false;
+    }
+    // If category, send in all children recursively
+    if (channel.type === 'GUILD_CATEGORY') {
+      for (const childChannel of (<CategoryChannel>channel).children.values()) {
+        if (childChannel.permissionsLocked) {
+          await this.trySendMessage(childChannel, lock, bot);
+        }
+      }
+      return true;
+    }
+    // Check perms
+    const member: GuildMember = channel.guild.members.cache.get(bot.client.user!.id)!;
+    if (!channel.permissionsFor(member).has(Permissions.FLAGS.SEND_MESSAGES)) {
+      return false;
+    }
+    const embed = new MessageEmbed()
+      .setColor(await CommandUtils.getSelfColor(<TextChannel | NewsChannel>channel, bot))
+      .setDescription(lock ? this.LOCK_MESSAGE : this.UNLOCK_MESSAGE);
+
+    await (<TextChannel | NewsChannel>channel).send({ embeds: [embed] });
+    return true;
+  }
+}

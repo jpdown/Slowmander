@@ -21,6 +21,7 @@
     },
     "rules": {
         "no-extra-parens": "off",
-        "@typescript-eslint/no-extra-parens": "error"
+        "@typescript-eslint/no-extra-parens": "error",
+        "max-len": ["error", { "code": 150, "tabWidth": 2 }]
     }
 }

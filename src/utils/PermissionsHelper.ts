@@ -1,11 +1,11 @@
 import { PermissionLevel, Command } from 'commands/Command';
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 
 import {
   User, GuildMember, Collection, Snowflake, Role, Permissions,
 } from 'discord.js';
 
-export class PermissionsHelper {
+export default class PermissionsHelper {
   public static async checkPermsAndDM(user: User | GuildMember, command: Command, bot: Bot): Promise<boolean> {
     let permLevel: PermissionLevel;
     let hasPerm = false;

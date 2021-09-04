@@ -1,11 +1,11 @@
+/* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import { Bot } from 'Bot';
-import { CommandUtils } from 'utils/CommandUtils';
-import { Logger } from 'Logger';
+import Bot from 'Bot';
+import CommandUtils from 'utils/CommandUtils';
+import { CatAPIHelper, DogAPIResp } from 'utils/CatAPIHelper';
 
-import { Message, User, MessageEmbed } from 'discord.js';
+import { Message, MessageEmbed } from 'discord.js';
 import fetch from 'node-fetch';
-import querystring from 'querystring';
 
 export class Cat extends Command {
   private readonly API: string = 'https://api.thecatapi.com/v1/images/search';
@@ -16,7 +16,7 @@ export class Cat extends Command {
     super('cat', PermissionLevel.Everyone, 'Gives a random cat image', bot, { aliases: ['kitty', 'meow'] });
   }
 
-  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+  async run(bot: Bot, message: Message): Promise<CommandResult> {
     if (!this.apiToken) {
       if (bot.catApiToken === '') {
         await CommandUtils.sendMessage("I don't have an API token.", message.channel, bot);
@@ -26,7 +26,9 @@ export class Cat extends Command {
     }
 
     const sentMessage: Message = await CommandUtils.sendMessage('Looking for a cat...', message.channel, bot, message);
-    const catUrl: string | undefined = await CatAPIHelper.getImage(message.author, bot, this.API, this.apiToken);
+    const catUrl: string | undefined = await CatAPIHelper.getImage(
+      message.author, bot, this.API, this.apiToken,
+    );
     let embed: MessageEmbed;
 
     if (catUrl !== undefined && catUrl !== '') {
@@ -55,7 +57,7 @@ export class Dog extends Command {
     super('dog', PermissionLevel.Everyone, 'Gives a random dog image', bot, { aliases: ['woof', 'bark'] });
   }
 
-  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+  async run(bot: Bot, message: Message): Promise<CommandResult> {
     const sentMessage: Message = await CommandUtils.sendMessage('Looking for a dog...', message.channel, bot, message);
     let dogJson: DogAPIResp;
     let dogImage: string | undefined;
@@ -98,7 +100,7 @@ export class DadJoke extends Command {
     super('dadjoke', PermissionLevel.Everyone, 'Gives a random dad joke', bot, { aliases: ['dad'] });
   }
 
-  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+  async run(bot: Bot, message: Message): Promise<CommandResult> {
     const sentMessage: Message = await CommandUtils.sendMessage('Looking for a dad joke...', message.channel, bot, message);
     let dadJokeMessage = '';
     let embed: MessageEmbed;
@@ -129,37 +131,4 @@ export class DadJoke extends Command {
 
     return { sendHelp: false, command: this, message };
   }
-}
-
-class CatAPIHelper {
-  public static async getImage(user: User, bot: Bot, api: string, token: string): Promise<string | undefined> {
-    let imageUrl: string | undefined;
-
-    const headers = {
-      'X-API-KEY': token,
-    };
-    const params = {
-      limit: 1,
-    };
-
-    try {
-      const newUrl: string = `${api}?${querystring.stringify(params)}`;
-      const respJson: CatAPIResp[] = await (await fetch(newUrl, { method: 'get', headers })).json() as CatAPIResp[];
-      imageUrl = respJson[0].url;
-    } catch (err) {
-      await new Logger(bot, CatAPIHelper.name).error(`Error obtaining image from API ${api}`, err);
-    }
-
-    return imageUrl;
-  }
-}
-
-type CatAPIResp = {
-  id: string;
-  url: string;
-};
-
-interface DogAPIResp {
-  message: string;
-  status: string;
 }

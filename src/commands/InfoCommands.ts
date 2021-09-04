@@ -1,8 +1,9 @@
+/* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import { Bot } from 'Bot';
-import { CommandUtils } from 'utils/CommandUtils';
-import { PermissionsHelper } from 'utils/PermissionsHelper';
-import { ReactionPaginator } from 'utils/ReactionPaginator';
+import Bot from 'Bot';
+import CommandUtils from 'utils/CommandUtils';
+import PermissionsHelper from 'utils/PermissionsHelper';
+import ReactionPaginator from 'utils/ReactionPaginator';
 
 import {
   Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client,
@@ -53,7 +54,7 @@ export class Whois extends Command {
     }
 
     // Join pos
-    embed.addField('Join Position', (await this.getJoinPos(member)).toString(), false);
+    embed.addField('Join Position', (await Whois.getJoinPos(member)).toString(), false);
 
     // Roles list
     const rolesList: Collection<Snowflake, Role> = member.roles.cache.clone();
@@ -61,9 +62,9 @@ export class Whois extends Command {
     rolesList.delete(message.guild!.roles.everyone.id);
     if (rolesList.size > 0) {
       let rolesStr = '';
-      for (const role of rolesList.values()) {
+      rolesList.forEach((role) => {
         rolesStr += `${role.name}, `;
-      }
+      });
 
       embed.addField(`Roles (${rolesList.size})`, rolesStr.slice(0, -2), false);
     }
@@ -80,16 +81,17 @@ export class Whois extends Command {
     return { sendHelp: false, command: this, message };
   }
 
-  private async getJoinPos(member: GuildMember): Promise<number> {
+  private static async getJoinPos(member: GuildMember): Promise<number> {
     // Get all members
     const allMembers: Collection<Snowflake, GuildMember> = await member.guild.members.fetch();
     // Iterate, keeping track of join time
     let joinPos = 1;
-    for (const [currSnowflake, currMember] of allMembers) {
-      if ((currMember.joinedTimestamp ?? Number.MAX_VALUE) < (member.joinedTimestamp ?? Number.MAX_VALUE)) {
-        joinPos++;
+    allMembers.forEach((currMember) => {
+      if (currMember.joinedTimestamp && member.joinedTimestamp
+          && currMember.joinedTimestamp < member.joinedTimestamp) {
+        joinPos += 1;
       }
-    }
+    });
 
     return joinPos;
   }
@@ -97,10 +99,12 @@ export class Whois extends Command {
 
 export class Roles extends Command {
   constructor(bot: Bot) {
-    super('roles', PermissionLevel.Mod, 'Gets list of roles', bot, { runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ['rolelist'] });
+    super('roles', PermissionLevel.Mod, 'Gets list of roles', bot, {
+      runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ['rolelist'],
+    });
   }
 
-  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+  async run(bot: Bot, message: Message): Promise<CommandResult> {
     // Roles list
     await message.guild!.roles.fetch(); // Fetch all roles (just to be sure)
     const rolesList: Collection<Snowflake, Role> = message.guild!.roles.cache.clone();
@@ -109,9 +113,9 @@ export class Roles extends Command {
 
     // List of strings
     const stringList: string[] = [];
-    for (const role of rolesList.values()) {
+    rolesList.forEach((role) => {
       stringList.push(`${role.toString()} - ${role.members.size} members.`);
-    }
+    });
 
     // Make paginator
     const paginator: ReactionPaginator = new ReactionPaginator(stringList, 10,
@@ -146,9 +150,9 @@ export class Members extends Command {
 
     // List of strings
     const stringList: string[] = [];
-    for (const member of memberList.values()) {
+    memberList.forEach((member) => {
       stringList.push(`**${member.user.username}#${member.user.discriminator}** - ${member.id}`);
-    }
+    });
 
     // Make paginator
     const paginator: ReactionPaginator = new ReactionPaginator(stringList, 10,
@@ -195,17 +199,20 @@ export class Stats extends Command {
     super('stats', PermissionLevel.Everyone, 'Gets bot statistics', bot, { aliases: ['statistics'] });
   }
 
-  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+  async run(bot: Bot, message: Message): Promise<CommandResult> {
     const embed: MessageEmbed = new MessageEmbed()
       .setColor(await CommandUtils.getSelfColor(message.channel, bot))
       .addField('RAM Usage', `${Math.floor(memoryUsage().rss / 1048576)} MB`, true)
-      .addField('Load', this.getLoadString(), true)
-      .addField('Uptime', this.getFormattedUptime(), true)
-      .addField('User Count', this.getUserCount(message.client).toString(), true)
+      .addField('Load', Stats.getLoadString(), true)
+      .addField('Uptime', Stats.getFormattedUptime(), true)
+      .addField('User Count', Stats.getUserCount(message.client).toString(), true)
       .addField('Guild Count', message.client.guilds.cache.size.toString(), true)
       .addField('Channel Count', message.client.channels.cache.size.toString(), true);
     if (message.client.user) {
-      embed.setAuthor(`${message.client.user.username}#${message.client.user.discriminator}`, message.client.user.displayAvatarURL({ format: 'png', dynamic: true, size: 4096 }));
+      embed.setAuthor(
+        `${message.client.user.username}#${message.client.user.discriminator}`,
+        message.client.user.displayAvatarURL({ format: 'png', dynamic: true, size: 4096 }),
+      );
     }
 
     await message.channel.send({ embeds: [embed] });
@@ -213,7 +220,7 @@ export class Stats extends Command {
     return { sendHelp: false, command: this, message };
   }
 
-  private getFormattedUptime(): string {
+  private static getFormattedUptime(): string {
     let uptime: number = process_uptime();
     const days: number = Math.floor(uptime / 86400);
     uptime -= days * 86400;
@@ -229,17 +236,17 @@ export class Stats extends Command {
     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
   }
 
-  private getUserCount(client: Client): number {
+  private static getUserCount(client: Client): number {
     return client.users.cache.size;
   }
 
-  private getLoadString(): string {
+  private static getLoadString(): string {
     const load: number[] = loadavg();
     let loadString = '';
 
-    for (const num of load) {
+    load.forEach((num) => {
       loadString += `${num.toFixed(2)} `;
-    }
+    });
 
     return loadString.slice(0, loadString.length - 1);
   }

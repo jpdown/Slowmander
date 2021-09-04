@@ -1,6 +1,6 @@
 import { CommandGroup } from 'commands/CommandGroup';
 import { Command, CommandResult, PermissionLevel } from 'commands/Command';
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 
 import {

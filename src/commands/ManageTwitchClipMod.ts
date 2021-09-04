@@ -1,31 +1,13 @@
+/* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import { Bot } from 'Bot';
-import { CommandUtils } from 'utils/CommandUtils';
-import { CommandGroup } from 'commands/CommandGroup';
-import { TwitchClipModObject } from 'config/TwitchClipModConfig';
+import Bot from 'Bot';
+import CommandUtils from 'utils/CommandUtils';
+import CommandGroup from 'commands/CommandGroup';
 
 import {
-  Message, Permissions, MessageEmbed, TextBasedChannels,
+  Message, Permissions, MessageEmbed,
 } from 'discord.js';
 import { HelixUser } from 'twitch/lib';
-
-export class ManageTwitchClipMod extends CommandGroup {
-  constructor(bot: Bot) {
-    super('twitchclip', 'Manages Twitch Clip moderation', bot, { runsInDm: false });
-
-    this.registerSubCommands(bot);
-  }
-
-  protected registerSubCommands(bot: Bot): void {
-    this.registerSubCommand(new EnableClipModeration(this, bot));
-    this.registerSubCommand(new DisableClipModeration(this, bot));
-    this.registerSubCommand(new EnableApprovedChannels(this, bot));
-    this.registerSubCommand(new DisableApprovedChannels(this, bot));
-    this.registerSubCommand(new AddTwitchChannel(this, bot));
-    this.registerSubCommand(new DeleteTwitchChannel(this, bot));
-    this.registerSubCommand(new ChannelModInfo(this, bot));
-  }
-}
 
 class EnableClipModeration extends Command {
   constructor(group: CommandGroup, bot: Bot) {
@@ -40,7 +22,7 @@ class EnableClipModeration extends Command {
     }
 
     // Parse channel
-    const channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
+    const channel = await CommandUtils.parseTextChannel(args[0], message.client);
     if (!channel || channel.type === 'DM') {
       return { sendHelp: true, command: this, message };
     }
@@ -80,7 +62,7 @@ class DisableClipModeration extends Command {
     }
 
     // Parse channel
-    const channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
+    const channel = await CommandUtils.parseTextChannel(args[0], message.client);
     if (!channel || channel.type === 'DM') {
       return { sendHelp: true, command: this, message };
     }
@@ -116,7 +98,7 @@ class EnableApprovedChannels extends Command {
     }
 
     // Parse Discord channel
-    const channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
+    const channel = await CommandUtils.parseTextChannel(args[0], message.client);
     if (!channel || channel.type === 'DM') {
       return { sendHelp: true, command: this, message };
     }
@@ -155,7 +137,7 @@ class DisableApprovedChannels extends Command {
     }
 
     // Parse Discord channel
-    const channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
+    const channel = await CommandUtils.parseTextChannel(args[0], message.client);
     if (!channel || channel.type === 'DM') {
       return { sendHelp: true, command: this, message };
     }
@@ -193,7 +175,7 @@ class AddTwitchChannel extends Command {
     }
 
     // Parse Discord channel
-    const channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
+    const channel = await CommandUtils.parseTextChannel(args[0], message.client);
     if (!channel || channel.type === 'DM') {
       return { sendHelp: true, command: this, message };
     }
@@ -217,11 +199,11 @@ class AddTwitchChannel extends Command {
     }
 
     const addedUsers: string[] = [];
-    for (const user of twitchUsers) {
+    twitchUsers.forEach(async (user) => {
       if (user && await bot.configs.twitchClipModConfig.addApprovedChannel(channel.id, user.id)) {
         addedUsers.push(user.displayName);
       }
-    }
+    });
 
     if (addedUsers.length === 0) {
       await CommandUtils.sendMessage('No channels added.', message.channel, bot);
@@ -245,7 +227,7 @@ class DeleteTwitchChannel extends Command {
     }
 
     // Parse Discord channel
-    const channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
+    const channel = await CommandUtils.parseTextChannel(args[0], message.client);
     if (!channel || channel.type === 'DM') {
       return { sendHelp: true, command: this, message };
     }
@@ -269,11 +251,11 @@ class DeleteTwitchChannel extends Command {
     }
 
     const removedUsers: string[] = [];
-    for (const user of twitchUsers) {
-      if (user && await bot.configs.twitchClipModConfig.removeApprovedChannel(channel.id, user.id)) {
+    twitchUsers.forEach(async (user) => {
+      if (await bot.configs.twitchClipModConfig.removeApprovedChannel(channel.id, user.id)) {
         removedUsers.push(user.displayName);
       }
-    }
+    });
 
     if (removedUsers.length === 0) {
       await CommandUtils.sendMessage('No channels removed.', message.channel, bot);
@@ -297,7 +279,7 @@ class ChannelModInfo extends Command {
     }
 
     // Parse channel
-    const channel: TextBasedChannels | null = await CommandUtils.parseTextChannel(args[0], message.client);
+    const channel = await CommandUtils.parseTextChannel(args[0], message.client);
     if (!channel || channel.type === 'DM') {
       return { sendHelp: true, command: this, message };
     }
@@ -310,7 +292,7 @@ class ChannelModInfo extends Command {
     const responseMessage: Message = await CommandUtils.sendMessage('Getting info...', message.channel, bot);
 
     // Get config
-    const config: TwitchClipModObject | undefined = await bot.configs.twitchClipModConfig.getChannelTwitchClipMod(channel.id);
+    const config = await bot.configs.twitchClipModConfig.getChannelTwitchClipMod(channel.id);
 
     const embed: MessageEmbed = new MessageEmbed();
     embed.setColor(await CommandUtils.getSelfColor(message.channel, bot));
@@ -325,14 +307,12 @@ class ChannelModInfo extends Command {
       embed.addField('Approved Channels Only', config.approvedChannelsOnly ? 'True' : 'False', true);
 
       if (config.twitchChannels && config.twitchChannels.length > 0) {
-        const twitchUsers: HelixUser[] | null = await bot.twitchApiManager.getUsersByIds(config.twitchChannels);
+        const twitchUsers = await bot.twitchApiManager.getUsersByIds(config.twitchChannels);
         let usernames = '';
         if (twitchUsers) {
-          for (const user of twitchUsers) {
-            if (user) {
-              usernames += `${user.displayName}\n`;
-            }
-          }
+          twitchUsers.forEach((user) => {
+            usernames += `${user.displayName}\n`;
+          });
           embed.addField('Approved Channels', usernames, true);
         }
       } else {
@@ -342,5 +322,24 @@ class ChannelModInfo extends Command {
 
     await responseMessage.edit({ embeds: [embed] });
     return { sendHelp: false, command: this, message };
+  }
+}
+
+// eslint-disable-next-line import/prefer-default-export
+export class ManageTwitchClipMod extends CommandGroup {
+  constructor(bot: Bot) {
+    super('twitchclip', 'Manages Twitch Clip moderation', bot, { runsInDm: false });
+
+    this.registerSubCommands(bot);
+  }
+
+  protected registerSubCommands(bot: Bot): void {
+    this.registerSubCommand(new EnableClipModeration(this, bot));
+    this.registerSubCommand(new DisableClipModeration(this, bot));
+    this.registerSubCommand(new EnableApprovedChannels(this, bot));
+    this.registerSubCommand(new DisableApprovedChannels(this, bot));
+    this.registerSubCommand(new AddTwitchChannel(this, bot));
+    this.registerSubCommand(new DeleteTwitchChannel(this, bot));
+    this.registerSubCommand(new ChannelModInfo(this, bot));
   }
 }

@@ -1,4 +1,4 @@
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 import { GuildConfig } from 'config/GuildConfig';
 import { ReactionRoleConfig } from 'config/ReactionRoleConfig';
 import { LockdownConfig } from 'config/LockdownConfig';

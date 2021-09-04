@@ -1,4 +1,4 @@
-import { Bot } from 'Bot';
+import Bot from 'Bot';
 import { Logger } from 'Logger';
 import { VerificationConfigObject } from 'config/VerificationConfig';
 import { ModErrorLog } from 'moderrorlog/ModErrorLog';
@@ -7,7 +7,7 @@ import {
   GuildMember, MessageReaction, User, Role, Permissions, Guild, PartialMessageReaction, PartialUser,
 } from 'discord.js';
 
-export class VerificationManager {
+export default class VerificationManager {
   private bot: Bot;
 
   private logger: Logger;
