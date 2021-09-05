@@ -7,7 +7,7 @@ import { Message, PermissionResolvable, Permissions } from 'discord.js';
 import CommandManager from 'CommandManager';
 
 export default abstract class CommandGroup extends Command {
-  protected readonly subCommands: Map<string, Command>;
+  public readonly subCommands: Map<string, Command>;
 
   constructor(name: string, desc: string, bot: Bot, params: CommandParameters = {}) {
     const newParams = params;

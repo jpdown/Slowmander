@@ -1,7 +1,7 @@
 import { Logger } from 'Logger';
 import Bot from 'Bot';
 import { TwitchClipModObject } from 'config/TwitchClipModConfig';
-import { ModErrorLog } from 'moderrorlog/ModErrorLog';
+import ModErrorLog from 'moderrorlog/ModErrorLog';
 
 import {
   GuildChannelResolvable, Message, PartialMessage, Permissions,

@@ -1,8 +1,8 @@
 import Bot from 'Bot';
 import { Command, PermissionLevel } from 'commands/Command';
-import { PermissionsHelper } from 'utils/PermissionsHelper';
-import { CommandUtils } from 'utils/CommandUtils';
-import { CommandGroup } from 'commands/CommandGroup';
+import PermissionsHelper from 'utils/PermissionsHelper';
+import CommandUtils from 'utils/CommandUtils';
+import CommandGroup from 'commands/CommandGroup';
 
 import {
   Message, MessageEmbed, GuildMember, User, Permissions,
@@ -32,7 +32,7 @@ export class HelpManager {
       helpMessage += ` ${command.usage}`;
     }
     helpMessage += `\`\n\n${command.desc}`;
-    if (command.longDesc !=== '') {
+    if (command.longDesc !== '') {
       helpMessage += `\n\n${command.longDesc}`;
     }
     helpMessage += '`';

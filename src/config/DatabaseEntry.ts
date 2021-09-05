@@ -1,7 +1,7 @@
 import Bot from 'Bot';
 import { Logger } from 'Logger';
 
-import r from 'rethinkdb';
+// import r from 'rethinkdb';
 
 export abstract class DatabaseEntry<T extends DatabaseObject> {
   protected readonly TABLE: string;
@@ -20,15 +20,16 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
   }
 
   protected async checkTable(): Promise<boolean> {
-    const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    // const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    const connection = undefined;
     if (!connection) {
       await this.logger.error('Error getting database connection.');
       return false;
     }
     // If we need to generate the table, do so
-    let tableList: string[];
+    let tableList: string[] = [];
     try {
-      tableList = await r.db(this.bot.databaseManager.db).tableList().run(connection);
+      // tableList = await r.db(this.bot.databaseManager.db).tableList().run(connection);
     } catch (err) {
       await this.logger.error('Error getting table list.', err);
       return false;
@@ -47,7 +48,8 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
   }
 
   protected async getDocument(id: string): Promise<T | undefined> {
-    const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    // const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    const connection = undefined
     if (!connection) {
       await this.logger.error('Error getting database connection.');
       return undefined;
@@ -57,7 +59,7 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
     let dbObj: T | undefined;
 
     try {
-      dbObj = <T> await r.table(this.TABLE).get(id).run(connection);
+      // dbObj = <T> await r.table(this.TABLE).get(id).run(connection);
     } catch (err) {
       await this.logger.error('Error getting from database.', err);
     }
@@ -66,7 +68,8 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
   }
 
   protected async getFirstDocument(): Promise<T | undefined> {
-    const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    // const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    const connection = undefined;
     if (!connection) {
       await this.logger.error('Error getting database connection.');
       return undefined;
@@ -76,9 +79,9 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
     let dbObj: T | undefined;
 
     try {
-      const result: r.Cursor = await r.table(this.TABLE).limit(1).run(connection);
-      const resultArray: T[] = await result.toArray();
-      if (resultArray.length > 0) dbObj = resultArray[0];
+      // const result: r.Cursor = await r.table(this.TABLE).limit(1).run(connection);
+      // const resultArray: T[] = await result.toArray();
+      // if (resultArray.length > 0) dbObj = resultArray[0];
     } catch (err) {
       await this.logger.error('Error getting from database.', err);
     }
@@ -87,7 +90,8 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
   }
 
   protected async getAllDocuments(): Promise<T[] | undefined> {
-    const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    // const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    const connection = undefined;
     if (!connection) {
       await this.logger.error('Error getting database connection.');
       return undefined;
@@ -97,11 +101,11 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
     let resultArray: T[] | undefined;
 
     try {
-      const result: r.Cursor = await r.table(this.TABLE).run(connection);
-      resultArray = await result.toArray();
-      if (resultArray.length === 0) {
-        resultArray = undefined;
-      }
+      // const result: r.Cursor = await r.table(this.TABLE).run(connection);
+      // resultArray = await result.toArray();
+      // if (resultArray.length === 0) {
+      //   resultArray = undefined;
+      // }
     } catch (err) {
       await this.logger.error('Error getting from database.', err);
     }
@@ -110,7 +114,8 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
   }
 
   protected async updateDocument(id: any, object: T): Promise<boolean> {
-    const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    // const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    const connection = undefined;
     if (!connection) {
       await this.logger.error('Error getting database connection.');
       return false;
@@ -118,11 +123,11 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
     if (!await this.checkTable()) return false;
 
     try {
-      const result: r.WriteResult = await r.table(this.TABLE).get(id).update(object).run(connection);
-      if (result.errors > 0) {
-        await this.logger.error(`Error updating document. Table: ${this.TABLE}, ID: ${id}, Updates: ${object}. First error: ${result.first_error}`);
-        return false;
-      }
+      // const result: r.WriteResult = await r.table(this.TABLE).get(id).update(object).run(connection);
+      // if (result.errors > 0) {
+      //   await this.logger.error(`Error updating document. Table: ${this.TABLE}, ID: ${id}, Updates: ${object}. First error: ${result.first_error}`);
+      //   return false;
+      // }
 
       return true;
     } catch (err) {
@@ -132,7 +137,8 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
   }
 
   protected async updateFirstDocument(object: T): Promise<boolean> {
-    const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    // const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    const connection = undefined;
     if (!connection) {
       await this.logger.error('Error getting database connection.');
       return false;
@@ -140,11 +146,11 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
     if (!await this.checkTable()) return false;
 
     try {
-      const result: r.WriteResult = await r.table(this.TABLE).limit(1).update(object).run(connection);
-      if (result.errors > 0) {
-        await this.logger.error(`Error updating document. Table: ${this.TABLE}, Updates: ${object}. First error: ${result.first_error}`);
-        return false;
-      }
+      // const result: r.WriteResult = await r.table(this.TABLE).limit(1).update(object).run(connection);
+      // if (result.errors > 0) {
+      //   await this.logger.error(`Error updating document. Table: ${this.TABLE}, Updates: ${object}. First error: ${result.first_error}`);
+      //   return false;
+      // }
 
       return true;
     } catch (err) {
@@ -154,7 +160,8 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
   }
 
   protected async insertDocument(object: T, id?: any): Promise<boolean> {
-    const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    // const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    const connection = undefined;
     if (!connection) {
       await this.logger.error('Error getting database connection.');
       return false;
@@ -165,11 +172,11 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
       if (id) {
         object.id = id;
       }
-      const result: r.WriteResult = await r.table(this.TABLE).insert(object).run(connection);
-      if (result.errors > 0) {
-        await this.logger.error(`Error inserting document. Table: ${this.TABLE}, ID: ${id}, Document: ${object}. First error: ${result.first_error}`);
-        return false;
-      }
+      // const result: r.WriteResult = await r.table(this.TABLE).insert(object).run(connection);
+      // if (result.errors > 0) {
+      //   await this.logger.error(`Error inserting document. Table: ${this.TABLE}, ID: ${id}, Document: ${object}. First error: ${result.first_error}`);
+      //   return false;
+      // }
 
       return true;
     } catch (err) {
@@ -187,7 +194,8 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
   }
 
   protected async removeMatchingDocuments(object: T): Promise<boolean> {
-    const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    // const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    const connection = undefined;
     if (!connection) {
       await this.logger.error('Error getting database connection.');
       return false;
@@ -195,11 +203,11 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
     if (!await this.checkTable()) return false;
 
     try {
-      const result: r.WriteResult = await r.table(this.TABLE).filter(object).delete().run(connection);
-      if (result.errors > 0) {
-        await this.logger.error(`Error removing documents. Table: ${this.TABLE}, Filter: ${object}. First error: ${result.first_error}`);
-        return false;
-      }
+      // const result: r.WriteResult = await r.table(this.TABLE).filter(object).delete().run(connection);
+      // if (result.errors > 0) {
+      //   await this.logger.error(`Error removing documents. Table: ${this.TABLE}, Filter: ${object}. First error: ${result.first_error}`);
+      //   return false;
+      // }
 
       return true;
     } catch (err) {
@@ -209,7 +217,8 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
   }
 
   protected async getAllMatches(row: string, value: string): Promise<T[] | undefined> {
-    const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    // const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    const connection = undefined;
     if (!connection) {
       await this.logger.error('Error getting database connection.');
       return undefined;
@@ -219,8 +228,8 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
     if (!await this.checkTable()) return resultsArr;
 
     try {
-      const cursor: r.Cursor = await r.table(this.TABLE).filter(r.row(row).eq(value)).run(connection);
-      resultsArr = await cursor.toArray();
+    //   const cursor: r.Cursor = await r.table(this.TABLE).filter(r.row(row).eq(value)).run(connection);
+    //   resultsArr = await cursor.toArray();
     } catch (err) {
       await this.logger.error(`Error getting matching documents. Table: ${this.TABLE}, Row: ${row}, Value: ${value}`, err);
       return undefined;
@@ -230,17 +239,18 @@ export abstract class DatabaseEntry<T extends DatabaseObject> {
   }
 
   private async generateTable(): Promise<boolean> {
-    const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    // const connection: r.Connection | undefined = await this.bot.databaseManager.getConnection();
+    const connection = undefined;
     if (!connection) {
       await this.logger.error('Error getting database connection.');
       return false;
     }
     try {
-      await r.db(this.bot.databaseManager.db).tableCreate(this.TABLE).run(connection);
+      // await r.db(this.bot.databaseManager.db).tableCreate(this.TABLE).run(connection);
       await this.logger.info(`Table ${this.TABLE} created successfully.`);
 
       if (this.defaultEntry) {
-        await r.table(this.TABLE).insert(this.defaultEntry).run(connection);
+        // await r.table(this.TABLE).insert(this.defaultEntry).run(connection);
         await this.logger.info(`Default data put in ${this.TABLE} successfully.`);
       }
 

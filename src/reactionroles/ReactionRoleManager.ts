@@ -1,7 +1,7 @@
 import { ReactionRoleObject } from 'config/ReactionRoleConfig';
 import Bot from 'Bot';
 import { Logger } from 'Logger';
-import { ModErrorLog } from 'moderrorlog/ModErrorLog';
+import ModErrorLog from 'moderrorlog/ModErrorLog';
 
 import {
   MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Permissions, PartialMessageReaction, PartialUser,

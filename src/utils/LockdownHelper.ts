@@ -1,6 +1,8 @@
 import Bot from 'Bot';
+import { LockdownConfigObject } from 'config/LockdownConfig';
 
-import { Permissions, Message } from 'discord.js';
+import { Permissions, Message, GuildChannel, ThreadChannel, Role, CategoryChannel, GuildMember, MessageEmbed, NewsChannel, Snowflake, TextChannel, User } from 'discord.js';
+import CommandUtils from './CommandUtils';
 
 export default class LockdownHelper {
   static readonly PERMISSION = Permissions.FLAGS.SEND_MESSAGES;

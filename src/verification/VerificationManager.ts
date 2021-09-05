@@ -1,7 +1,7 @@
 import Bot from 'Bot';
 import { Logger } from 'Logger';
 import { VerificationConfigObject } from 'config/VerificationConfig';
-import { ModErrorLog } from 'moderrorlog/ModErrorLog';
+import ModErrorLog from 'moderrorlog/ModErrorLog';
 
 import {
   GuildMember, MessageReaction, User, Role, Permissions, Guild, PartialMessageReaction, PartialUser,

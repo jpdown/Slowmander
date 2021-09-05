@@ -1,9 +1,9 @@
 import { Command, CommandResult } from 'commands/Command';
 import * as commands from 'commands';
 import Bot from 'Bot';
-import { CommandUtils } from 'utils/CommandUtils';
-import { PermissionsHelper } from 'utils/PermissionsHelper';
-import { CommandGroup } from 'commands/CommandGroup';
+import CommandUtils from 'utils/CommandUtils';
+import PermissionsHelper from 'utils/PermissionsHelper';
+import CommandGroup from 'commands/CommandGroup';
 import { Logger } from 'Logger';
 
 import {
@@ -28,11 +28,14 @@ export default class CommandManager {
   }
 
   public async parseCommand(message: Message | PartialMessage): Promise<void> {
-    let fullMessage = message;
+    let fullMessage: Message;
     // Handle partial events
     try {
       if (message.partial) {
         fullMessage = await message.fetch();
+      }
+      else {
+        fullMessage = message;
       }
     } catch (err) {
       await this.logger.warning('Error fetching message.', err);
@@ -69,7 +72,7 @@ export default class CommandManager {
 
     // Check perms/in DM and run
     const user = fullMessage.member ?? fullMessage.author;
-    const allowed = await PermissionsHelper.checkPermsAndDM(user, command, this.bot);
+    const allowed = user && await PermissionsHelper.checkPermsAndDM(user, command, this.bot);
     if (allowed) {
       try {
         const result: CommandResult = await command.run(this.bot, fullMessage, args);
