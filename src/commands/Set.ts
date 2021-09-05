@@ -1,29 +1,12 @@
-import { CommandGroup } from 'commands/CommandGroup';
+/* eslint-disable max-classes-per-file */
+import CommandGroup from 'commands/CommandGroup';
 import { Command, CommandResult, PermissionLevel } from 'commands/Command';
 import Bot from 'Bot';
-import { CommandUtils } from 'utils/CommandUtils';
+import CommandUtils from 'utils/CommandUtils';
 
 import {
   Message, GuildMember, Role, TextChannel, Channel, Permissions,
 } from 'discord.js';
-
-export class Set extends CommandGroup {
-  constructor(bot: Bot) {
-    super('set', 'Sets various bot parameters', bot);
-
-    this.registerSubCommands(bot);
-  }
-
-  protected registerSubCommands(bot: Bot): void {
-    this.registerSubCommand(new SetNickname(this, bot));
-    this.registerSubCommand(new SetGuildPrefix(this, bot));
-    this.registerSubCommand(new SetVipRole(this, bot));
-    this.registerSubCommand(new SetModRole(this, bot));
-    this.registerSubCommand(new SetAdminRole(this, bot));
-    this.registerSubCommand(new SetEventLogChannel(this, bot));
-    this.registerSubCommand(new SetModErrorLogChannel(this, bot));
-  }
-}
 
 class SetNickname extends Command {
   constructor(group: CommandGroup, bot: Bot) {
@@ -34,7 +17,6 @@ class SetNickname extends Command {
 
   public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
     let member: GuildMember | undefined;
-    let newNickname: string;
     if (args.length > 0) {
       member = await CommandUtils.parseMemberPingOnly(args[0], message.guild!);
     }
@@ -46,11 +28,11 @@ class SetNickname extends Command {
     }
 
     // Check if we can change nickname
-    if (!await this.checkPerms(member, message, bot)) {
+    if (!await SetNickname.checkPerms(member, message, bot)) {
       return { sendHelp: false, command: this, message };
     }
 
-    newNickname = args.join(' ');
+    const newNickname = args.join(' ');
 
     try {
       await member.setNickname(newNickname);
@@ -62,7 +44,7 @@ class SetNickname extends Command {
     return { sendHelp: false, command: this, message };
   }
 
-  private async checkPerms(member: GuildMember, message: Message, bot: Bot): Promise<boolean> {
+  private static async checkPerms(member: GuildMember, message: Message, bot: Bot): Promise<boolean> {
     if (member.id === member.client.user!.id && !member.permissions.has(Permissions.FLAGS.CHANGE_NICKNAME)) {
       await CommandUtils.sendMessage("Setting nickname failed: I'm missing permission to change my own nickname.", message.channel, bot);
       return false;
@@ -222,7 +204,10 @@ class SetEventLogChannel extends Command {
     const result: boolean = await bot.eventLogger.setEventlogChannel(message.guild!.id, channel.id);
 
     if (result) {
-      await CommandUtils.sendMessage(`Eventlog channel set to ${channel.toString()} for guild ${message.guild!.name} successfully.`, message.channel, bot);
+      await CommandUtils.sendMessage(
+        `Eventlog channel set to ${channel.toString()} for guild ${message.guild!.name} successfully.`,
+        message.channel, bot,
+      );
     } else {
       await CommandUtils.sendMessage(`Eventlog channel was unable to be set for guild ${message.guild!.name}.`, message.channel, bot);
     }
@@ -253,11 +238,33 @@ class SetModErrorLogChannel extends Command {
     const result: boolean = await bot.configs.guildConfig.setModErrorChannel(message.guild!.id, channel.id);
 
     if (result) {
-      await CommandUtils.sendMessage(`Mod error log channel set to ${channel.toString()} for guild ${message.guild!.name} successfully.`, message.channel, bot);
+      await CommandUtils.sendMessage(
+        `Mod error log channel set to ${channel.toString()} for guild ${message.guild!.name} successfully.`,
+        message.channel, bot,
+      );
     } else {
       await CommandUtils.sendMessage(`Mod error log channel was unable to be set for guild ${message.guild!.name}.`, message.channel, bot);
     }
 
     return { sendHelp: false, command: this, message };
+  }
+}
+
+// eslint-disable-next-line import/prefer-default-export
+export class Set extends CommandGroup {
+  constructor(bot: Bot) {
+    super('set', 'Sets various bot parameters', bot);
+
+    this.registerSubCommands(bot);
+  }
+
+  protected registerSubCommands(bot: Bot): void {
+    this.registerSubCommand(new SetNickname(this, bot));
+    this.registerSubCommand(new SetGuildPrefix(this, bot));
+    this.registerSubCommand(new SetVipRole(this, bot));
+    this.registerSubCommand(new SetModRole(this, bot));
+    this.registerSubCommand(new SetAdminRole(this, bot));
+    this.registerSubCommand(new SetEventLogChannel(this, bot));
+    this.registerSubCommand(new SetModErrorLogChannel(this, bot));
   }
 }

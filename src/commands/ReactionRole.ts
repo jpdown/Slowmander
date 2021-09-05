@@ -268,7 +268,7 @@ class ListReactionRoles extends Command {
     // List of strings
     const stringList: string[] = [];
     let currString: string;
-    for (const reactionRole of reactionRoles) {
+    reactionRoles.forEach(async (reactionRole) => {
       let reactionChannel: TextChannel | NewsChannel;
       let reactionMessage: Message;
 
@@ -285,13 +285,13 @@ class ListReactionRoles extends Command {
       currString += ` Emote: ${await CommandUtils.makeEmoteFromId(reactionRole.emoteID, message)},`;
       currString += ` Role: <@&${reactionRole.roleID}>`;
       stringList.push(currString);
-    }
+    });
 
     // Make paginator
     const paginator: ReactionPaginator = new ReactionPaginator(stringList, 10,
       'Reaction Roles', message.channel, bot, this);
 
-    const paginatedMessage = await paginator.postMessage();
+    await paginator.postMessage();
 
     return { sendHelp: false, command: this, message };
   }

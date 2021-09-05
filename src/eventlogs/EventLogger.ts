@@ -2,7 +2,7 @@ import Bot from 'Bot';
 import { Logger } from 'Logger';
 
 import {
-  GuildMember, Message, Collection, Snowflake, Client, TextChannel, MessageEmbed, NewsChannel, GuildBan, PartialGuildMember, PartialMessage,
+  GuildMember, Message, Collection, Snowflake, TextChannel, MessageEmbed, NewsChannel, GuildBan, PartialGuildMember, PartialMessage,
 } from 'discord.js';
 
 export default class EventLogger {

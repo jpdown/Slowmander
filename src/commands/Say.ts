@@ -1,9 +1,10 @@
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
 import Bot from 'Bot';
-import { CommandUtils } from 'utils/CommandUtils';
+import CommandUtils from 'utils/CommandUtils';
 
 import { Message, TextBasedChannels } from 'discord.js';
 
+// eslint-disable-next-line import/prefer-default-export
 export class Say extends Command {
   constructor(bot: Bot) {
     super('say', PermissionLevel.Owner, 'Sends a message as the bot', bot, { usage: '[channel/user]... <message>' });
@@ -27,7 +28,8 @@ export class Say extends Command {
     let lastChannel = 0;
     const channelList: TextBasedChannels[] = [];
     let currChannel: TextBasedChannels | null;
-    for (lastChannel = 0; lastChannel < args.length; lastChannel++) {
+    for (lastChannel = 0; lastChannel < args.length; lastChannel += 1) {
+      // eslint-disable-next-line no-await-in-loop
       currChannel = await CommandUtils.parseTextChannel(args[lastChannel], message.client);
       if (currChannel === null) {
         break;
@@ -44,9 +46,9 @@ export class Say extends Command {
     const messageToSend: string = args.slice(lastChannel, args.length).join(' ');
 
     // Send message(s)
-    for (const channel of channelList) {
+    channelList.forEach(async (channel) => {
       await CommandUtils.sendMessage(messageToSend, channel, bot);
-    }
+    });
 
     return { sendHelp: false, command: this, message };
   }

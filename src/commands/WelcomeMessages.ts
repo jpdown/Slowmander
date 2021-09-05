@@ -1,9 +1,10 @@
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
 import Bot from 'Bot';
-import { CommandUtils } from 'utils/CommandUtils';
+import CommandUtils from 'utils/CommandUtils';
 
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
 
+// eslint-disable-next-line import/prefer-default-export
 export class WelcomeMessages extends Command {
   private readonly CHANNEL_ID: string = '329371265372782593';
 
@@ -17,7 +18,7 @@ export class WelcomeMessages extends Command {
     super('welcome', PermissionLevel.Owner, 'Edits welcome messages', bot);
   }
 
-  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+  async run(bot: Bot, message: Message): Promise<CommandResult> {
     const channel: TextChannel = <TextChannel> message.client.channels.resolve(this.CHANNEL_ID);
     const messageOne: Message = await channel.messages.fetch(this.MESSAGE_ONE_ID);
     const messageTwo: Message = await channel.messages.fetch(this.MESSAGE_TWO_ID);
