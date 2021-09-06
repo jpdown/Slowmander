@@ -13,8 +13,6 @@ export default class TwitchClipModeration {
   constructor(bot: Bot, db: BS3.Database) {
     this.logger = Logger.getLogger(bot, this);
     this.db = db;
-
-    this.generateTables();
   }
 
   /**
@@ -137,35 +135,6 @@ export default class TwitchClipModeration {
     }
 
     return rowsModified > 0;
-  }
-
-  private generateTables() {
-    try {
-      let statementInfo = this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS TwitchClipModConfigs('
-        + '"channelId" TEXT NOT NULL PRIMARY KEY,'
-        + '"enabled" BOOLEAN NOT NULL DEFAULT 0 CHECK (enabled in (0, 1)),'
-        + '"approvedOnly" BOOLEAN NOT NULL DEFAULT 0 CHECK (enabled in (0, 1))'
-        + ');',
-      ).run();
-      if (statementInfo.changes > 0) {
-        this.logger.info('TwitchClipModConfigs table created.');
-      }
-
-      statementInfo = this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS TwitchClipApprovedChannels('
-        + '"channelId" TEXT NOT NULL,'
-        + '"twitchChannel" TEXT NOT NULL,'
-        + 'FOREIGN KEY(channelId) REFERENCES TwitchClipModConfigs(channelId),'
-        + 'PRIMARY KEY(channelId, twitchChannel)'
-        + ');',
-      ).run();
-      if (statementInfo.changes > 0) {
-        this.logger.info('TwitchClipApprovedChannels table created.');
-      }
-    } catch (err) {
-      this.logger.error('Error creating TwitchClipMod tables.', err);
-    }
   }
 }
 

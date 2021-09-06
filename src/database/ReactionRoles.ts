@@ -13,8 +13,6 @@ export default class ReactionRoles {
   constructor(bot: Bot, db: BS3.Database) {
     this.logger = Logger.getLogger(bot, this);
     this.db = db;
-
-    this.generateTable();
   }
 
   /**
@@ -94,26 +92,6 @@ export default class ReactionRoles {
     }
 
     return rowsModified > 0;
-  }
-
-  private generateTable() {
-    try {
-      const statementInfo = this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS ReactionRoles('
-        + '"channelId" TEXT NOT NULL,'
-        + '"messageId" TEXT NOT NULL,'
-        + '"emoteId" TEXT NOT NULL,'
-        + '"roleId" TEXT NOT NULL,'
-        + '"guildId" TEXT NOT NULL,'
-        + 'PRIMARY KEY(channelId, messageId, emoteId)'
-        + ');',
-      ).run();
-      if (statementInfo.changes > 0) {
-        this.logger.info('ReactionRoles table created.');
-      }
-    } catch (err) {
-      this.logger.error('Error creating ReactionRoles table.', err);
-    }
   }
 }
 

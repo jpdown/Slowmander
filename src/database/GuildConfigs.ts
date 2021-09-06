@@ -13,8 +13,6 @@ export default class GuildConfigs {
   constructor(bot: Bot, db: BS3.Database) {
     this.logger = Logger.getLogger(bot, this);
     this.db = db;
-
-    this.generateTable();
   }
 
   /**
@@ -160,26 +158,6 @@ export default class GuildConfigs {
     }
 
     return rowsModified > 0;
-  }
-
-  private generateTable() {
-    try {
-      const statementInfo = this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS GuildConfigs('
-        + '"guildId" TEXT NOT NULL PRIMARY KEY,'
-        + '"prefix" TEXT,'
-        + '"vipRole" TEXT,'
-        + '"modRole" TEXT,'
-        + '"adminRole" TEXT,'
-        + '"modChannel" TEXT'
-        + ');',
-      ).run();
-      if (statementInfo.changes > 0) {
-        this.logger.info('GuildConfigs table created.');
-      }
-    } catch (err) {
-      this.logger.error('Error creating GuildConfigs table.', err);
-    }
   }
 }
 

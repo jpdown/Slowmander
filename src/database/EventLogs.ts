@@ -13,8 +13,6 @@ export default class EventLogs {
   constructor(bot: Bot, db: BS3.Database) {
     this.logger = Logger.getLogger(bot, this);
     this.db = db;
-
-    this.generateTable();
   }
 
   /**
@@ -47,22 +45,6 @@ export default class EventLogs {
     }
 
     return rowsModified > 0;
-  }
-
-  private generateTable() {
-    try {
-      const statementInfo = this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS EventLogs('
-        + '"guildId" TEXT NOT NULL PRIMARY KEY,'
-        + '"channelId" TEXT'
-        + ');',
-      ).run();
-      if (statementInfo.changes > 0) {
-        this.logger.info('EventLogs table created.');
-      }
-    } catch (err) {
-      this.logger.error('Error creating EventLogs table.', err);
-    }
   }
 }
 

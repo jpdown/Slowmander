@@ -13,8 +13,6 @@ export default class LockdownPresets {
   constructor(bot: Bot, db: BS3.Database) {
     this.logger = Logger.getLogger(bot, this);
     this.db = db;
-
-    this.generateTables();
   }
 
   /**
@@ -149,50 +147,6 @@ export default class LockdownPresets {
     }
 
     return rowsModified > 0;
-  }
-
-  private generateTables() {
-    try {
-      let statementInfo = this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS LockdownPresets('
-        + '"guildId" TEXT NOT NULL,'
-        + '"preset" TEXT NOT NULL,'
-        + '"grant" BOOLEAN NOT NULL CHECK (grant IN (0, 1)),'
-        + 'PRIMARY KEY(guildId, preset)'
-        + ');',
-      ).run();
-      if (statementInfo.changes > 0) {
-        this.logger.info('LockdownPresets table created.');
-      }
-
-      statementInfo = this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS LockdownChannels('
-        + '"guildId" TEXT NOT NULL,'
-        + '"preset" TEXT NOT NULL,'
-        + '"channelId" TEXT NOT NULL,'
-        + 'FOREIGN KEY(guildId, preset) REFERENCES LockdownPresets(guildId, preset),'
-        + 'PRIMARY KEY(guildId, preset, channelId)'
-        + ');',
-      ).run();
-      if (statementInfo.changes > 0) {
-        this.logger.info('LockdownChannels table created.');
-      }
-
-      statementInfo = this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS LockdownRoles('
-        + '"guildId" TEXT NOT NULL,'
-        + '"preset" TEXT NOT NULL,'
-        + '"roleId" TEXT NOT NULL,'
-        + 'FOREIGN KEY(guildId, preset) REFERENCES LockdownPresets(guildId, preset),'
-        + 'PRIMARY KEY(guildId, preset, roleId)'
-        + ');',
-      ).run();
-      if (statementInfo.changes > 0) {
-        this.logger.info('LockdownRoles table created.');
-      }
-    } catch (err) {
-      this.logger.error('Error creating Lockdown tables.', err);
-    }
   }
 }
 

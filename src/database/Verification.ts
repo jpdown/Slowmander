@@ -13,8 +13,6 @@ export default class Verification {
   constructor(bot: Bot, db: BS3.Database) {
     this.logger = Logger.getLogger(bot, this);
     this.db = db;
-
-    this.generateTable();
   }
 
   /**
@@ -111,27 +109,6 @@ export default class Verification {
     }
 
     return rowsModified > 0;
-  }
-
-  private generateTable() {
-    try {
-      const statementInfo = this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS VerificationConfigs('
-        + '"guildId" TEXT NOT NULL PRIMARY KEY,'
-        + '"enabled" BOOLEAN NOT NULL DEFAULT 0 CHECK (enabled in (0, 1)),'
-        + '"channelId" TEXT NOT NULL,'
-        + '"messageId" TEXT NOT NULL,'
-        + '"emoteId" TEXT NOT NULL,'
-        + '"roleId" TEXT NOT NULL,'
-        + '"removeReaction" BOOLEAN NOT NULL DEFAULT 0 CHECK (removeReaction in (0, 1))'
-        + ');',
-      ).run();
-      if (statementInfo.changes > 0) {
-        this.logger.info('VerificationConfigs table created.');
-      }
-    } catch (err) {
-      this.logger.error('Error creating Verification table.', err);
-    }
   }
 }
 
