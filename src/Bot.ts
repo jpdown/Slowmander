@@ -4,8 +4,7 @@ import ReactionRoleManager from 'reactionroles/ReactionRoleManager';
 import { HelpManager } from 'HelpManager';
 import { Logger, LogLevel } from 'Logger';
 import EventLogger from 'eventlogs/EventLogger';
-import { DatabaseManager } from 'config/DatabaseManager';
-import { ConfigManager } from 'config/ConfigManager';
+import DatabaseManager from 'database/DatabaseManager';
 import VerificationManager from 'verification/VerificationManager';
 import TwitchAPIManager from 'twitch/TwitchAPIManager';
 import TwitchClipModManager from 'twitch/TwitchClipModManager';
@@ -20,9 +19,7 @@ export default class Bot {
 
   private _config: Config;
 
-  private _configManager: ConfigManager;
-
-  // private _databaseManager: DatabaseManager;
+  private _databaseManager: DatabaseManager;
 
   private _commandManager: CommandManager;
 
@@ -52,14 +49,13 @@ export default class Bot {
     this.logger = Logger.getLogger(this, this);
     this._credentials = new Credentials(this);
     this._config = new Config(this);
-    // this._databaseManager = new DatabaseManager(this, this._credentials.rethinkCreds);
+    this._databaseManager = new DatabaseManager(this);
     this._commandManager = new CommandManager(this);
     this._helpManager = new HelpManager();
     this._eventLogger = new EventLogger(this);
     this._verificationManager = new VerificationManager(this);
     this._twitchApiManager = new TwitchAPIManager(this, this._credentials.twitchId, this._credentials.twitchSecret);
     this._twitchClipModManager = new TwitchClipModManager(this);
-    this._configManager = new ConfigManager(this);
     this._reactionRoleManager = new ReactionRoleManager(this);
 
     this._client.on('ready', async () => {
@@ -74,21 +70,16 @@ export default class Bot {
       process.exit();
     }
 
-    // Connect to db
-    // this._databaseManager.connect().then(() => {
-    //   this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
-    //   this._client.on('messageReactionAdd', this._reactionRoleManager.onMessageReactionAdd.bind(this._reactionRoleManager));
-    //   this._client.on('messageReactionRemove', this._reactionRoleManager.onMessageReactionRemove.bind(this._reactionRoleManager));
-    //   this._client.on('ready', this._reactionRoleManager.onReady.bind(this._reactionRoleManager));
-    //   this._client.on('guildMemberAdd', this._verificationManager.onGuildMemberAdd.bind(this._verificationManager));
-    //   this._client.on('messageReactionAdd', this._verificationManager.onMessageReactionAdd.bind(this._verificationManager));
-    //   this._client.on('message', this._twitchClipModManager.onMessage.bind(this._twitchClipModManager));
-    //   this._client.on('messageUpdate', this._twitchClipModManager.onMessageUpdate.bind(this._twitchClipModManager));
-    // }).catch((err) => {
-    //   this.logger.logSync(LogLevel.ERROR, 'Error with db', err);
-    // });
-
-    this._client.login(token);
+    this._client.login(token).then(() => {
+      this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
+      this._client.on('messageReactionAdd', this._reactionRoleManager.onMessageReactionAdd.bind(this._reactionRoleManager));
+      this._client.on('messageReactionRemove', this._reactionRoleManager.onMessageReactionRemove.bind(this._reactionRoleManager));
+      this._client.on('ready', this._reactionRoleManager.onReady.bind(this._reactionRoleManager));
+      this._client.on('guildMemberAdd', this._verificationManager.onGuildMemberAdd.bind(this._verificationManager));
+      this._client.on('messageReactionAdd', this._verificationManager.onMessageReactionAdd.bind(this._verificationManager));
+      this._client.on('message', this._twitchClipModManager.onMessage.bind(this._twitchClipModManager));
+      this._client.on('messageUpdate', this._twitchClipModManager.onMessageUpdate.bind(this._twitchClipModManager));
+    });
   }
 
   public async addOwner(ownerId: Snowflake) {
@@ -111,13 +102,9 @@ export default class Bot {
     return this._config;
   }
 
-  public get configs(): ConfigManager {
-    return this._configManager;
+  public get databaseManager(): DatabaseManager {
+    return this._databaseManager;
   }
-
-  // public get databaseManager(): DatabaseManager {
-  //   return this._databaseManager;
-  // }
 
   public get commandManager(): CommandManager {
     return this._commandManager;
