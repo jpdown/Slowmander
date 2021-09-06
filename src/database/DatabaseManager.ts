@@ -2,6 +2,7 @@ import BS3 from 'better-sqlite3';
 
 import Bot from 'Bot';
 import { Logger } from 'Logger';
+import EventLogs from './EventLogs';
 import GuildConfigs from './GuildConfigs';
 import LockdownPresets from './LockdownPresets';
 import ReactionRoles from './ReactionRoles';
@@ -16,6 +17,7 @@ export default class DatabaseManager {
   private readonly db: BS3.Database;
 
   public readonly guildConfigs: GuildConfigs;
+  public readonly eventLogs: EventLogs;
   public readonly lockdownPresets: LockdownPresets;
   public readonly reactionRoles: ReactionRoles;
   public readonly twitchClipMod: TwitchClipModeration;
@@ -28,6 +30,7 @@ export default class DatabaseManager {
     this.db.pragma('foreign_keys = ON');
 
     this.guildConfigs = new GuildConfigs(bot, this.db);
+    this.eventLogs = new EventLogs(bot, this.db);
     this.lockdownPresets = new LockdownPresets(bot, this.db);
     this.reactionRoles = new ReactionRoles(bot, this.db);
     this.twitchClipMod = new TwitchClipModeration(bot, this.db);
