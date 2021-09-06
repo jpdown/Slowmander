@@ -32,7 +32,7 @@ class EnableClipModeration extends Command {
       return { sendHelp: false, command: this, message };
     }
 
-    const result = await bot.configs.twitchClipModConfig.enableChannelTwitchClipMod(channel.id);
+    const result = bot.db.twitchClipMod.enable(channel);
     let messageToSend = '';
     if (result) {
       messageToSend = `Twitch clip moderation successfully enabled for ${channel.toString()}`;
@@ -72,7 +72,7 @@ class DisableClipModeration extends Command {
       return { sendHelp: false, command: this, message };
     }
 
-    const result = await bot.configs.twitchClipModConfig.disableChannelTwitchClipMod(channel.id);
+    const result = bot.db.twitchClipMod.disable(channel);
     let messageToSend = '';
     if (result) {
       messageToSend = `Twitch clip moderation successfully disabled for ${channel.toString()}`;
@@ -114,7 +114,7 @@ class EnableApprovedChannels extends Command {
       return { sendHelp: false, command: this, message };
     }
 
-    if (await bot.configs.twitchClipModConfig.enableApprovedChannels(channel.id)) {
+    if (bot.db.twitchClipMod.enableApprovedOnly(channel)) {
       await CommandUtils.sendMessage(`Successfully enabled approved channels in ${channel.toString()}`, message.channel, bot);
     } else {
       await CommandUtils.sendMessage(`Error enabling approved channels in ${channel.toString()}`, message.channel, bot);
@@ -153,7 +153,7 @@ class DisableApprovedChannels extends Command {
       return { sendHelp: false, command: this, message };
     }
 
-    if (await bot.configs.twitchClipModConfig.disableApprovedChannels(channel.id)) {
+    if (bot.db.twitchClipMod.disableApprovedOnly(channel)) {
       await CommandUtils.sendMessage(`Successfully disabled approved channels in ${channel.toString()}`, message.channel, bot);
     } else {
       await CommandUtils.sendMessage(`Error disabling approved channels in ${channel.toString()}`, message.channel, bot);
@@ -200,7 +200,7 @@ class AddTwitchChannel extends Command {
 
     const addedUsers: string[] = [];
     twitchUsers.forEach(async (user) => {
-      if (user && await bot.configs.twitchClipModConfig.addApprovedChannel(channel.id, user.id)) {
+      if (user && bot.db.twitchClipMod.addApprovedChannel(channel, user.id)) {
         addedUsers.push(user.displayName);
       }
     });
@@ -252,7 +252,7 @@ class DeleteTwitchChannel extends Command {
 
     const removedUsers: string[] = [];
     twitchUsers.forEach(async (user) => {
-      if (await bot.configs.twitchClipModConfig.removeApprovedChannel(channel.id, user.id)) {
+      if (bot.db.twitchClipMod.removeApprovedChannel(channel, user.id)) {
         removedUsers.push(user.displayName);
       }
     });
@@ -289,10 +289,14 @@ class ChannelModInfo extends Command {
       return { sendHelp: false, command: this, message };
     }
 
-    const responseMessage: Message = await CommandUtils.sendMessage('Getting info...', message.channel, bot);
-
     // Get config
-    const config = await bot.configs.twitchClipModConfig.getChannelTwitchClipMod(channel.id);
+    const config = bot.db.twitchClipMod.getChannelConfig(channel);
+    const approvedChannels = bot.db.twitchClipMod.getApprovedChannels(channel);
+
+    if (config === null || approvedChannels === null) {
+      await CommandUtils.sendMessage('Error getting from db, please try again later.', message.channel, bot, message);
+      return { sendHelp: false, command: this, message };
+    }
 
     const embed: MessageEmbed = new MessageEmbed();
     embed.setColor(await CommandUtils.getSelfColor(message.channel, bot));
@@ -304,10 +308,10 @@ class ChannelModInfo extends Command {
       embed.addField('Channel', channel.toString(), true);
       embed.addField('Enabled', config.enabled ? 'True' : 'False', true);
       embed.addField('Twitch API', await bot.twitchApiManager.getApiStatus() ? 'True' : 'False', true);
-      embed.addField('Approved Channels Only', config.approvedChannelsOnly ? 'True' : 'False', true);
+      embed.addField('Approved Channels Only', config.approvedOnly ? 'True' : 'False', true);
 
-      if (config.twitchChannels && config.twitchChannels.length > 0) {
-        const twitchUsers = await bot.twitchApiManager.getUsersByIds(config.twitchChannels);
+      if (approvedChannels.length > 0) {
+        const twitchUsers = await bot.twitchApiManager.getUsersByIds(approvedChannels);
         let usernames = '';
         if (twitchUsers) {
           twitchUsers.forEach((user) => {
@@ -320,7 +324,7 @@ class ChannelModInfo extends Command {
       }
     }
 
-    await responseMessage.edit({ embeds: [embed] });
+    await message.reply({ embeds: [embed] });
     return { sendHelp: false, command: this, message };
   }
 }

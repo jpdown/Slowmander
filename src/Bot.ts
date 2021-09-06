@@ -101,7 +101,7 @@ export default class Bot {
     return this._config;
   }
 
-  public get databaseManager(): DatabaseManager {
+  public get db(): DatabaseManager {
     return this._databaseManager;
   }
 

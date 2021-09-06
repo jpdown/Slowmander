@@ -2,7 +2,7 @@ import Bot from 'Bot';
 import { Logger } from 'Logger';
 
 import {
-  GuildMember, Message, Collection, Snowflake, TextChannel, MessageEmbed, NewsChannel, GuildBan, PartialGuildMember, PartialMessage,
+  GuildMember, Message, Collection, Snowflake, TextChannel, MessageEmbed, NewsChannel, GuildBan, PartialGuildMember, PartialMessage, TextBasedChannels,
 } from 'discord.js';
 
 export default class EventLogger {
@@ -29,7 +29,7 @@ export default class EventLogger {
   }
 
   public async onGuildMemberAdd(member: GuildMember) {
-    const channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(member.guild.id);
+    const channel = await this.getLogChannel(member.guild.id);
 
     if (!channel) {
       return;
@@ -51,7 +51,7 @@ export default class EventLogger {
   }
 
   public async onGuildMemberRemove(member: GuildMember | PartialGuildMember) {
-    const channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(member.guild.id);
+    const channel = await this.getLogChannel(member.guild.id);
 
     if (!channel) {
       return;
@@ -82,7 +82,7 @@ export default class EventLogger {
   }
 
   public async onGuildBanAdd(ban: GuildBan) {
-    const channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(ban.guild.id);
+    const channel = await this.getLogChannel(ban.guild.id);
 
     if (ban.partial) {
       try {
@@ -116,7 +116,7 @@ export default class EventLogger {
   }
 
   public async onGuildBanRemove(ban: GuildBan) {
-    const channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(ban.guild.id);
+    const channel = await this.getLogChannel(ban.guild.id);
 
     if (!channel) {
       return;
@@ -142,7 +142,7 @@ export default class EventLogger {
       return;
     }
 
-    const channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(message.guild.id);
+    const channel = await this.getLogChannel(message.guild.id);
 
     if (!channel) {
       return;
@@ -169,7 +169,7 @@ export default class EventLogger {
       return;
     }
 
-    const channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(firstMessage.guild.id);
+    const channel = await this.getLogChannel(firstMessage.guild.id);
 
     if (!channel) {
       return;
@@ -199,7 +199,7 @@ export default class EventLogger {
       return;
     }
 
-    const channel: TextChannel | NewsChannel | undefined = await this.getLogChannel(newMessage.guild.id);
+    const channel = await this.getLogChannel(newMessage.guild.id);
 
     if (!channel || newMessage.author.bot) {
       return;
@@ -230,32 +230,18 @@ export default class EventLogger {
     await channel.send({ embeds: [embed] });
   }
 
-  public async setEventlogChannel(guildId: string, channelId: string) {
-    const result: boolean = await this.bot.configs.guildConfig.setEventlogChannel(guildId, channelId);
-    if (result) this.channelMap.set(guildId, channelId);
-
-    return result;
-  }
-
-  private async getLogChannel(guildId: string): Promise<TextChannel | NewsChannel | undefined> {
-    let channelId: Snowflake | undefined = this.channelMap.get(guildId);
+  private async getLogChannel(guildId: string): Promise<TextBasedChannels | undefined> {
+    let channelId = this.bot.db.eventLogs.getChannel(guildId);
 
     if (!channelId) {
-      try {
-        channelId = await this.bot.configs.guildConfig.getEventlogChannel(guildId);
-        if (channelId) {
-          this.channelMap.set(guildId, channelId);
-        }
-      } catch (err) {
-        await this.logger.error('Error getting eventlog channel', err);
-      }
+      return;
     }
 
-    let channel: TextChannel | NewsChannel | undefined;
+    let channel: TextBasedChannels | undefined;
 
     try {
       if (channelId) {
-        channel = <TextChannel | NewsChannel> await this.bot.client.channels.fetch(channelId);
+        channel = <TextBasedChannels> await this.bot.client.channels.fetch(channelId);
       }
     } catch (err) {
       await this.logger.error('Error getting eventlog channel from API', err);

@@ -1,11 +1,12 @@
 import { Logger } from 'Logger';
 import Bot from 'Bot';
-import { TwitchClipModObject } from 'config/TwitchClipModConfig';
 import ModErrorLog from 'moderrorlog/ModErrorLog';
 
 import {
+  Channel,
   GuildChannelResolvable, Message, PartialMessage, Permissions,
 } from 'discord.js';
+import { TwitchClipModConfig } from 'database/TwitchClipModeration';
 
 export default class TwitchClipModManager {
   private bot: Bot;
@@ -20,10 +21,14 @@ export default class TwitchClipModManager {
   }
 
   public async onMessage(message: Message) {
+    let fullMessage: Message;
     // Handle partial events
     try {
       if (message.partial) {
-        message = await message.fetch();
+        fullMessage = await message.fetch();
+      }
+      else {
+        fullMessage = message;
       }
     } catch (err) {
       await this.logger.warning('Error fetching message.', err);
@@ -39,7 +44,7 @@ export default class TwitchClipModManager {
     }
 
     // See if message in moderated channel
-    const clipModConfig: TwitchClipModObject | undefined = await this.bot.configs.twitchClipModConfig.getChannelTwitchClipMod(message.channel.id);
+    const clipModConfig = this.bot.db.twitchClipMod.getChannelConfig(message.channel as Channel);
 
     if (!clipModConfig || !clipModConfig.enabled) {
       return;
@@ -49,45 +54,53 @@ export default class TwitchClipModManager {
   }
 
   public async onMessageUpdate(oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage) {
-    if (newMessage.partial) {
-      try {
-        newMessage = await newMessage.fetch();
-      } catch (err) {
-        this.logger.error('Error fetching new message.', err);
-        return;
+    let fullMessage: Message;
+    try {
+      if (newMessage.partial) {
+        fullMessage = await newMessage.fetch();
+      }
+      else {
+        fullMessage = newMessage;
       }
     }
-
-    if (!newMessage.guild) {
-      return;
-    }
-    if (!newMessage.guild) {
+    catch (err) {
+      this.logger.error('Error fetching new message.', err);
       return;
     }
 
-    if (oldMessage && oldMessage.content === newMessage.content) {
+    if (!fullMessage.guild) {
       return;
     }
 
-    if (newMessage.author.bot) {
+    if (oldMessage && oldMessage.content === fullMessage.content) {
+      return;
+    }
+
+    if (fullMessage.author.bot) {
       return;
     }
 
     // See if message in moderated channel
-    const clipModConfig: TwitchClipModObject | undefined = await this.bot.configs.twitchClipModConfig.getChannelTwitchClipMod(newMessage.channel.id);
+    const clipModConfig = this.bot.db.twitchClipMod.getChannelConfig(fullMessage.channel as Channel);
 
     if (!clipModConfig || !clipModConfig.enabled) {
       return;
     }
 
-    await this.checkMessage(newMessage, clipModConfig);
+    await this.checkMessage(fullMessage, clipModConfig);
   }
 
-  private async checkMessage(message: Message, config: TwitchClipModObject): Promise<void> {
+  private async checkMessage(message: Message, config: TwitchClipModConfig): Promise<void> {
     let deleteMessage = false;
     let matchedLinks = 0;
     let clipBroadcaster: string | null;
     let clipMatch: RegExpExecArray | null;
+    let approvedChannels: string[] | null = null;
+
+    // Get approved channel list
+    if (config.approvedOnly) {
+      approvedChannels = this.bot.db.twitchClipMod.getApprovedChannels(message.channel as Channel)
+    }
 
     // Multiple clips may be in the message, loop until none left or message marked for deletion
     while (!deleteMessage && (clipMatch = this.clipRegex.exec(message.content)) !== null) {
@@ -100,9 +113,11 @@ export default class TwitchClipModManager {
         if (clipBroadcaster == null) {
           // Invalid clip
           deleteMessage = true;
-        } else if (config.approvedChannelsOnly && !config.twitchChannels?.includes(clipBroadcaster)) {
-          // Not an approved channel
-          deleteMessage = true;
+        } else if (config.approvedOnly) {
+          if (approvedChannels && !approvedChannels.includes(clipBroadcaster)) {
+            // Not an approved channel
+            deleteMessage = true;
+          }
         }
       }
     }

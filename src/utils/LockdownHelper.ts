@@ -1,5 +1,4 @@
 import Bot from 'Bot';
-import { LockdownConfigObject } from 'config/LockdownConfig';
 
 import { Permissions, Message, GuildChannel, ThreadChannel, Role, CategoryChannel, GuildMember, MessageEmbed, NewsChannel, Snowflake, TextChannel, User } from 'discord.js';
 import CommandUtils from './CommandUtils';
@@ -19,15 +18,23 @@ export default class LockdownHelper {
     }
 
     // Try to get config
-    const lockdownConfig: LockdownConfigObject | undefined = await bot.configs.lockdownConfig.getLockdownPreset(message.guild!.id, preset);
-    if (!lockdownConfig) {
+    const lockdownConfig = bot.db.lockdownPresets.getPreset(message.guild!.id, preset);
+    if (lockdownConfig === undefined) {
       await CommandUtils.sendMessage(`No lockdown config found, please make one with \`${await bot.commandManager.getPrefix(message.guild?.id)}managelockdown\`. The default preset is \`default\`.`, message.channel, bot);
+      return false;
+    }
+
+    const lockdownChannels = bot.db.lockdownPresets.getPresetChannels(message.guild!.id, preset);
+    const lockdownRoles = bot.db.lockdownPresets.getPresetRoles(message.guild!.id, preset);
+
+    if (!lockdownConfig || !lockdownChannels || !lockdownRoles) {
+      await CommandUtils.sendMessage('There was an error with the database, please try again later.', message.channel, bot);
       return false;
     }
 
     // Make lists
     const channels: GuildChannel[] = [];
-    for (const channelId of lockdownConfig.channelIDs) {
+    for (const channelId of lockdownChannels) {
       const parsedChannel: GuildChannel | ThreadChannel | null = message.guild!.channels.resolve(channelId);
       if (parsedChannel && (parsedChannel as GuildChannel)) {
         channels.push(<GuildChannel>parsedChannel);
@@ -35,7 +42,7 @@ export default class LockdownHelper {
     }
 
     const roles: Role[] = [];
-    for (const roleId of lockdownConfig.roleIDs) {
+    for (const roleId of lockdownRoles) {
       const parsedRole: Role | null = message.guild!.roles.resolve(roleId);
       if (parsedRole) {
         roles.push(parsedRole);
@@ -75,14 +82,14 @@ export default class LockdownHelper {
     // Get mod and admin role (if applicable)
     const { guild } = channels[0];
     const modAndAdminRoles: Role[] = [];
-    const modRoleId: Snowflake | undefined = await bot.configs.guildConfig.getModRole(guild.id);
+    const modRoleId = bot.db.guildConfigs.getModRole(guild.id);
     if (modRoleId) {
       const modRole: Role | null = guild.roles.resolve(modRoleId);
       if (modRole) {
         modAndAdminRoles.push(modRole);
       }
     }
-    const adminRoleId: Snowflake | undefined = await bot.configs.guildConfig.getAdminRole(guild.id);
+    const adminRoleId = bot.db.guildConfigs.getAdminRole(guild.id);
     if (adminRoleId) {
       const adminRole: Role | null = guild.roles.resolve(adminRoleId);
       if (adminRole) {

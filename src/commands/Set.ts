@@ -80,7 +80,7 @@ class SetGuildPrefix extends Command {
 
     const prefix: string = args.join(' ');
 
-    const result: boolean = await bot.commandManager.setGuildPrefix(message.guild!.id, prefix);
+    const result: boolean = bot.db.guildConfigs.setPrefix(message.guild!.id, prefix);
 
     if (result) {
       await CommandUtils.sendMessage(`Prefix for guild ${message.guild!.name} set to ${prefix} successfully.`, message.channel, bot);
@@ -110,7 +110,7 @@ class SetVipRole extends Command {
       return { sendHelp: true, command: this, message };
     }
 
-    const result: boolean = await bot.configs.guildConfig.setVipRole(message.guild!.id, role.id);
+    const result: boolean = bot.db.guildConfigs.setVipRole(message.guild!.id, role.id);
 
     if (result) {
       await CommandUtils.sendMessage(`VIP role for guild ${message.guild!.name} set to ${role.toString()} successfully.`, message.channel, bot);
@@ -140,7 +140,7 @@ class SetModRole extends Command {
       return { sendHelp: true, command: this, message };
     }
 
-    const result: boolean = await bot.configs.guildConfig.setModRole(message.guild!.id, role.id);
+    const result: boolean = bot.db.guildConfigs.setModRole(message.guild!.id, role.id);
 
     if (result) {
       await CommandUtils.sendMessage(`Mod role for guild ${message.guild!.name} set to ${role.toString()} successfully.`, message.channel, bot);
@@ -170,7 +170,7 @@ class SetAdminRole extends Command {
       return { sendHelp: true, command: this, message };
     }
 
-    const result: boolean = await bot.configs.guildConfig.setAdminRole(message.guild!.id, role.id);
+    const result: boolean = bot.db.guildConfigs.setAdminRole(message.guild!.id, role.id);
 
     if (result) {
       await CommandUtils.sendMessage(`Admin role for guild ${message.guild!.name} set to ${role.toString()} successfully.`, message.channel, bot);
@@ -201,7 +201,7 @@ class SetEventLogChannel extends Command {
     }
 
     // Set channel
-    const result: boolean = await bot.eventLogger.setEventlogChannel(message.guild!.id, channel.id);
+    const result: boolean = bot.db.eventLogs.setChannel(message.guild!.id, channel.id);
 
     if (result) {
       await CommandUtils.sendMessage(
@@ -216,9 +216,9 @@ class SetEventLogChannel extends Command {
   }
 }
 
-class SetModErrorLogChannel extends Command {
+class SetModChannel extends Command {
   constructor(group: CommandGroup, bot: Bot) {
-    super('moderror', PermissionLevel.Admin, 'Sets mod error log channel', bot, {
+    super('modchannel', PermissionLevel.Admin, 'Sets mod channel', bot, {
       usage: '<channel>', runsInDm: false, group, requiredPerm: Permissions.FLAGS.ADMINISTRATOR,
     });
   }
@@ -235,15 +235,15 @@ class SetModErrorLogChannel extends Command {
     }
 
     // Set channel
-    const result: boolean = await bot.configs.guildConfig.setModErrorChannel(message.guild!.id, channel.id);
+    const result: boolean = bot.db.guildConfigs.setModChannel(message.guild!.id, channel.id);
 
     if (result) {
       await CommandUtils.sendMessage(
-        `Mod error log channel set to ${channel.toString()} for guild ${message.guild!.name} successfully.`,
+        `Mod channel set to ${channel.toString()} for guild ${message.guild!.name} successfully.`,
         message.channel, bot,
       );
     } else {
-      await CommandUtils.sendMessage(`Mod error log channel was unable to be set for guild ${message.guild!.name}.`, message.channel, bot);
+      await CommandUtils.sendMessage(`Mod channel was unable to be set for guild ${message.guild!.name}.`, message.channel, bot);
     }
 
     return { sendHelp: false, command: this, message };
@@ -265,6 +265,6 @@ export class Set extends CommandGroup {
     this.registerSubCommand(new SetModRole(this, bot));
     this.registerSubCommand(new SetAdminRole(this, bot));
     this.registerSubCommand(new SetEventLogChannel(this, bot));
-    this.registerSubCommand(new SetModErrorLogChannel(this, bot));
+    this.registerSubCommand(new SetModChannel(this, bot));
   }
 }

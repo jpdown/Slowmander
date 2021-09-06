@@ -3,12 +3,11 @@ import { Command, PermissionLevel, CommandResult } from 'commands/Command';
 import CommandGroup from 'commands/CommandGroup';
 import Bot from 'Bot';
 import CommandUtils from 'utils/CommandUtils';
-import { LockdownConfigObject } from 'config/LockdownConfig';
 import ReactionPaginator from 'utils/ReactionPaginator';
 import LockdownHelper from 'utils/LockdownHelper';
 
 import {
-  Message, Permissions, Role, Guild,
+  Message, Permissions, Role, Guild, MessageEmbed,
 } from 'discord.js';
 
 export class Lockdown extends Command {
@@ -57,20 +56,20 @@ class ManageLockdownList extends Command {
   }
 
   async run(bot: Bot, message: Message): Promise<CommandResult> {
-    const lockdownPresets = await bot.configs.lockdownConfig.getAllLockdownPresets(message.guild!.id);
+    const lockdownPresets = bot.db.lockdownPresets.getPresetList(message.guild!.id);
+
+    if (lockdownPresets === null) {
+      await CommandUtils.sendMessage('Error getting from db, please try again later.', message.channel, bot);
+      return { sendHelp: false, command: this, message };
+    }
 
     if (!lockdownPresets || lockdownPresets.length < 1) {
       await CommandUtils.sendMessage('No presets found.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
 
-    const presetNames: string[] = [];
-    lockdownPresets.forEach((preset) => {
-      presetNames.push(preset.name);
-    });
-
     // Make paginator
-    const paginator = new ReactionPaginator(presetNames, 10, `Lockdown presets in guild ${message.guild!.name}`, message.channel, bot, this);
+    const paginator = new ReactionPaginator(lockdownPresets, 10, `Lockdown presets in guild ${message.guild!.name}`, message.channel, bot, this);
     await paginator.postMessage();
 
     return { sendHelp: false, command: this, message };
@@ -89,26 +88,42 @@ class ManageLockdownInfo extends Command {
       return { sendHelp: true, command: this, message };
     }
 
-    const lockdownPreset = await bot.configs.lockdownConfig.getLockdownPreset(message.guild!.id, args[0]);
+    const guildId = message.guild!.id;
 
-    if (!lockdownPreset) {
+    const lockdownPreset = bot.db.lockdownPresets.getPreset(guildId, args[0]);
+    const lockdownChannels = bot.db.lockdownPresets.getPresetChannels(guildId, args[0]);
+    const lockdownRoles = bot.db.lockdownPresets.getPresetRoles(guildId, args[0]);
+
+    if (lockdownPreset === undefined) {
       return { sendHelp: true, command: this, message };
+    }
+
+    if (!lockdownPreset || !lockdownChannels || !lockdownRoles) {
+      await CommandUtils.sendMessage("There was an error with the database, please try again later.", message.channel, bot, message);
+      return { sendHelp: false, command: this, message };
     }
 
     // Make lists
     const channelList: string[] = [];
-    lockdownPreset.channelIDs.forEach((channel) => {
+    lockdownChannels.forEach((channel) => {
       channelList.push(`<#${channel}>`);
     });
     const roleList: string[] = [];
-    roleList.forEach((role) => {
+    lockdownRoles.forEach((role) => {
       roleList.push(`<@&${role}>`);
     });
 
+    // Make info embed
+    const embed = new MessageEmbed()
+      .setTitle(`Lockdown Preset ${lockdownPreset.preset}`)
+      .addField("Permission Set To", lockdownPreset.grant ? "Grant" : "Neutral")
+      .setColor(await CommandUtils.getSelfColor(message.channel, bot));
+    await message.reply({embeds: [embed]});
+
     // Make paginators
-    const channelPaginator = new ReactionPaginator(channelList, 10, `Channels in lockdown preset ${lockdownPreset.name}`, message.channel, bot, this);
+    const channelPaginator = new ReactionPaginator(channelList, 10, `Channels in lockdown preset ${lockdownPreset.preset}`, message.channel, bot, this);
     await channelPaginator.postMessage();
-    const rolePaginator = new ReactionPaginator(roleList, 10, `Roles in lockdown preset ${lockdownPreset.name}`, message.channel, bot, this);
+    const rolePaginator = new ReactionPaginator(roleList, 10, `Roles in lockdown preset ${lockdownPreset.preset}`, message.channel, bot, this);
     await rolePaginator.postMessage();
 
     return { sendHelp: false, command: this, message };
@@ -147,17 +162,8 @@ class ManageLockdownSet extends Command {
       grant = true;
     }
 
-    // Make LockdownConfig
-    const lockdownConfig: LockdownConfigObject = {
-      guildID: message.guild!.id,
-      channelIDs: channelResult.parsedIDs,
-      roleIDs: rolesResult.parsedIDs,
-      grant,
-      name: args[0],
-    };
-
     // Try to save
-    if (!await bot.configs.lockdownConfig.setLockdownPreset(lockdownConfig)) {
+    if (!bot.db.lockdownPresets.setPreset(message.guild!.id, args[0], grant, channelResult.parsedIDs, rolesResult.parsedIDs)) {
       await CommandUtils.sendMessage('Error saving lockdown preset.', message.channel, bot);
     } else {
       await CommandUtils.sendMessage('Lockdown preset saved successfully.', message.channel, bot);
@@ -221,7 +227,7 @@ class ManageLockdownRemove extends Command {
     }
 
     // Try to delete
-    if (await bot.configs.lockdownConfig.removeLockdownPreset(message.guild!.id, args[0])) {
+    if (bot.db.lockdownPresets.removePreset(message.guild!.id, args[0])) {
       await CommandUtils.sendMessage(`Lockdown preset ${args[0]} removed successfully.`, message.channel, bot);
     } else {
       await CommandUtils.sendMessage(`Error removing lockdown preset ${args[0]}, does it exist?`, message.channel, bot);

@@ -1,11 +1,11 @@
 import Bot from 'Bot';
 import { Logger } from 'Logger';
-import { VerificationConfigObject } from 'config/VerificationConfig';
 import ModErrorLog from 'moderrorlog/ModErrorLog';
 
 import {
   GuildMember, MessageReaction, User, Role, Permissions, Guild, PartialMessageReaction, PartialUser,
 } from 'discord.js';
+import { VerificationConfig } from 'database/Verification';
 
 export default class VerificationManager {
   private bot: Bot;
@@ -19,13 +19,14 @@ export default class VerificationManager {
 
   public async onGuildMemberAdd(member: GuildMember) {
     // Check if guild has verification enabled
-    if (!await this.bot.configs.guildConfig.getVerificationEnabled(member.guild.id)) {
+    const config = this.bot.db.verification.getConfig(member.guild.id);
+    if (!config || !config.enabled) {
       return;
     }
 
     // Try to assign role to user
     try {
-      await this.applyRole(member, true);
+      await this.applyRole(member, true, config);
     } catch (err) {
       await ModErrorLog.log(`Unknown error applying verification role to ${member.user.tag}`, member.guild, this.bot);
       await this.logger.error(`Error adding verification role to user ${member.user.tag} in guild ${member.guild.name}.`, err);
@@ -64,8 +65,9 @@ export default class VerificationManager {
       return;
     }
 
-    // Check if guild has verification enabled
-    if (!await this.bot.configs.guildConfig.getVerificationEnabled(reaction.message.guild.id)) {
+    // Grab verification config
+    const config = this.bot.db.verification.getConfig(reaction.message.guild.id);
+    if (!config || !config.enabled) {
       return;
     }
 
@@ -81,24 +83,16 @@ export default class VerificationManager {
 
     const member: GuildMember = await reaction.message.guild.members.fetch(user);
 
-    // Grab verification config
-    const verificationConfig: VerificationConfigObject | undefined = await this.getVerificationConfig(member.guild);
-    if (!verificationConfig) {
-      await ModErrorLog.log('Verification is enabled but I do not have a config. Please set a config. Disabling verification.', member.guild, this.bot);
-      await this.bot.configs.guildConfig.setVerificationEnabled(member.guild.id, false);
-      return;
-    }
-
     // Verify correct message
-    if (reaction.message.id != verificationConfig.messageID) {
+    if (reaction.message.id != config.messageId) {
       return;
     }
 
     // Check if emote matches
-    if (reaction.emoji.identifier === verificationConfig.emoteID) {
+    if (reaction.emoji.identifier === config.emoteId) {
       // Try to remove role from user
       try {
-        await this.applyRole(member, false);
+        await this.applyRole(member, false, config);
       } catch (err) {
         await ModErrorLog.log(`Unknown error removing verification role from ${member.user.tag}`, member.guild, this.bot);
         await this.logger.error(`Error removing verification role from user ${member.user.tag} in guild ${member.guild.name}.`, err);
@@ -106,7 +100,7 @@ export default class VerificationManager {
     }
 
     // Check if removing reaction
-    if (!verificationConfig.removeReaction) {
+    if (!config.removeReaction) {
       return;
     }
 
@@ -123,26 +117,18 @@ export default class VerificationManager {
     }
   }
 
-  private async applyRole(member: GuildMember, adding: boolean) {
+  private async applyRole(member: GuildMember, adding: boolean, config: VerificationConfig) {
     // If we're not in guild, give up
     if (!member.guild.me) {
       return;
     }
 
-    // Grab verification config
-    const verificationConfig: VerificationConfigObject | undefined = await this.getVerificationConfig(member.guild);
-    if (!verificationConfig) {
-      await ModErrorLog.log('Verification was enabled but I do not have a config. Please set a config. Disabling verification.', member.guild, this.bot);
-      await this.bot.configs.guildConfig.setVerificationEnabled(member.guild.id, false);
-      return;
-    }
-
     // Find role in guild
-    const role: Role | null = member.guild.roles.resolve(verificationConfig.roleID);
+    const role: Role | null = member.guild.roles.resolve(config.roleId);
     // If role not found, disable verification
     if (!role) {
       await ModErrorLog.log('Verification was enabled but role was unable to be found, disabling verification.', member.guild, this.bot);
-      await this.bot.configs.guildConfig.setVerificationEnabled(member.guild.id, false);
+      this.bot.db.verification.disable(member.guild.id);
       return;
     }
 
@@ -162,17 +148,5 @@ export default class VerificationManager {
     } else {
       await member.roles.remove(role);
     }
-  }
-
-  private async getVerificationConfig(guild: Guild): Promise<VerificationConfigObject | undefined> {
-    // Grab verification config
-    const verificationConfig: VerificationConfigObject | undefined = await this.bot.configs.verificationConfig.getVerificationConfig(guild.id);
-    // If we couldn't get verification config, we should disable verification
-    if (!verificationConfig) {
-      await ModErrorLog.log('Verification was enabled but no config was found, disabling verification.', guild, this.bot);
-      await this.bot.configs.guildConfig.setVerificationEnabled(guild.id, false);
-    }
-
-    return verificationConfig;
   }
 }

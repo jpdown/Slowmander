@@ -13,8 +13,6 @@ import {
 export default class CommandManager {
   private commandMap: Map<string, Command>;
 
-  private prefixMap: Map<Snowflake, string>;
-
   private bot: Bot;
 
   private logger: Logger;
@@ -23,7 +21,6 @@ export default class CommandManager {
     this.bot = bot;
     this.logger = Logger.getLogger(bot, this);
     this.commandMap = new Map<string, Command>();
-    this.prefixMap = new Map<Snowflake, string>();
     this.registerAll();
   }
 
@@ -124,39 +121,13 @@ export default class CommandManager {
 
   public async getPrefix(guildId?: string): Promise<string> {
     if (guildId) {
-      let prefix = this.prefixMap.get(guildId);
+      let prefix = this.bot.db.guildConfigs.getPrefix(guildId);
       if (prefix) {
         return prefix;
       }
-
-      try {
-        prefix = await this.bot.configs.guildConfig.getPrefix(guildId);
-        if (prefix) {
-          this.prefixMap.set(guildId, prefix);
-          return prefix;
-        }
-      } catch (err) {
-        await this.logger.error('Error getting guild prefix', err);
-      }
     }
 
-    try {
-      return this.bot.config.prefix;
-    } catch (err) {
-      await this.logger.error('Error getting default prefix', err);
-      return '!';
-    }
-  }
-
-  public async setGuildPrefix(guildId: string, newPrefix: string): Promise<boolean> {
-    try {
-      const result: boolean = await this.bot.configs.guildConfig.setPrefix(guildId, newPrefix);
-      if (result) this.prefixMap.set(guildId, newPrefix);
-      return result;
-    } catch (err) {
-      await this.logger.error('Error setting guild prefix.', err);
-      return false;
-    }
+    return this.bot.config.prefix;
   }
 
   private registerCommand(command: Command) {

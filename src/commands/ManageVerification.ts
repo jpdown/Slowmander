@@ -15,13 +15,13 @@ class EnableVerification extends Command {
 
   async run(bot: Bot, message: Message): Promise<CommandResult> {
     // Check if we have a valid config before enabling
-    const verificationConfig = await bot.configs.verificationConfig.getVerificationConfig(message.guild!.id);
+    const verificationConfig = bot.db.verification.getConfig(message.guild!.id);
     if (!verificationConfig) {
       await CommandUtils.sendMessage('No config found, please set the config first.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
 
-    const result = await bot.configs.guildConfig.setVerificationEnabled(message.guild!.id, true);
+    const result = bot.db.verification.enable(message.guild!.id);
     if (result) {
       await CommandUtils.sendMessage('Verification successfully enabled.', message.channel, bot);
     } else {
@@ -38,7 +38,18 @@ class DisableVerification extends Command {
   }
 
   async run(bot: Bot, message: Message): Promise<CommandResult> {
-    const result = await bot.configs.guildConfig.setVerificationEnabled(message.guild!.id, false);
+    // Check if we have a valid config before enabling
+    const verificationConfig = bot.db.verification.getConfig(message.guild!.id);
+    if (verificationConfig === null) {
+      await CommandUtils.sendMessage('Error getting from db, please try again later.', message.channel, bot);
+      return { sendHelp: false, command: this, message };
+    }
+    else if (verificationConfig === undefined) {
+      await CommandUtils.sendMessage('No config found, please set the config first.', message.channel, bot);
+      return { sendHelp: false, command: this, message };
+    }
+
+    const result = bot.db.verification.disable(message.guild!.id);
     if (result) {
       await CommandUtils.sendMessage('Verification successfully disabled.', message.channel, bot);
     } else {
@@ -49,15 +60,71 @@ class DisableVerification extends Command {
   }
 }
 
+class EnableRemoveReaction extends Command {
+  constructor(group: CommandGroup, bot: Bot) {
+    super('enableremovereaction', PermissionLevel.Admin, 'Enables removing reaction', bot, { group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR });
+  }
+
+  async run(bot: Bot, message: Message): Promise<CommandResult> {
+    // Check if we have a valid config before enabling
+    const verificationConfig = bot.db.verification.getConfig(message.guild!.id);
+    if (verificationConfig === null) {
+      await CommandUtils.sendMessage('Error getting from db, please try again later.', message.channel, bot);
+      return { sendHelp: false, command: this, message };
+    }
+    else if (verificationConfig === undefined) {
+      await CommandUtils.sendMessage('No config found, please set the config first.', message.channel, bot);
+      return { sendHelp: false, command: this, message };
+    }
+
+    const result = bot.db.verification.enableRemoveReaction(message.guild!.id);
+    if (result) {
+      await CommandUtils.sendMessage('Remove reaction successfully enabled.', message.channel, bot);
+    } else {
+      await CommandUtils.sendMessage('Error enabling remove reaction.', message.channel, bot);
+    }
+
+    return { sendHelp: false, command: this, message };
+  }
+}
+
+class DisableRemoveReaction extends Command {
+  constructor(group: CommandGroup, bot: Bot) {
+    super('disableremovereaction', PermissionLevel.Admin, 'Disables removing reaction', bot, { group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR });
+  }
+
+  async run(bot: Bot, message: Message): Promise<CommandResult> {
+    // Check if we have a valid config before enabling
+    const verificationConfig = bot.db.verification.getConfig(message.guild!.id);
+    if (verificationConfig === null) {
+      await CommandUtils.sendMessage('Error getting from db, please try again later.', message.channel, bot);
+      return { sendHelp: false, command: this, message };
+    }
+    else if (verificationConfig === undefined) {
+      await CommandUtils.sendMessage('No config found, please set the config first.', message.channel, bot);
+      return { sendHelp: false, command: this, message };
+    }
+
+    const result = bot.db.verification.disableRemoveReaction(message.guild!.id);
+    if (result) {
+      await CommandUtils.sendMessage('Remove reaction successfully disabled.', message.channel, bot);
+    } else {
+      await CommandUtils.sendMessage('Error enabling remove reaction.', message.channel, bot);
+    }
+
+    return { sendHelp: false, command: this, message };
+  }
+}
+
 class SetVerification extends Command {
   constructor(group: CommandGroup, bot: Bot) {
     super('set', PermissionLevel.Admin, 'Sets verification options', bot, {
-      usage: '<channel> <role> <remove reaction true/false>', group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR,
+      usage: '<channel> <role>', group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR,
     });
   }
 
   async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-    if (args.length < 3) {
+    if (args.length < 2) {
       return { sendHelp: true, command: this, message };
     }
 
@@ -83,8 +150,6 @@ class SetVerification extends Command {
       return { sendHelp: false, command: this, message };
     }
 
-    const removeReaction: boolean = args[2].toLowerCase().startsWith('t');
-
     // Get emote to listen for
     const emote: GuildEmoji | ReactionEmoji | undefined = await CommandUtils.getEmote(message, bot);
     if (!emote) {
@@ -93,25 +158,25 @@ class SetVerification extends Command {
 
     // Check if we already have a config, if so we don't need a new message
     let messageId: string;
-    const config = await bot.configs.verificationConfig.getVerificationConfig(message.guild!.id);
-    if (config && config.channelID === channel.id) {
-      messageId = config.messageID;
-    } else {
-      const verificationMessage = await CommandUtils.sendMessage(
+    let verificationMessage: Message | undefined;
+    const config = bot.db.verification.getConfig(message.guild!.id);
+    if (config === null) {
+      await CommandUtils.sendMessage('Error saving verification config.', message.channel, bot);
+      return { sendHelp: false, command: this, message };
+    } else if (config && config.channelId === channel.id) {
+      messageId = config.messageId;
+      verificationMessage = await (await CommandUtils.parseTextChannel(config.channelId, message.client))?.messages.fetch(messageId);
+    } 
+    if (!verificationMessage) {
+      verificationMessage = await CommandUtils.sendMessage(
         'Please react to this message to gain access to the rest of the server.',
         channel, bot,
       );
-      messageId = verificationMessage.id;
-
-      // React if we're not removing reactions
-      if (!removeReaction) {
-        await verificationMessage.react(emote);
-      }
     }
 
     // Save verification config
-    const saveResult = await bot.configs.verificationConfig.setVerificationConfig(
-      message.guild!.id, channel.id, messageId, emote.identifier, role.id, removeReaction,
+    const saveResult = bot.db.verification.setConfig(
+      verificationMessage, role, emote.identifier,
     );
     if (saveResult) {
       await CommandUtils.sendMessage('Verification config saved successfully, please enable it if not already enabled.', message.channel, bot);
@@ -131,17 +196,21 @@ class VerificationStatus extends Command {
   }
 
   async run(bot: Bot, message: Message): Promise<CommandResult> {
-    const verificationConfig = await bot.configs.verificationConfig.getVerificationConfig(message.guild!.id);
-    if (!verificationConfig) {
-      await CommandUtils.sendMessage('No config found, please set one first.', message.channel, bot);
+    const verificationConfig = bot.db.verification.getConfig(message.guild!.id);
+    if (verificationConfig === null) {
+      await CommandUtils.sendMessage('Error getting from db, please try again later.', message.channel, bot);
+      return { sendHelp: false, command: this, message };
+    }
+    else if (verificationConfig === undefined) {
+      await CommandUtils.sendMessage('No config found, please set the config first.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
 
     const embed: MessageEmbed = new MessageEmbed()
-      .addField('Status', await bot.configs.guildConfig.getVerificationEnabled(message.guild!.id) ? 'Enabled' : 'Disabled', true)
-      .addField('Channel', `<#${verificationConfig.channelID}>`, true)
-      .addField('Emote', await CommandUtils.makeEmoteFromId(verificationConfig.emoteID, message) ?? 'Invalid', true)
-      .addField('Role', `<@&${verificationConfig.roleID}>`, true)
+      .addField('Status', verificationConfig.enabled ? 'Enabled' : 'Disabled', true)
+      .addField('Channel', `<#${verificationConfig.channelId}>`, true)
+      .addField('Emote', await CommandUtils.makeEmoteFromId(verificationConfig.emoteId, message) ?? 'Invalid', true)
+      .addField('Role', `<@&${verificationConfig.roleId}>`, true)
       .setTitle(`Verification Status in ${message.guild!.name}`)
       .setColor(await CommandUtils.getSelfColor(message.channel, bot));
 
@@ -162,6 +231,8 @@ export class ManageVerification extends CommandGroup {
   protected registerSubCommands(bot: Bot): void {
     this.registerSubCommand(new EnableVerification(this, bot));
     this.registerSubCommand(new DisableVerification(this, bot));
+    this.registerSubCommand(new EnableRemoveReaction(this, bot));
+    this.registerSubCommand(new DisableRemoveReaction(this, bot));
     this.registerSubCommand(new SetVerification(this, bot));
     this.registerSubCommand(new VerificationStatus(this, bot));
   }

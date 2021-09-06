@@ -31,19 +31,19 @@ export default class PermissionsHelper {
 
   public static async getMemberPermLevel(member: GuildMember, bot: Bot): Promise<PermissionLevel> {
     const roleList: Collection<Snowflake, Role> = member.roles.cache;
-    let tempRole: string | undefined;
+    let tempRole: string | null | undefined;
 
     if (bot.owners.includes(member.user.id)) {
       return PermissionLevel.Owner;
     }
-    if ((tempRole = await bot.configs.guildConfig.getAdminRole(member.guild.id)) && roleList.has(tempRole)
+    if ((tempRole = bot.db.guildConfigs.getAdminRole(member.guild.id)) && roleList.has(tempRole)
             || member.guild.ownerId === member.id) {
       return PermissionLevel.Admin;
     }
-    if ((tempRole = await bot.configs.guildConfig.getModRole(member.guild.id)) && roleList.has(tempRole)) {
+    if ((tempRole = bot.db.guildConfigs.getModRole(member.guild.id)) && roleList.has(tempRole)) {
       return PermissionLevel.Mod;
     }
-    if ((tempRole = await bot.configs.guildConfig.getVipRole(member.guild.id)) && roleList.has(tempRole)) {
+    if ((tempRole = bot.db.guildConfigs.getVipRole(member.guild.id)) && roleList.has(tempRole)) {
       return PermissionLevel.VIP;
     }
     if (member.guild.id != '326543379955580929') { // Shitty disable commands in acai's discord

@@ -81,13 +81,13 @@ export default class ReactionRoles {
     return rowsModified > 0;
   }
 
-  public removeReactionRole(message: Message, emoteId: string): boolean {
+  public removeReactionRole(channelId: Snowflake, messageId: Snowflake, emoteId: string): boolean {
     let rowsModified = 0;
 
     try {
       const info = this.db.prepare(
         'DELETE FROM ReactionRoles WHERE channelId = ? AND messageId = ? emoteId = ?;'
-      ).run(message.channel.id, message.id, emoteId);
+      ).run(channelId, messageId, emoteId);
       rowsModified = info.changes;
     } catch (err) {
       this.logger.error('Error removing ReactionRole', err);

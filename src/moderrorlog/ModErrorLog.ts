@@ -7,7 +7,7 @@ import {
 export default class ModErrorLog {
   public static async log(message: string, guild: Guild, bot: Bot): Promise<boolean> {
     // Find mod error log channel
-    const channelId: Snowflake | undefined = await bot.configs.guildConfig.getModErrorChannel(guild.id);
+    const channelId = bot.db.guildConfigs.getModChannel(guild.id);
     if (!channelId) {
       return false;
     }

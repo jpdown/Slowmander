@@ -123,7 +123,7 @@ export default class Verification {
         + '"messageId" TEXT NOT NULL,'
         + '"emoteId" TEXT NOT NULL,'
         + '"roleId" TEXT NOT NULL,'
-        + '"removeReaction" BOOLEAN NOT NULL DEFAULT 0 CHECK (enabled in (0, 1))'
+        + '"removeReaction" BOOLEAN NOT NULL DEFAULT 0 CHECK (removeReaction in (0, 1))'
         + ');',
       ).run();
       if (statementInfo.changes > 0) {

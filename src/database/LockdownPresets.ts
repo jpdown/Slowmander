@@ -121,6 +121,35 @@ export default class LockdownPresets {
     return rowsModified > 0;
   }
 
+  public removePreset(guildId: Snowflake, preset: string): boolean {
+    let rowsModified = 0;
+
+    try {
+      // Begin transaction
+      this.db.prepare('BEGIN;').run();
+
+      // Remove channels
+      let info = this.db.prepare('DELETE FROM LockdownChannels WHERE guildId = ? AND preset = ?;').run();
+      rowsModified += info.changes;
+
+      // Remove roles
+      info = this.db.prepare('DELETE FROM LockdownRoles WHERE guildId = ? AND preset = ?;').run();
+      rowsModified += info.changes;
+
+      // Remove preset
+      info = this.db.prepare('DELETE FROM LockdownPresets WHERE guildId = ? AND preset = ?;').run();
+      rowsModified += info.changes;
+
+      // Commit
+      this.db.prepare('COMMIT;').run();
+    } catch (err) {
+      this.db.prepare("ROLLBACK;").run();
+      rowsModified = 0;
+      this.logger.error('Error removing LockdownPreset', err);
+    }
+
+    return rowsModified > 0;
+  }
 
   private generateTables() {
     try {
