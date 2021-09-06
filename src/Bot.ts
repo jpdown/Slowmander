@@ -74,7 +74,6 @@ export default class Bot {
       this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
       this._client.on('messageReactionAdd', this._reactionRoleManager.onMessageReactionAdd.bind(this._reactionRoleManager));
       this._client.on('messageReactionRemove', this._reactionRoleManager.onMessageReactionRemove.bind(this._reactionRoleManager));
-      this._client.on('ready', this._reactionRoleManager.onReady.bind(this._reactionRoleManager));
       this._client.on('guildMemberAdd', this._verificationManager.onGuildMemberAdd.bind(this._verificationManager));
       this._client.on('messageReactionAdd', this._verificationManager.onMessageReactionAdd.bind(this._verificationManager));
       this._client.on('message', this._twitchClipModManager.onMessage.bind(this._twitchClipModManager));
