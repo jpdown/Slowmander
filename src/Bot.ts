@@ -44,7 +44,7 @@ export default class Bot {
         'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS',
         'DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS',
       ],
-      partials: ['MESSAGE', 'REACTION'],
+      partials: ['MESSAGE', 'REACTION', 'CHANNEL'],
     });
     this.logger = Logger.getLogger(this, this);
     this._credentials = new Credentials(this);
