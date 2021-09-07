@@ -1,11 +1,11 @@
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { Logger } from 'Logger';
 import ModErrorLog from 'moderrorlog/ModErrorLog';
 
 import {
-  GuildMember, MessageReaction, User, Role, Permissions, Guild, PartialMessageReaction, PartialUser,
+  GuildMember, MessageReaction, User, Role, Permissions, PartialMessageReaction, PartialUser, Message,
 } from 'discord.js';
-import { VerificationConfig } from 'database/Verification';
+import type { VerificationConfig } from 'database/Verification';
 
 export default class VerificationManager {
   private bot: Bot;
@@ -34,62 +34,71 @@ export default class VerificationManager {
   }
 
   public async onMessageReactionAdd(reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) {
+    let fullReaction: MessageReaction;
     try {
       if (reaction.partial) {
-        reaction = await reaction.fetch();
+        fullReaction = await reaction.fetch();
+      } else {
+        fullReaction = reaction;
       }
     } catch (err) {
       await this.logger.error('Error fetching reaction.', err);
       return;
     }
 
+    let fullMessage: Message;
     try {
-      if (reaction.message.partial) {
-        reaction.message = await reaction.message.fetch();
+      if (fullReaction.message.partial) {
+        fullMessage = await fullReaction.message.fetch();
+      } else {
+        fullMessage = fullReaction.message;
       }
     } catch (err) {
       await this.logger.error('Error fetching reaction message.', err);
       return;
     }
 
+    let fullUser: User;
     try {
       if (user.partial) {
-        user = await user.fetch();
+        fullUser = await user.fetch();
+      } else {
+        fullUser = user;
       }
     } catch (err) {
       await this.logger.error('Error fetching reaction user.', err);
       return;
     }
 
-    if (!reaction.message.guild || !reaction.message.guild.me) {
+    if (!fullMessage.guild || !fullMessage.guild.me) {
       return;
     }
 
     // Grab verification config
-    const config = this.bot.db.verification.getConfig(reaction.message.guild.id);
+    const config = this.bot.db.verification.getConfig(fullMessage.guild.id);
     if (!config || !config.enabled) {
       return;
     }
 
     // Ignore bots
-    if (user.bot) {
+    if (fullUser.bot) {
       return;
     }
 
     // Ignore reactions from DMs
-    if (!reaction.message.guild || reaction.message.channel.type === 'DM') {
+    if (!fullMessage.guild || fullMessage.channel.type === 'DM') {
       return;
     }
 
-    const member: GuildMember = await reaction.message.guild.members.fetch(user);
+    const member: GuildMember = await fullMessage.guild.members.fetch(fullUser);
 
     // Verify correct message
-    if (reaction.message.id != config.messageId) {
+    if (fullMessage.id !== config.messageId) {
       return;
     }
 
     // Check if emote matches
-    if (reaction.emoji.identifier === config.emoteId) {
+    if (fullReaction.emoji.identifier === config.emoteId) {
       // Try to remove role from user
       try {
         await this.applyRole(member, false, config);
@@ -104,13 +113,16 @@ export default class VerificationManager {
       return;
     }
 
-    if (!reaction.message.channel.permissionsFor(reaction.message.guild.me).has(Permissions.FLAGS.MANAGE_MESSAGES)) {
-      await ModErrorLog.log(`Remove reaction is enabled for verification but I do not have the Manage Messages permission in ${reaction.message.channel.toString()}.`, member.guild, this.bot);
+    if (!fullMessage.channel.permissionsFor(fullMessage.guild.me).has(Permissions.FLAGS.MANAGE_MESSAGES)) {
+      await ModErrorLog.log(
+        `Remove reaction is enabled for verification but I do not have the Manage Messages permission in ${fullMessage.channel.toString()}.`,
+        member.guild, this.bot,
+      );
       return;
     }
 
     try {
-      await reaction.remove();
+      await fullReaction.remove();
     } catch (err) {
       await ModErrorLog.log(`Unknown error removing verification reaction from ${member.user.tag}`, member.guild, this.bot);
       await this.logger.error(`Error removing verification reaction from user ${member.user.tag} in guild ${member.guild.name}.`, err);
@@ -133,12 +145,11 @@ export default class VerificationManager {
     }
 
     // Verify we have permissions
-    // If no manage roles
     if (!member.guild.me.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
+      // If no manage roles
       await ModErrorLog.log('Verification is enabled but I do not have the Manage Roles permission.', member.guild, this.bot);
-    }
-    // If role hierarchy messed up
-    else if (member.guild.me.roles.highest.comparePositionTo(role) < 0) {
+    } else if (member.guild.me.roles.highest.comparePositionTo(role) < 0) {
+      // If role hierarchy messed up
       await ModErrorLog.log('Verification is enabled but incorrect hierarchy, my top role is not above verification role.', member.guild, this.bot);
     }
 

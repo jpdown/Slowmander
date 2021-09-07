@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import CommandUtils from 'utils/CommandUtils';
 import CommandGroup from 'commands/CommandGroup';
 
@@ -44,7 +44,7 @@ class DisableVerification extends Command {
       await CommandUtils.sendMessage('Error getting from db, please try again later.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
-    else if (verificationConfig === undefined) {
+    if (verificationConfig === undefined) {
       await CommandUtils.sendMessage('No config found, please set the config first.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
@@ -62,7 +62,10 @@ class DisableVerification extends Command {
 
 class EnableRemoveReaction extends Command {
   constructor(group: CommandGroup, bot: Bot) {
-    super('enableremovereaction', PermissionLevel.Admin, 'Enables removing reaction', bot, { group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR });
+    super(
+      'enableremovereaction', PermissionLevel.Admin, 'Enables removing reaction',
+      bot, { group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR },
+    );
   }
 
   async run(bot: Bot, message: Message): Promise<CommandResult> {
@@ -72,7 +75,7 @@ class EnableRemoveReaction extends Command {
       await CommandUtils.sendMessage('Error getting from db, please try again later.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
-    else if (verificationConfig === undefined) {
+    if (verificationConfig === undefined) {
       await CommandUtils.sendMessage('No config found, please set the config first.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
@@ -90,7 +93,10 @@ class EnableRemoveReaction extends Command {
 
 class DisableRemoveReaction extends Command {
   constructor(group: CommandGroup, bot: Bot) {
-    super('disableremovereaction', PermissionLevel.Admin, 'Disables removing reaction', bot, { group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR });
+    super(
+      'disableremovereaction', PermissionLevel.Admin, 'Disables removing reaction',
+      bot, { group, runsInDm: false, requiredPerm: Permissions.FLAGS.ADMINISTRATOR },
+    );
   }
 
   async run(bot: Bot, message: Message): Promise<CommandResult> {
@@ -100,7 +106,7 @@ class DisableRemoveReaction extends Command {
       await CommandUtils.sendMessage('Error getting from db, please try again later.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
-    else if (verificationConfig === undefined) {
+    if (verificationConfig === undefined) {
       await CommandUtils.sendMessage('No config found, please set the config first.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
@@ -163,10 +169,10 @@ class SetVerification extends Command {
     if (config === null) {
       await CommandUtils.sendMessage('Error saving verification config.', message.channel, bot);
       return { sendHelp: false, command: this, message };
-    } else if (config && config.channelId === channel.id) {
+    } if (config && config.channelId === channel.id) {
       messageId = config.messageId;
       verificationMessage = await (await CommandUtils.parseTextChannel(config.channelId, message.client))?.messages.fetch(messageId);
-    } 
+    }
     if (!verificationMessage) {
       verificationMessage = await CommandUtils.sendMessage(
         'Please react to this message to gain access to the rest of the server.',
@@ -201,7 +207,7 @@ class VerificationStatus extends Command {
       await CommandUtils.sendMessage('Error getting from db, please try again later.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
-    else if (verificationConfig === undefined) {
+    if (verificationConfig === undefined) {
       await CommandUtils.sendMessage('No config found, please set the config first.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }

@@ -1,7 +1,8 @@
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import Bot from 'Bot';
+import type Bot from 'Bot';
+import HelpManager from 'HelpManager';
 
-import { Message } from 'discord.js';
+import type { Message } from 'discord.js';
 
 // eslint-disable-next-line import/prefer-default-export
 export class Help extends Command {
@@ -11,21 +12,21 @@ export class Help extends Command {
 
   async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
     if (args.length === 0) {
-      await bot.helpManager.sendFullHelp(message, bot);
+      await HelpManager.sendFullHelp(message, bot);
       return { sendHelp: false, command: this, message };
     }
 
     const command: Command | undefined = bot.commandManager.getCommand(<string>args.shift());
 
     if (!command) {
-      await bot.helpManager.sendFullHelp(message, bot);
+      await HelpManager.sendFullHelp(message, bot);
       return { sendHelp: false, command: this, message };
     }
 
     if (args.length > 0) {
-      await bot.helpManager.sendCommandHelp(command, message, bot, args);
+      await HelpManager.sendCommandHelp(command, message, bot, args);
     } else {
-      await bot.helpManager.sendCommandHelp(command, message, bot);
+      await HelpManager.sendCommandHelp(command, message, bot);
     }
 
     return { sendHelp: false, command: this, message };

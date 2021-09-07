@@ -1,7 +1,7 @@
 import {
   Command, PermissionLevel, CommandResult, CommandParameters,
 } from 'commands/Command';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 
 import { Message, PermissionResolvable, Permissions } from 'discord.js';
 import CommandManager from 'CommandManager';

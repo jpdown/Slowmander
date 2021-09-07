@@ -1,14 +1,15 @@
-import { Command, CommandResult } from 'commands/Command';
+import type { Command, CommandResult } from 'commands/Command';
 import * as commands from 'commands';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import CommandUtils from 'utils/CommandUtils';
 import PermissionsHelper from 'utils/PermissionsHelper';
-import CommandGroup from 'commands/CommandGroup';
+import type CommandGroup from 'commands/CommandGroup';
 import { Logger } from 'Logger';
 
 import {
-  Message, MessageEmbed, PartialMessage, Snowflake,
+  Message, MessageEmbed, PartialMessage,
 } from 'discord.js';
+import HelpManager from 'HelpManager';
 
 export default class CommandManager {
   private commandMap: Map<string, Command>;
@@ -30,8 +31,7 @@ export default class CommandManager {
     try {
       if (message.partial) {
         fullMessage = await message.fetch();
-      }
-      else {
+      } else {
         fullMessage = message;
       }
     } catch (err) {
@@ -74,7 +74,7 @@ export default class CommandManager {
       try {
         const result: CommandResult = await command.run(this.bot, fullMessage, args);
         if (result.sendHelp && result.command) {
-          await this.bot.helpManager.sendCommandHelp(result.command, result.message, this.bot);
+          await HelpManager.sendCommandHelp(result.command, result.message, this.bot);
         }
       } catch (err) {
         await this.logger.error(`Error running command "${command.fullName}".`, err);
@@ -121,7 +121,7 @@ export default class CommandManager {
 
   public async getPrefix(guildId?: string): Promise<string> {
     if (guildId) {
-      let prefix = this.bot.db.guildConfigs.getPrefix(guildId);
+      const prefix = this.bot.db.guildConfigs.getPrefix(guildId);
       if (prefix) {
         return prefix;
       }
@@ -138,9 +138,9 @@ export default class CommandManager {
   }
 
   private registerAll(): void {
-    for (const CommandToRegister of Object.values(commands)) {
+    Object.values(commands).forEach((CommandToRegister) => {
       this.registerCommand(new CommandToRegister(this.bot));
-    }
+    });
   }
 
   private static getCommandHelper(commandToGet: string | undefined, commandList: Map<string, Command>): Command | undefined {

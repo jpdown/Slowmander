@@ -1,13 +1,13 @@
 /* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import CommandUtils from 'utils/CommandUtils';
 import CommandGroup from 'commands/CommandGroup';
 
 import {
   Message, Permissions, MessageEmbed,
 } from 'discord.js';
-import { HelixUser } from 'twitch/lib';
+import type { HelixUser } from 'twitch/lib';
 
 class EnableClipModeration extends Command {
   constructor(group: CommandGroup, bot: Bot) {
@@ -37,7 +37,7 @@ class EnableClipModeration extends Command {
     if (result) {
       messageToSend = `Twitch clip moderation successfully enabled for ${channel.toString()}`;
       // Check for Twitch API
-      if (!await bot.twitchApiManager.getApiStatus()) {
+      if (!await bot.twitch.getApiStatus()) {
         messageToSend += '\nI do not have Twitch API access so verification will be solely through RegExp.';
       }
     } else {
@@ -109,7 +109,7 @@ class EnableApprovedChannels extends Command {
     }
 
     // Check if we have Twitch
-    if (!await bot.twitchApiManager.getApiStatus()) {
+    if (!await bot.twitch.getApiStatus()) {
       await CommandUtils.sendMessage('I do not have Twitch API access.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
@@ -148,7 +148,7 @@ class DisableApprovedChannels extends Command {
     }
 
     // Check if we have Twitch
-    if (!await bot.twitchApiManager.getApiStatus()) {
+    if (!await bot.twitch.getApiStatus()) {
       await CommandUtils.sendMessage('I do not have Twitch API access.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
@@ -186,13 +186,13 @@ class AddTwitchChannel extends Command {
     }
 
     // Check if we have Twitch
-    if (!await bot.twitchApiManager.getApiStatus()) {
+    if (!await bot.twitch.getApiStatus()) {
       await CommandUtils.sendMessage('I do not have Twitch API access.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
 
     // Get Twitch users
-    const twitchUsers: HelixUser[] | null = await bot.twitchApiManager.getUserIds(args.slice(1));
+    const twitchUsers: HelixUser[] | null = await bot.twitch.getUserIds(args.slice(1));
     if (!twitchUsers) {
       await CommandUtils.sendMessage('Unknown issue getting Twitch channels', message.channel, bot);
       return { sendHelp: false, command: this, message };
@@ -238,13 +238,13 @@ class DeleteTwitchChannel extends Command {
     }
 
     // Check if we have Twitch
-    if (!await bot.twitchApiManager.getApiStatus()) {
+    if (!await bot.twitch.getApiStatus()) {
       await CommandUtils.sendMessage('I do not have Twitch API access.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
 
     // Get Twitch users
-    const twitchUsers: HelixUser[] | null = await bot.twitchApiManager.getUserIds(args.slice(1));
+    const twitchUsers: HelixUser[] | null = await bot.twitch.getUserIds(args.slice(1));
     if (!twitchUsers) {
       await CommandUtils.sendMessage('Unknown issue getting Twitch channels', message.channel, bot);
       return { sendHelp: false, command: this, message };
@@ -307,11 +307,11 @@ class ChannelModInfo extends Command {
     } else {
       embed.addField('Channel', channel.toString(), true);
       embed.addField('Enabled', config.enabled ? 'True' : 'False', true);
-      embed.addField('Twitch API', await bot.twitchApiManager.getApiStatus() ? 'True' : 'False', true);
+      embed.addField('Twitch API', await bot.twitch.getApiStatus() ? 'True' : 'False', true);
       embed.addField('Approved Channels Only', config.approvedOnly ? 'True' : 'False', true);
 
       if (approvedChannels.length > 0) {
-        const twitchUsers = await bot.twitchApiManager.getUsersByIds(approvedChannels);
+        const twitchUsers = await bot.twitch.getUsersByIds(approvedChannels);
         let usernames = '';
         if (twitchUsers) {
           twitchUsers.forEach((user) => {

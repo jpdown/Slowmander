@@ -22,6 +22,8 @@
     "rules": {
         "no-extra-parens": "off",
         "@typescript-eslint/no-extra-parens": "error",
-        "max-len": ["error", { "code": 150, "tabWidth": 2 }]
+        "max-len": ["error", { "code": 150, "tabWidth": 2 }],
+        "no-console": "off",
+        "no-cond-assign": ["error", "except-parens"]
     }
 }

@@ -1,9 +1,16 @@
-import Bot from 'Bot';
+import type Bot from 'Bot';
 
-import { WebhookClient } from 'discord.js';
+import type { WebhookClient } from 'discord.js';
 import {
   existsSync, mkdirSync, writeFileSync, appendFileSync,
 } from 'fs';
+
+export enum LogLevel {
+  DEBUG = 0,
+  INFO = 1,
+  WARNING = 2,
+  ERROR = 3,
+}
 
 export class Logger {
   private readonly CONSOLE_LOG_LEVEL = LogLevel.INFO;
@@ -97,18 +104,12 @@ export class Logger {
         splitMessage.push(message.substr(i, currEnd));
       }
       // Post
-      for (let i = 0; i < splitMessage.length; i++) {
+      for (let i = 0; i < splitMessage.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
         await webhook.send(`\`\`\`${splitMessage[i]}\`\`\``);
       }
+    } catch (err) {
+      // Nothing we can do
     }
-    // Nothing we can do
-    catch (err) {}
   }
-}
-
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARNING = 2,
-  ERROR = 3,
 }

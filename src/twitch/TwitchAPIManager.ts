@@ -1,4 +1,4 @@
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { Logger } from 'Logger';
 
 import { ApiClient, HelixClip, HelixUser } from 'twitch';

@@ -1,8 +1,8 @@
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { Logger } from 'Logger';
 
 import {
-  GuildMember, Message, Collection, Snowflake, TextChannel, MessageEmbed, NewsChannel, GuildBan, PartialGuildMember, PartialMessage, TextBasedChannels,
+  GuildMember, Message, Collection, Snowflake, GuildBan, PartialGuildMember, PartialMessage, TextBasedChannels, MessageEmbed,
 } from 'discord.js';
 
 export default class EventLogger {
@@ -51,29 +51,32 @@ export default class EventLogger {
   }
 
   public async onGuildMemberRemove(member: GuildMember | PartialGuildMember) {
-    const channel = await this.getLogChannel(member.guild.id);
+    let fullMember: GuildMember;
+    try {
+      if (member.partial) {
+        fullMember = await member.fetch();
+      } else {
+        fullMember = member;
+      }
+    } catch (err) {
+      this.logger.error('Error fetching removed member.', err);
+      return;
+    }
+
+    const channel = await this.getLogChannel(fullMember.guild.id);
 
     if (!channel) {
       return;
     }
 
-    if (member.partial) {
-      try {
-        member = await member.fetch();
-      } catch (err) {
-        this.logger.error('Error fetching removed member.', err);
-        return;
-      }
-    }
-
-    const avatarUrl: string = member.user.displayAvatarURL({ size: 4096, format: 'png', dynamic: true });
+    const avatarUrl: string = fullMember.user.displayAvatarURL({ size: 4096, format: 'png', dynamic: true });
 
     // Build embed
     const embed: MessageEmbed = new MessageEmbed()
       .setAuthor('Member Left', avatarUrl)
       .setThumbnail(avatarUrl)
-      .setDescription(`${member.user.toString()} ${member.user.username}#${member.user.discriminator}`)
-      .setFooter(`ID: ${member.user.id}`)
+      .setDescription(`${fullMember.user.toString()} ${fullMember.user.username}#${fullMember.user.discriminator}`)
+      .setFooter(`ID: ${fullMember.user.id}`)
       .setTimestamp(Date.now())
       .setColor('RED');
 
@@ -82,33 +85,37 @@ export default class EventLogger {
   }
 
   public async onGuildBanAdd(ban: GuildBan) {
-    const channel = await this.getLogChannel(ban.guild.id);
-
-    if (ban.partial) {
-      try {
-        ban = await ban.fetch();
-      } catch (err) {
-        this.logger.error('Error fetching guild ban.', err);
+    let fullBan: GuildBan;
+    try {
+      if (ban.partial) {
+        fullBan = await ban.fetch();
+      } else {
+        fullBan = ban;
       }
+    } catch (err) {
+      this.logger.error('Error fetching guild ban.', err);
+      return;
     }
+
+    const channel = await this.getLogChannel(fullBan.guild.id);
 
     if (!channel) {
       return;
     }
 
-    const avatarUrl: string = ban.user.displayAvatarURL({ size: 4096, format: 'png', dynamic: true });
+    const avatarUrl: string = fullBan.user.displayAvatarURL({ size: 4096, format: 'png', dynamic: true });
 
     // Build embed
     const embed: MessageEmbed = new MessageEmbed()
       .setAuthor('Member Banned', avatarUrl)
       .setThumbnail(avatarUrl)
-      .setDescription(`${ban.user.toString()} ${ban.user.username}#${ban.user.discriminator}`)
-      .setFooter(`ID: ${ban.user.id}`)
+      .setDescription(`${fullBan.user.toString()} ${fullBan.user.username}#${fullBan.user.discriminator}`)
+      .setFooter(`ID: ${fullBan.user.id}`)
       .setTimestamp(Date.now())
       .setColor('RED');
 
-    if (ban.reason) {
-      embed.addField('Reason', ban.reason);
+    if (fullBan.reason) {
+      embed.addField('Reason', fullBan.reason);
     }
 
     // Send message
@@ -187,36 +194,41 @@ export default class EventLogger {
   }
 
   public async onMessageUpdate(oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage) {
+    let fullMessage: Message;
+
     if (newMessage.partial) {
       try {
-        newMessage = await newMessage.fetch();
+        fullMessage = await newMessage.fetch();
       } catch (err) {
         this.logger.error('Error fetching new message.', err);
         return;
       }
+    } else {
+      fullMessage = newMessage;
     }
-    if (!newMessage.guild) {
+
+    if (!fullMessage.guild) {
       return;
     }
 
-    const channel = await this.getLogChannel(newMessage.guild.id);
+    const channel = await this.getLogChannel(fullMessage.guild.id);
 
-    if (!channel || newMessage.author.bot) {
+    if (!channel || fullMessage.author.bot) {
       return;
     }
 
-    if (oldMessage && oldMessage.content === newMessage.content) {
+    if (oldMessage && oldMessage.content === fullMessage.content) {
       return;
     }
 
-    const avatarUrl: string = newMessage.author.displayAvatarURL({ size: 4096, format: 'png', dynamic: true });
+    const avatarUrl: string = fullMessage.author.displayAvatarURL({ size: 4096, format: 'png', dynamic: true });
 
     // Build embed
     const embed: MessageEmbed = new MessageEmbed()
-      .setAuthor(`${newMessage.author.username}#${newMessage.author.discriminator}`, avatarUrl)
+      .setAuthor(`${fullMessage.author.username}#${fullMessage.author.discriminator}`, avatarUrl)
       .setThumbnail(avatarUrl)
-      .setDescription(`**Message edited by ${newMessage.author.toString()} in ${newMessage.channel.toString()}** [Jump](${newMessage.url})`)
-      .setFooter(`Author: ${newMessage.author.id} | Message: ${newMessage.id}`)
+      .setDescription(`**Message edited by ${fullMessage.author.toString()} in ${fullMessage.channel.toString()}** [Jump](${fullMessage.url})`)
+      .setFooter(`Author: ${fullMessage.author.id} | Message: ${fullMessage.id}`)
       .setTimestamp(Date.now())
       .setColor('AQUA');
 
@@ -224,17 +236,17 @@ export default class EventLogger {
       embed.addField('Before', oldMessage.content, false);
     }
 
-    embed.addField('After', newMessage.content, false);
+    embed.addField('After', fullMessage.content, false);
 
     // Send message
     await channel.send({ embeds: [embed] });
   }
 
   private async getLogChannel(guildId: string): Promise<TextBasedChannels | undefined> {
-    let channelId = this.bot.db.eventLogs.getChannel(guildId);
+    const channelId = this.bot.db.eventLogs.getChannel(guildId);
 
     if (!channelId) {
-      return;
+      return undefined;
     }
 
     let channel: TextBasedChannels | undefined;

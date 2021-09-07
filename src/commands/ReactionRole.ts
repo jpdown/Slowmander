@@ -1,15 +1,14 @@
 /* eslint-disable max-classes-per-file */
 import CommandGroup from 'commands/CommandGroup';
 import { Command, CommandResult, PermissionLevel } from 'commands/Command';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import ReactionPaginator from 'utils/ReactionPaginator';
 import CommandUtils from 'utils/CommandUtils';
 
 import {
   Message, Role, TextChannel, NewsChannel, Permissions, ReactionEmoji,
-  MessageReaction, GuildEmoji, Snowflake, GuildChannelResolvable, TextBasedChannels,
+  MessageReaction, GuildEmoji, GuildChannelResolvable,
 } from 'discord.js';
-import { ReactionRole } from 'database/ReactionRoles';
 
 class AddReactionRole extends Command {
   constructor(group: CommandGroup, bot: Bot) {
@@ -38,9 +37,9 @@ class AddReactionRole extends Command {
       await CommandUtils.sendMessage('Error checking database, please try again later.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
-    else if (config) {
-      let emote = await CommandUtils.makeEmoteFromId(config.emoteId, bot.client);
-      await CommandUtils.sendMessage(`Adding reaction role failed. Reaction role with emote ${emote} already exists.`, message.channel, bot);
+    if (config) {
+      const emoji = await CommandUtils.makeEmoteFromId(config.emoteId, bot.client);
+      await CommandUtils.sendMessage(`Adding reaction role failed. Reaction role with emote ${emoji} already exists.`, message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
 
@@ -60,7 +59,9 @@ class AddReactionRole extends Command {
     } catch (err) {
       await CommandUtils.sendMessage('Error reacting to message. Do I have perms? The reaction role is still registered.', message.channel, bot);
       await this.logger.warning(
-        `Error reacting to message ${parsedArgs.reactionMessage.id} in channel ${parsedArgs.reactionMessage.channel.id} in guild ${parsedArgs.reactionMessage.guild?.id}`, err,
+        // eslint-disable-next-line max-len
+        `Error reacting to message ${parsedArgs.reactionMessage.id} in channel ${parsedArgs.reactionMessage.channel.id} in guild ${parsedArgs.reactionMessage.guild?.id}`,
+        err,
       );
     }
 
@@ -91,7 +92,7 @@ class AddReactionRole extends Command {
       await CommandUtils.sendMessage("Adding reaction role failed. I couldn't find the channel.", message.channel, bot);
       return undefined;
     }
-    if (channel.type === "DM") {
+    if (channel.type === 'DM') {
       await CommandUtils.sendMessage("Adding reaction role failed. I couldn't find the channel.", message.channel, bot);
       return undefined;
     }
@@ -170,14 +171,14 @@ class RemoveReactionRole extends Command {
       await CommandUtils.sendMessage('Error accessing db, please try again later.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
-    else if (!config) {
+    if (!config) {
       await CommandUtils.sendMessage('Error removing reaction role, it does not exist.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
 
     const success: boolean = await this.removeReactionRole(message, emote.identifier, bot);
     if (success) {
-      await CommandUtils.sendMessage(`Reaction role removed successfully.`, message.channel, bot);
+      await CommandUtils.sendMessage('Reaction role removed successfully.', message.channel, bot);
     } else {
       await CommandUtils.sendMessage('Error removing reaction role.', message.channel, bot);
     }
@@ -191,7 +192,7 @@ class RemoveReactionRole extends Command {
     if (!result) return false;
 
     // Remove our reaction
-    const reaction: MessageReaction | undefined = await this.getReaction(message, emoteId, bot);
+    const reaction: MessageReaction | undefined = await this.getReaction(message, emoteId);
     if (reaction) {
       try {
         await reaction.users.remove(message.client.user!);
@@ -203,7 +204,7 @@ class RemoveReactionRole extends Command {
     return true;
   }
 
-  private async getReaction(message: Message, emoteId: string, bot: Bot): Promise<MessageReaction | undefined> {
+  private async getReaction(message: Message, emoteId: string): Promise<MessageReaction | undefined> {
     let reaction: MessageReaction | undefined;
 
     // Get reaction
@@ -246,7 +247,7 @@ class RemoveReactionRole extends Command {
       await CommandUtils.sendMessage("Removing reaction role failed. I couldn't find the channel.", message.channel, bot);
       return undefined;
     }
-    if (channel.type === "DM") {
+    if (channel.type === 'DM') {
       await CommandUtils.sendMessage("Removing reaction role failed. I couldn't find the channel.", message.channel, bot);
       return undefined;
     }
@@ -278,7 +279,7 @@ class ListReactionRoles extends Command {
       await CommandUtils.sendMessage('Error accessing db, please try again later.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
-    else if (!reactionRoles || reactionRoles.length < 1) {
+    if (!reactionRoles || reactionRoles.length < 1) {
       await CommandUtils.sendMessage('I have no current reaction roles.', message.channel, bot);
       return { sendHelp: false, command: this, message };
     }
@@ -315,6 +316,7 @@ class ListReactionRoles extends Command {
   }
 }
 
+// eslint-disable-next-line import/prefer-default-export
 export class ReactionRoleManagement extends CommandGroup {
   constructor(bot: Bot) {
     super('reactionrole', 'Manages reaction roles', bot, { runsInDm: false });
@@ -332,4 +334,4 @@ export class ReactionRoleManagement extends CommandGroup {
 type ReactionRoleParsedArgs = {
   role: Role;
   reactionMessage: Message;
-}
+};

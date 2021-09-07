@@ -1,5 +1,5 @@
 import { PermissionLevel, Command } from 'commands/Command';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 
 import {
   User, GuildMember, Collection, Snowflake, Role, Permissions,
@@ -36,8 +36,10 @@ export default class PermissionsHelper {
     if (bot.owners.includes(member.user.id)) {
       return PermissionLevel.Owner;
     }
-    if ((tempRole = bot.db.guildConfigs.getAdminRole(member.guild.id)) && roleList.has(tempRole)
-            || member.guild.ownerId === member.id) {
+    if (
+      (tempRole = bot.db.guildConfigs.getAdminRole(member.guild.id))
+      && (roleList.has(tempRole) || member.guild.ownerId === member.id)
+    ) {
       return PermissionLevel.Admin;
     }
     if ((tempRole = bot.db.guildConfigs.getModRole(member.guild.id)) && roleList.has(tempRole)) {
@@ -46,7 +48,7 @@ export default class PermissionsHelper {
     if ((tempRole = bot.db.guildConfigs.getVipRole(member.guild.id)) && roleList.has(tempRole)) {
       return PermissionLevel.VIP;
     }
-    if (member.guild.id != '326543379955580929') { // Shitty disable commands in acai's discord
+    if (member.guild.id !== '326543379955580929') { // Shitty disable commands in acai's discord
       return PermissionLevel.Everyone;
     }
 
@@ -55,14 +57,16 @@ export default class PermissionsHelper {
 
   public static async getString(perms: Permissions): Promise<string> {
     const permsStrings: string[] = [];
+    let permsNoAdmin: Permissions = perms;
 
     if (perms.has(Permissions.FLAGS.ADMINISTRATOR)) {
       permsStrings.push('ADMINISTRATOR');
-      perms = perms.remove(Permissions.FLAGS.ADMINISTRATOR);
+      permsNoAdmin = perms.remove(Permissions.FLAGS.ADMINISTRATOR);
     }
-    for (const perm of perms.toArray()) {
+
+    permsNoAdmin.toArray().forEach((perm) => {
       permsStrings.push(perm.toString());
-    }
+    });
 
     return permsStrings.join(', ');
   }

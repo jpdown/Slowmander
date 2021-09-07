@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import CommandUtils from 'utils/CommandUtils';
 import PermissionsHelper from 'utils/PermissionsHelper';
 import ReactionPaginator from 'utils/ReactionPaginator';

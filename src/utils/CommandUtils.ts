@@ -1,7 +1,10 @@
-import Bot from 'Bot';
+import type Bot from 'Bot';
 
 import {
-  ColorResolvable, User, Client, Collection, Snowflake, Guild, GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil, DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions, Message, MessageReaction, ReactionEmoji, MessageEmbed, TextBasedChannels, MessageOptions,
+  ColorResolvable, User, Client, Collection, Snowflake, Guild,
+  GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil,
+  DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions,
+  Message, MessageReaction, ReactionEmoji, MessageEmbed, TextBasedChannels, MessageOptions,
 } from 'discord.js';
 
 export default class CommandUtils {
@@ -20,8 +23,7 @@ export default class CommandUtils {
     return color;
   }
 
-  static async splitCommandArgs(args: string, startPos?: number): Promise<string[]> {
-    if (startPos === undefined) startPos = 0;
+  static async splitCommandArgs(args: string, startPos: number = 0): Promise<string[]> {
     return args.slice(startPos).split(/ +/);
   }
 
@@ -39,10 +41,9 @@ export default class CommandUtils {
   }
 
   static async parseMemberNickname(potentialMember: string, guild: Guild): Promise<GuildMember | undefined> {
-    let parsedMember: GuildMember | undefined;
-    potentialMember = potentialMember.toLowerCase();
+    const lowerMember = potentialMember.toLowerCase();
 
-    parsedMember = guild.members.cache.find((m) => m.nickname?.toLowerCase().startsWith(potentialMember) ?? false);
+    const parsedMember = guild.members.cache.find((m) => m.nickname?.toLowerCase().startsWith(lowerMember) ?? false);
 
     return parsedMember;
   }
@@ -77,16 +78,18 @@ export default class CommandUtils {
       if (snowflake) {
         parsedUser = await client.users.fetch(snowflake);
       }
-    } catch (err) {}
+    } catch (err) {
+      // Invalid snowflake
+      parsedUser = undefined;
+    }
 
     return parsedUser;
   }
 
   static async parseUserByName(potentialUser: string, client: Client): Promise<User | undefined> {
-    let parsedUser: User | undefined;
     const lowerUser: string = potentialUser.toLowerCase();
 
-    parsedUser = client.users.cache.find((u) => u.username.toLowerCase().startsWith(lowerUser) || u.tag === potentialUser);
+    const parsedUser = client.users.cache.find((u) => u.username.toLowerCase().startsWith(lowerUser) || u.tag === potentialUser);
 
     return parsedUser;
   }
@@ -110,7 +113,7 @@ export default class CommandUtils {
 
   static async parseRole(potentialRole: string, guild: Guild): Promise<Role | null> {
     let parsedRole: Role | null = null;
-    const snowflake: Snowflake | null = await CommandUtils.parseRoleID(potentialRole, guild);
+    const snowflake: Snowflake | null = await CommandUtils.parseRoleID(potentialRole);
 
     if (snowflake) {
       parsedRole = await guild.roles.fetch(snowflake);
@@ -126,22 +129,18 @@ export default class CommandUtils {
   static async parseRoleByName(potentialRole: string, guild: Guild): Promise<Role | null> {
     let parsedRole: Role | null = null;
     const roleCache: Collection<Snowflake, Role> = guild.roles.cache;
+    const lowerRole = potentialRole.toLowerCase();
 
     if (potentialRole === 'everyone') {
       parsedRole = guild.roles.everyone;
     } else {
-      for (const role of roleCache.values()) {
-        if (role.name.toLowerCase() === potentialRole.toLowerCase()) {
-          parsedRole = role;
-          break;
-        }
-      }
+      roleCache.find((role) => role.name.toLowerCase() === lowerRole);
     }
 
     return parsedRole;
   }
 
-  static async parseRoleID(potentialRole: string, guild: Guild): Promise<Snowflake | null> {
+  static async parseRoleID(potentialRole: string): Promise<Snowflake | null> {
     let snowflake: Snowflake | null = potentialRole;
     if (snowflake.startsWith('<@&') && snowflake.endsWith('>')) {
       snowflake = snowflake.substring(3, snowflake.length - 1);
@@ -177,7 +176,9 @@ export default class CommandUtils {
       if (snowflake) {
         parsedChannel = await client.channels.fetch(snowflake);
       }
-    } catch (err) {}
+    } catch (err) {
+      parsedChannel = null;
+    }
 
     if (!parsedChannel) {
       const parsedUser: User | undefined = await CommandUtils.parseUserPingOnly(potentialChannel, client);
@@ -209,7 +210,9 @@ export default class CommandUtils {
       if (snowflake) {
         parsedEmote = client.emojis.resolve(snowflake);
       }
-    } catch (err) {}
+    } catch (err) {
+      parsedEmote = null;
+    }
 
     if (!parsedEmote) {
       parsedEmote = await CommandUtils.parseEmoteByName(potentialEmote, client) ?? null;
@@ -254,6 +257,7 @@ export default class CommandUtils {
     return true;
   }
 
+  // eslint-disable-next-line max-len
   static async updateChannelPerms(channel: GuildChannel, roles: Role[], users: User[], grantedPerms: Permissions, revokedPerms: Permissions, neutralPerms: Permissions, reason?: string): Promise<boolean> {
     // Check if we have permissions to edit channel
     if (!channel.guild.me || !channel.permissionsFor(channel.guild.me).has(Permissions.FLAGS.MANAGE_CHANNELS)) {
@@ -273,34 +277,35 @@ export default class CommandUtils {
 
     // Make overwrite options object
     const overwriteOptions: PermissionOverwriteOptions = {};
-    for (const perm of grantedPerms.toArray()) {
+    grantedPerms.toArray().forEach((perm) => {
       overwriteOptions[perm] = true;
-    }
-    for (const perm of revokedPerms.toArray()) {
+    });
+    revokedPerms.toArray().forEach((perm) => {
       overwriteOptions[perm] = false;
-    }
-    for (const perm of neutralPerms.toArray()) {
+    });
+    neutralPerms.toArray().forEach((perm) => {
       overwriteOptions[perm] = null;
-    }
+    });
 
     // Try to update permissions
-    try {
-      for (const role of roles) {
-        await channel.permissionOverwrites.edit(role, overwriteOptions, { reason });
-      }
-      for (const user of users) {
-        await channel.permissionOverwrites.edit(user, overwriteOptions, { reason });
-      }
-      return true;
-    } catch (err) {
-      throw err;
-    }
+    roles.forEach(async (role) => {
+      await channel.permissionOverwrites.edit(role, overwriteOptions, { reason });
+    });
+    users.forEach(async (user) => {
+      await channel.permissionOverwrites.edit(user, overwriteOptions, { reason });
+    });
+
+    return true;
   }
 
   static async getEmote(message: Message, bot: Bot): Promise<ReactionEmoji | GuildEmoji | undefined> {
     // Ask for emote
-    const sentMessage: Message = await CommandUtils.sendMessage('Please react on this message with the emote you would like to use.', message.channel, bot);
-    const reactions: Collection<string, MessageReaction> = await sentMessage.awaitReactions({ filter: (reaction, user) => user.id === message.author.id, time: 60000, max: 1 });
+    const sentMessage: Message = await CommandUtils.sendMessage(
+      'Please react on this message with the emote you would like to use.', message.channel, bot,
+    );
+    const reactions: Collection<string, MessageReaction> = await sentMessage.awaitReactions(
+      { filter: (reaction, user) => user.id === message.author.id, time: 60000, max: 1 },
+    );
 
     // Check if unicode or if we have the custom emote
     if (reactions.size < 1) {
@@ -318,8 +323,6 @@ export default class CommandUtils {
   }
 
   static async sendMessage(message: string, channel: TextBasedChannels, bot: Bot, repliedMessage?: Message): Promise<Message> {
-    let messageSent: Message;
-
     const embed: MessageEmbed = new MessageEmbed()
       .setColor(await CommandUtils.getSelfColor(channel, bot))
       .setDescription(message);
@@ -329,18 +332,17 @@ export default class CommandUtils {
       options.reply = { messageReference: repliedMessage };
     }
 
-    messageSent = await channel.send(options);
-
-    return messageSent;
+    return channel.send(options);
   }
 
   public static async makeEmoteFromId(emoteId: string, client: Client): Promise<string | undefined> {
     let emote: string | undefined;
+    let newEmoteId: string;
 
     try {
-      emoteId = emoteId.split(':').pop() ?? '';
-      if (emoteId !== '') {
-        emote = client.emojis.resolve(emoteId)?.toString();
+      newEmoteId = emoteId.split(':').pop() ?? '';
+      if (newEmoteId !== '') {
+        emote = client.emojis.resolve(newEmoteId)?.toString();
       }
     } catch (err) {
       if (emoteId.indexOf(':') === -1) {

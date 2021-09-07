@@ -1,44 +1,40 @@
-import { Credentials } from 'config/Credentials';
+import Credentials from 'config/Credentials';
 import CommandManager from 'CommandManager';
 import ReactionRoleManager from 'reactionroles/ReactionRoleManager';
-import { HelpManager } from 'HelpManager';
 import { Logger, LogLevel } from 'Logger';
 import EventLogger from 'eventlogs/EventLogger';
 import DatabaseManager from 'database/DatabaseManager';
 import VerificationManager from 'verification/VerificationManager';
+import { Client, Snowflake } from 'discord.js';
+import Config from 'config/Config';
 import TwitchAPIManager from './twitch/TwitchAPIManager';
 import TwitchClipModManager from './twitch/TwitchClipModManager';
 
-import { Client, Snowflake } from 'discord.js';
-import { Config } from 'config/Config';
-
 export default class Bot {
-  private _client: Client;
+  private readonly credentials: Credentials;
 
-  private _credentials: Credentials;
+  private readonly verificationManager: VerificationManager;
 
-  private _config: Config;
+  private readonly twitchClipModManager: TwitchClipModManager;
 
-  private _databaseManager: DatabaseManager;
+  private readonly logger: Logger;
 
-  private _commandManager: CommandManager;
+  private readonly eventLogger: EventLogger;
 
-  private _reactionRoleManager: ReactionRoleManager;
+  private readonly reactionRoleManager: ReactionRoleManager;
 
-  private _helpManager: HelpManager;
+  public readonly client: Client<true>;
 
-  private _verificationManager: VerificationManager;
+  public readonly config: Config;
 
-  private _twitchApiManager: TwitchAPIManager;
+  public readonly db: DatabaseManager;
 
-  private _twitchClipModManager: TwitchClipModManager;
+  public readonly commandManager: CommandManager;
 
-  private logger: Logger;
-
-  private _eventLogger: EventLogger;
+  public readonly twitch: TwitchAPIManager;
 
   constructor() {
-    this._client = new Client({
+    this.client = new Client({
       intents: [
         'GUILDS', 'GUILD_MEMBERS', 'GUILD_BANS', 'GUILD_EMOJIS_AND_STICKERS',
         'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS',
@@ -47,86 +43,53 @@ export default class Bot {
       partials: ['MESSAGE', 'REACTION', 'CHANNEL'],
     });
     this.logger = Logger.getLogger(this, this);
-    this._credentials = new Credentials(this);
-    this._config = new Config(this);
-    this._databaseManager = new DatabaseManager(this);
-    this._commandManager = new CommandManager(this);
-    this._helpManager = new HelpManager();
-    this._eventLogger = new EventLogger(this);
-    this._verificationManager = new VerificationManager(this);
-    this._twitchApiManager = new TwitchAPIManager(this, this._credentials.twitchId, this._credentials.twitchSecret);
-    this._twitchClipModManager = new TwitchClipModManager(this);
-    this._reactionRoleManager = new ReactionRoleManager(this);
+    this.credentials = new Credentials(this);
+    this.config = new Config(this);
+    this.db = new DatabaseManager(this);
+    this.commandManager = new CommandManager(this);
+    this.eventLogger = new EventLogger(this);
+    this.verificationManager = new VerificationManager(this);
+    this.twitch = new TwitchAPIManager(this, this.credentials.twitchId, this.credentials.twitchSecret);
+    this.twitchClipModManager = new TwitchClipModManager(this);
+    this.reactionRoleManager = new ReactionRoleManager(this);
 
-    this._client.on('ready', async () => {
-      await this.logger.info(`Welcome to Slowmander! Logged in as ${this._client.user!.tag} in ${this._client.guilds.cache.size} guild(s).`);
+    this.client.on('ready', async () => {
+      await this.logger.info(`Welcome to Slowmander! Logged in as ${this.client.user.tag} in ${this.client.guilds.cache.size} guild(s).`);
     });
   }
 
   public run() {
-    const { token } = this._credentials;
+    const { token } = this.credentials;
     if (token === '') {
       this.logger.logSync(LogLevel.ERROR, 'No token provided, please put a valid token in the config file.');
       process.exit();
     }
 
-    this._client.login(token).then(() => {
-      this._client.on('messageCreate', this._commandManager.parseCommand.bind(this._commandManager));
-      this._client.on('messageReactionAdd', this._reactionRoleManager.onMessageReactionAdd.bind(this._reactionRoleManager));
-      this._client.on('messageReactionRemove', this._reactionRoleManager.onMessageReactionRemove.bind(this._reactionRoleManager));
-      this._client.on('guildMemberAdd', this._verificationManager.onGuildMemberAdd.bind(this._verificationManager));
-      this._client.on('messageReactionAdd', this._verificationManager.onMessageReactionAdd.bind(this._verificationManager));
-      this._client.on('messageCreate', this._twitchClipModManager.onMessage.bind(this._twitchClipModManager));
-      this._client.on('messageUpdate', this._twitchClipModManager.onMessageUpdate.bind(this._twitchClipModManager));
+    this.client.login(token).then(() => {
+      this.client.on('messageCreate', this.commandManager.parseCommand.bind(this.commandManager));
+      this.client.on('messageReactionAdd', this.reactionRoleManager.onMessageReactionAdd.bind(this.reactionRoleManager));
+      this.client.on('messageReactionRemove', this.reactionRoleManager.onMessageReactionRemove.bind(this.reactionRoleManager));
+      this.client.on('guildMemberAdd', this.verificationManager.onGuildMemberAdd.bind(this.verificationManager));
+      this.client.on('messageReactionAdd', this.verificationManager.onMessageReactionAdd.bind(this.verificationManager));
+      this.client.on('messageCreate', this.twitchClipModManager.onMessage.bind(this.twitchClipModManager));
+      this.client.on('messageUpdate', this.twitchClipModManager.onMessageUpdate.bind(this.twitchClipModManager));
     });
   }
 
   public async addOwner(ownerId: Snowflake) {
-    return this._credentials.addOwner(ownerId);
+    return this.credentials.addOwner(ownerId);
   }
 
   public async removeOwner(ownerId: Snowflake) {
-    return this._credentials.removeOwner(ownerId);
+    return this.credentials.removeOwner(ownerId);
   }
 
   public get owners(): Snowflake[] {
-    return this._credentials.owners;
+    return this.credentials.owners;
   }
 
   public get catApiToken(): string {
-    return this._credentials.catApiToken;
-  }
-
-  public get config(): Config {
-    return this._config;
-  }
-
-  public get db(): DatabaseManager {
-    return this._databaseManager;
-  }
-
-  public get commandManager(): CommandManager {
-    return this._commandManager;
-  }
-
-  public get reactionRoleManager(): ReactionRoleManager {
-    return this._reactionRoleManager;
-  }
-
-  public get helpManager(): HelpManager {
-    return this._helpManager;
-  }
-
-  public get twitchApiManager(): TwitchAPIManager {
-    return this._twitchApiManager;
-  }
-
-  public get client(): Client {
-    return this._client;
-  }
-
-  public get eventLogger(): EventLogger {
-    return this._eventLogger;
+    return this.credentials.catApiToken;
   }
 }
 

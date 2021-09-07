@@ -1,9 +1,11 @@
-import BS3 from 'better-sqlite3';
+import type BS3 from 'better-sqlite3';
 
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { Logger } from 'Logger';
 
-import { Guild, Message, Role, Snowflake } from 'discord.js';
+import type {
+  Snowflake,
+} from 'discord.js';
 
 export default class EventLogs {
   private readonly logger: Logger;
@@ -21,7 +23,7 @@ export default class EventLogs {
   public getChannel(guildId: Snowflake): Snowflake | null | undefined {
     try {
       const channel: Snowflake | undefined = this.db.prepare(
-        'SELECT channelId FROM EventLogs WHERE guildId = ?;'
+        'SELECT channelId FROM EventLogs WHERE guildId = ?;',
       ).pluck().get(guildId);
       return channel;
     } catch (err) {
@@ -47,8 +49,3 @@ export default class EventLogs {
     return rowsModified > 0;
   }
 }
-
-type EventLog = {
-  guildId: Snowflake;
-  channelId: Snowflake | undefined;
-};

@@ -1,8 +1,8 @@
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import CommandUtils from 'utils/CommandUtils';
 
-import { Message, TextBasedChannels } from 'discord.js';
+import type { Message, TextBasedChannels } from 'discord.js';
 
 // eslint-disable-next-line import/prefer-default-export
 export class Say extends Command {

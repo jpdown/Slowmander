@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import CommandGroup from 'commands/CommandGroup';
 import { Command, CommandResult, PermissionLevel } from 'commands/Command';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import CommandUtils from 'utils/CommandUtils';
 
 import {

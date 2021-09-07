@@ -1,4 +1,4 @@
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { LogLevel, Logger } from 'Logger';
 
 import {
@@ -6,7 +6,7 @@ import {
 } from 'fs';
 import { WebhookClient } from 'discord.js';
 
-export class Config {
+export default class Config {
   private readonly CONFIG_PATH: string = './data/config.json';
 
   private configObject: ConfigObject;
@@ -33,7 +33,7 @@ export class Config {
     }
 
     if (tempConfig === undefined) {
-      tempConfig = this.generateConfig();
+      tempConfig = Config.generateConfig();
       this.saveConfig(tempConfig);
       this.logger.logSync(LogLevel.INFO, 'Default config generated.');
     }
@@ -47,8 +47,7 @@ export class Config {
       let jsonData: string;
       if (config) {
         jsonData = JSON.stringify(config);
-      }
-      else {
+      } else {
         jsonData = JSON.stringify(this.configObject);
       }
       writeFileSync(this.CONFIG_PATH, jsonData);
@@ -104,7 +103,7 @@ export class Config {
     return new WebhookClient({ id: this.configObject.errorWebhookId, token: this.configObject.errorWebhookToken });
   }
 
-  private generateConfig(): ConfigObject {
+  private static generateConfig(): ConfigObject {
     return {
       prefix: '!',
       color: 42239,

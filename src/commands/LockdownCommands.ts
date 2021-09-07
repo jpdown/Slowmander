@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
 import CommandGroup from 'commands/CommandGroup';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import CommandUtils from 'utils/CommandUtils';
 import ReactionPaginator from 'utils/ReactionPaginator';
 import LockdownHelper from 'utils/LockdownHelper';
@@ -99,7 +99,7 @@ class ManageLockdownInfo extends Command {
     }
 
     if (!lockdownPreset || !lockdownChannels || !lockdownRoles) {
-      await CommandUtils.sendMessage("There was an error with the database, please try again later.", message.channel, bot, message);
+      await CommandUtils.sendMessage('There was an error with the database, please try again later.', message.channel, bot, message);
       return { sendHelp: false, command: this, message };
     }
 
@@ -116,12 +116,16 @@ class ManageLockdownInfo extends Command {
     // Make info embed
     const embed = new MessageEmbed()
       .setTitle(`Lockdown Preset ${lockdownPreset.preset}`)
-      .addField("Permission Set To", lockdownPreset.grant ? "Grant" : "Neutral")
+      .addField('Permission Set To', lockdownPreset.grant ? 'Grant' : 'Neutral')
       .setColor(await CommandUtils.getSelfColor(message.channel, bot));
-    await message.reply({embeds: [embed]});
+    await message.reply({ embeds: [embed] });
 
     // Make paginators
-    const channelPaginator = new ReactionPaginator(channelList, 10, `Channels in lockdown preset ${lockdownPreset.preset}`, message.channel, bot, this);
+    const channelPaginator = new ReactionPaginator(
+      channelList, 10,
+      `Channels in lockdown preset ${lockdownPreset.preset}`,
+      message.channel, bot, this,
+    );
     await channelPaginator.postMessage();
     const rolePaginator = new ReactionPaginator(roleList, 10, `Roles in lockdown preset ${lockdownPreset.preset}`, message.channel, bot, this);
     await rolePaginator.postMessage();

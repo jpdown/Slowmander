@@ -1,9 +1,9 @@
-import BS3 from 'better-sqlite3';
+import type BS3 from 'better-sqlite3';
 
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { Logger } from 'Logger';
 
-import { Message, Role, Snowflake } from 'discord.js';
+import type { Message, Role, Snowflake } from 'discord.js';
 
 export default class Verification {
   private readonly logger: Logger;
@@ -33,7 +33,7 @@ export default class Verification {
 
     try {
       const info = this.db.prepare(
-        'UPDATE VerificationConfigs SET enabled = 1 WHERE guildId = ?;'
+        'UPDATE VerificationConfigs SET enabled = 1 WHERE guildId = ?;',
       ).run(guildId);
       rowsModified = info.changes;
     } catch (err) {
@@ -48,7 +48,7 @@ export default class Verification {
 
     try {
       const info = this.db.prepare(
-        'UPDATE VerificationConfigs SET enabled = 0 WHERE guildId = ?;'
+        'UPDATE VerificationConfigs SET enabled = 0 WHERE guildId = ?;',
       ).run(guildId);
       rowsModified = info.changes;
     } catch (err) {
@@ -63,7 +63,7 @@ export default class Verification {
 
     try {
       const info = this.db.prepare(
-        'UPDATE VerificationConfigs SET removeReaction = 1 WHERE guildId = ?;'
+        'UPDATE VerificationConfigs SET removeReaction = 1 WHERE guildId = ?;',
       ).run(guildId);
       rowsModified = info.changes;
     } catch (err) {
@@ -78,7 +78,7 @@ export default class Verification {
 
     try {
       const info = this.db.prepare(
-        'UPDATE VerificationConfigs SET removeReaction = 0 WHERE guildId = ?;'
+        'UPDATE VerificationConfigs SET removeReaction = 0 WHERE guildId = ?;',
       ).run(guildId);
       rowsModified = info.changes;
     } catch (err) {
@@ -92,7 +92,7 @@ export default class Verification {
     let rowsModified = 0;
 
     if (message.guild?.id !== role.id) {
-        return false;
+      return false;
     }
 
     try {

@@ -1,9 +1,9 @@
-import BS3 from 'better-sqlite3';
+import type BS3 from 'better-sqlite3';
 
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { Logger } from 'Logger';
 
-import { Channel, Snowflake } from 'discord.js';
+import type { Channel, Snowflake } from 'discord.js';
 
 export default class TwitchClipModeration {
   private readonly logger: Logger;
@@ -34,7 +34,7 @@ export default class TwitchClipModeration {
   public getApprovedChannels(channel: Channel): string[] | null {
     try {
       const rows: string[] = this.db.prepare(
-        'SELECT twitchChannel FROM TwitchClipApprovedChannels WHERE channelId = ?;'
+        'SELECT twitchChannel FROM TwitchClipApprovedChannels WHERE channelId = ?;',
       ).pluck().all(channel.id);
       return rows;
     } catch (err) {
@@ -112,7 +112,7 @@ export default class TwitchClipModeration {
 
     try {
       const info = this.db.prepare(
-        'INSERT OR IGNORE INTO TwitchClipApprovedChannels(channelId,twitchChannel) VALUES(?, ?);'
+        'INSERT OR IGNORE INTO TwitchClipApprovedChannels(channelId,twitchChannel) VALUES(?, ?);',
       ).run(channel.id, twitchChannel);
       rowsModified = info.changes;
     } catch (err) {
@@ -127,7 +127,7 @@ export default class TwitchClipModeration {
 
     try {
       const info = this.db.prepare(
-        'DELETE FROM TwitchClipApprovedChannels WHERE channelId = ? AND twitchChannel = ?;'
+        'DELETE FROM TwitchClipApprovedChannels WHERE channelId = ? AND twitchChannel = ?;',
       ).run(channel.id, twitchChannel);
       rowsModified = info.changes;
     } catch (err) {
@@ -139,12 +139,7 @@ export default class TwitchClipModeration {
 }
 
 export type TwitchClipModConfig = {
-    channelId: Snowflake;
-    enabled: boolean;
-    approvedOnly: boolean;
-};
-
-type TwitchClipApprovedChannel = {
   channelId: Snowflake;
-  twitchChannel: string;
-}
+  enabled: boolean;
+  approvedOnly: boolean;
+};

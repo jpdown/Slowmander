@@ -1,12 +1,12 @@
 import { Logger } from 'Logger';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import ModErrorLog from 'moderrorlog/ModErrorLog';
 
 import {
   Channel,
   GuildChannelResolvable, Message, PartialMessage, Permissions,
 } from 'discord.js';
-import { TwitchClipModConfig } from 'database/TwitchClipModeration';
+import type { TwitchClipModConfig } from 'database/TwitchClipModeration';
 
 export default class TwitchClipModManager {
   private bot: Bot;
@@ -26,8 +26,7 @@ export default class TwitchClipModManager {
     try {
       if (message.partial) {
         fullMessage = await message.fetch();
-      }
-      else {
+      } else {
         fullMessage = message;
       }
     } catch (err) {
@@ -35,22 +34,22 @@ export default class TwitchClipModManager {
       return;
     }
 
-    if (!message.guild) {
+    if (!fullMessage.guild) {
       return;
     }
 
-    if (message.author.bot) {
+    if (fullMessage.author.bot) {
       return;
     }
 
     // See if message in moderated channel
-    const clipModConfig = this.bot.db.twitchClipMod.getChannelConfig(message.channel as Channel);
+    const clipModConfig = this.bot.db.twitchClipMod.getChannelConfig(fullMessage.channel as Channel);
 
     if (!clipModConfig || !clipModConfig.enabled) {
       return;
     }
 
-    await this.checkMessage(message, clipModConfig);
+    await this.checkMessage(fullMessage, clipModConfig);
   }
 
   public async onMessageUpdate(oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage) {
@@ -58,12 +57,10 @@ export default class TwitchClipModManager {
     try {
       if (newMessage.partial) {
         fullMessage = await newMessage.fetch();
-      }
-      else {
+      } else {
         fullMessage = newMessage;
       }
-    }
-    catch (err) {
+    } catch (err) {
       this.logger.error('Error fetching new message.', err);
       return;
     }
@@ -91,43 +88,42 @@ export default class TwitchClipModManager {
   }
 
   private async checkMessage(message: Message, config: TwitchClipModConfig): Promise<void> {
-    let deleteMessage = false;
-    let matchedLinks = 0;
-    let clipBroadcaster: string | null;
     let clipMatch: RegExpExecArray | null;
     let approvedChannels: string[] | null = null;
+    let keepMessage: boolean;
 
     // Get approved channel list
     if (config.approvedOnly) {
-      approvedChannels = this.bot.db.twitchClipMod.getApprovedChannels(message.channel as Channel)
+      approvedChannels = this.bot.db.twitchClipMod.getApprovedChannels(message.channel as Channel);
     }
 
     // Multiple clips may be in the message, loop until none left or message marked for deletion
-    while (!deleteMessage && (clipMatch = this.clipRegex.exec(message.content)) !== null) {
-      matchedLinks++;
-
-      // If we have Twitch API access, check if valid clip
-      if (await this.bot.twitchApiManager.getApiStatus()) {
-        clipBroadcaster = await this.bot.twitchApiManager.getClipBroadcasterId(clipMatch[1]);
-
-        if (clipBroadcaster == null) {
-          // Invalid clip
-          deleteMessage = true;
-        } else if (config.approvedOnly) {
-          if (approvedChannels && !approvedChannels.includes(clipBroadcaster)) {
-            // Not an approved channel
-            deleteMessage = true;
-          }
-        }
+    const broadcasters: Promise<string | null>[] = [];
+    if (await this.bot.twitch.getApiStatus()) {
+      while ((clipMatch = this.clipRegex.exec(message.content)) !== null) {
+        broadcasters.push(this.bot.twitch.getClipBroadcasterId(clipMatch[1]));
       }
     }
 
-    // If no links matched, delete
-    if (matchedLinks === 0) {
-      deleteMessage = true;
+    const broadcasterIds: (string | null)[] = await Promise.all(broadcasters);
+
+    if (broadcasterIds.length > 0) {
+      keepMessage = broadcasterIds.every((clipBroadcaster) => {
+        if (clipBroadcaster === null) {
+          // Invalid clip
+          return false;
+        }
+        if (config.approvedOnly && approvedChannels && !approvedChannels.includes(clipBroadcaster)) {
+          // Not an approved channel
+          return false;
+        }
+        return true;
+      });
+    } else {
+      keepMessage = false;
     }
 
-    if (deleteMessage) {
+    if (!keepMessage) {
       await this.deleteMessage(message);
     }
   }

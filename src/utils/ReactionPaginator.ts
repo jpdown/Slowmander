@@ -1,7 +1,7 @@
 import CommandUtils from 'utils/CommandUtils';
-import { Command } from 'commands/Command';
+import type { Command } from 'commands/Command';
 import PermissionsHelper from 'utils/PermissionsHelper';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 
 import {
   MessageReaction, Message, MessageEmbed, User, ReactionCollector, TextBasedChannels, GuildMember,
@@ -49,13 +49,13 @@ export default class ReactionPaginator {
 
       // Handle reactions
       const reactionCollector: ReactionCollector = this.message.createReactionCollector({
-        filter: (reaction: MessageReaction, user: User) => !user.bot && (reaction.emoji.name === ReactionPaginator.NEXT_PAGE || reaction.emoji.name === ReactionPaginator.PREV_PAGE),
+        filter: (reaction: MessageReaction, user: User) => !user.bot,
         time: 60000,
         dispose: true,
       });
 
       reactionCollector.on('collect', this.onReaction.bind(this));
-      reactionCollector.on('end', async (collected) => {
+      reactionCollector.on('end', async () => {
         await this.message?.delete();
       });
     }
@@ -71,16 +71,18 @@ export default class ReactionPaginator {
     switch (reaction.emoji.name) {
       case ReactionPaginator.NEXT_PAGE:
         if (this.currPage + 1 < this.numPages) {
-          this.currPage++;
+          this.currPage += 1;
           await this.message?.edit({ embeds: [await this.generateEmbed()] });
         }
         break;
       case ReactionPaginator.PREV_PAGE:
         if (this.currPage > 0) {
-          this.currPage--;
+          this.currPage -= 1;
           await this.message?.edit({ embeds: [await this.generateEmbed()] });
         }
         break;
+      default:
+        return;
     }
 
     try {

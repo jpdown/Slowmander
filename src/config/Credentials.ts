@@ -1,11 +1,11 @@
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { LogLevel, Logger } from 'Logger';
 
 import {
   existsSync, readFileSync, mkdirSync, writeFileSync,
 } from 'fs';
 
-export class Credentials {
+export default class Credentials {
   readonly CREDENTIALS_PATH: string = './data/credentials.json';
 
   private credentialsObject: CredentialsObject;
@@ -32,7 +32,7 @@ export class Credentials {
     }
 
     if (credsObject === undefined) {
-      credsObject = this.generateConfig();
+      credsObject = Credentials.generateConfig();
       this.saveConfig(credsObject);
       this.logger.logSync(LogLevel.INFO, 'Default credentials generated.');
     }
@@ -46,8 +46,7 @@ export class Credentials {
       let jsonData: string;
       if (creds) {
         jsonData = JSON.stringify(creds);
-      }
-      else {
+      } else {
         jsonData = JSON.stringify(this.credentialsObject);
       }
       writeFileSync(this.CREDENTIALS_PATH, jsonData);
@@ -96,7 +95,7 @@ export class Credentials {
     return this.credentialsObject.twitchSecret;
   }
 
-  private generateConfig(): CredentialsObject {
+  private static generateConfig(): CredentialsObject {
     return {
       token: '',
       owners: [],

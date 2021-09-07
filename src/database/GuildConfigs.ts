@@ -1,9 +1,9 @@
-import BS3 from 'better-sqlite3';
+import type BS3 from 'better-sqlite3';
 
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { Logger } from 'Logger';
 
-import { Snowflake } from 'discord.js';
+import type { Snowflake } from 'discord.js';
 
 export default class GuildConfigs {
   private readonly logger: Logger;

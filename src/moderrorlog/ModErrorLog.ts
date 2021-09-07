@@ -1,7 +1,7 @@
-import Bot from 'Bot';
+import type Bot from 'Bot';
 
 import {
-  Guild, MessageEmbed, Snowflake, TextChannel, NewsChannel, Permissions,
+  Guild, MessageEmbed, TextChannel, NewsChannel, Permissions,
 } from 'discord.js';
 
 export default class ModErrorLog {

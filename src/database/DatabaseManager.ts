@@ -1,6 +1,6 @@
 import BS3 from 'better-sqlite3';
 
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { Logger } from 'Logger';
 import EventLogs from './EventLogs';
 import GuildConfigs from './GuildConfigs';
@@ -11,18 +11,23 @@ import Verification from './Verification';
 
 export default class DatabaseManager {
   private readonly DB_PATH: string = './data/slowmander.db';
+
   private readonly DB_VERSION: number = 1;
 
   private readonly logger: Logger;
 
   private readonly db: BS3.Database;
 
-
   public readonly eventLogs: EventLogs;
+
   public readonly guildConfigs: GuildConfigs;
+
   public readonly lockdownPresets: LockdownPresets;
+
   public readonly reactionRoles: ReactionRoles;
+
   public readonly twitchClipMod: TwitchClipModeration;
+
   public readonly verification: Verification;
 
   constructor(bot: Bot) {
@@ -41,7 +46,7 @@ export default class DatabaseManager {
   }
 
   private checkSchema() {
-    let dbVersion: number = this.db.pragma('user_version;', { simple: true });
+    const dbVersion: number = this.db.pragma('user_version;', { simple: true });
 
     if (dbVersion === 0) {
       this.createSchemaVer1();
@@ -50,7 +55,7 @@ export default class DatabaseManager {
 
   private createSchemaVer1() {
     try {
-      this.db.prepare("BEGIN;").run();
+      this.db.prepare('BEGIN;').run();
 
       this.db.prepare(
         'CREATE TABLE EventLogs('
@@ -143,10 +148,9 @@ export default class DatabaseManager {
 
       this.db.prepare('COMMIT;').run();
       this.logger.info('Database schema version 1 created.');
-    }
-    catch (err) {
-      this.db.prepare("ROLLBACK;").run();
-      this.logger.error("Error creating schema version 1.", err);
+    } catch (err) {
+      this.db.prepare('ROLLBACK;').run();
+      this.logger.error('Error creating schema version 1.', err);
     }
   }
 }

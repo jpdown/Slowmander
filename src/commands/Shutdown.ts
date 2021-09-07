@@ -1,8 +1,8 @@
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import CommandUtils from 'utils/CommandUtils';
 
-import { Message } from 'discord.js';
+import type { Message } from 'discord.js';
 
 // eslint-disable-next-line import/prefer-default-export
 export class Shutdown extends Command {

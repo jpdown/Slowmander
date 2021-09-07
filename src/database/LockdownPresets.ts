@@ -1,9 +1,9 @@
-import BS3 from 'better-sqlite3';
+import type BS3 from 'better-sqlite3';
 
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { Logger } from 'Logger';
 
-import { Snowflake } from 'discord.js';
+import type { Snowflake } from 'discord.js';
 
 export default class LockdownPresets {
   private readonly logger: Logger;
@@ -76,12 +76,12 @@ export default class LockdownPresets {
 
       // Delete old channels and roles
       let info = this.db.prepare(
-        'DELETE FROM LockdownChannels WHERE guildId = ? AND preset = ?;'
+        'DELETE FROM LockdownChannels WHERE guildId = ? AND preset = ?;',
       ).run(guildId, preset);
       rowsModified += info.changes;
-      
+
       info = this.db.prepare(
-        'DELETE FROM LockdownRoles WHERE guildId = ? AND preset = ?;'
+        'DELETE FROM LockdownRoles WHERE guildId = ? AND preset = ?;',
       ).run(guildId, preset);
       rowsModified += info.changes;
 
@@ -95,7 +95,7 @@ export default class LockdownPresets {
       // Insert channels
       channels.forEach((channel) => {
         info = this.db.prepare(
-          'INSERT INTO LockdownChannels(guildId, preset, channelId) VALUES(?, ?, ?);'
+          'INSERT INTO LockdownChannels(guildId, preset, channelId) VALUES(?, ?, ?);',
         ).run(guildId, preset, channel);
         rowsModified += info.changes;
       });
@@ -103,7 +103,7 @@ export default class LockdownPresets {
       // Insert roles
       roles.forEach((role) => {
         info = this.db.prepare(
-          'INSERT INTO LockdownRoles(guildId, preset, roleId) VALUES(?, ?, ?);'
+          'INSERT INTO LockdownRoles(guildId, preset, roleId) VALUES(?, ?, ?);',
         ).run(guildId, preset, role);
         rowsModified += info.changes;
       });
@@ -111,7 +111,7 @@ export default class LockdownPresets {
       // Commit transaction
       this.db.prepare('COMMIT;').run();
     } catch (err) {
-      this.db.prepare("ROLLBACK;").run();
+      this.db.prepare('ROLLBACK;').run();
       rowsModified = 0;
       this.logger.error('Error setting LockdownPreset', err);
     }
@@ -127,21 +127,21 @@ export default class LockdownPresets {
       this.db.prepare('BEGIN;').run();
 
       // Remove channels
-      let info = this.db.prepare('DELETE FROM LockdownChannels WHERE guildId = ? AND preset = ?;').run();
+      let info = this.db.prepare('DELETE FROM LockdownChannels WHERE guildId = ? AND preset = ?;').run(guildId, preset);
       rowsModified += info.changes;
 
       // Remove roles
-      info = this.db.prepare('DELETE FROM LockdownRoles WHERE guildId = ? AND preset = ?;').run();
+      info = this.db.prepare('DELETE FROM LockdownRoles WHERE guildId = ? AND preset = ?;').run(guildId, preset);
       rowsModified += info.changes;
 
       // Remove preset
-      info = this.db.prepare('DELETE FROM LockdownPresets WHERE guildId = ? AND preset = ?;').run();
+      info = this.db.prepare('DELETE FROM LockdownPresets WHERE guildId = ? AND preset = ?;').run(guildId, preset);
       rowsModified += info.changes;
 
       // Commit
       this.db.prepare('COMMIT;').run();
     } catch (err) {
-      this.db.prepare("ROLLBACK;").run();
+      this.db.prepare('ROLLBACK;').run();
       rowsModified = 0;
       this.logger.error('Error removing LockdownPreset', err);
     }
@@ -155,15 +155,3 @@ export type LockdownPreset = {
   preset: string;
   grant: boolean;
 };
-
-type LockdownChannel = {
-  guildId: Snowflake;
-  preset: string;
-  channelId: Snowflake;
-}
-
-type LockdownRole = {
-  guildId: Snowflake;
-  preset: string;
-  roleId: Snowflake;
-}

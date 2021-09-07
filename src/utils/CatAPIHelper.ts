@@ -1,7 +1,7 @@
-import Bot from 'Bot';
+import type Bot from 'Bot';
 import { Logger } from 'Logger';
 
-import { User } from 'discord.js';
+import type { User } from 'discord.js';
 import querystring from 'querystring';
 
 export class CatAPIHelper {

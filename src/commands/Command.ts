@@ -1,8 +1,8 @@
-import Bot from 'Bot';
-import CommandGroup from 'commands/CommandGroup';
+import type Bot from 'Bot';
+import type CommandGroup from 'commands/CommandGroup';
 import { Logger } from 'Logger';
 
-import { Message, PermissionResolvable } from 'discord.js';
+import type { Message, PermissionResolvable } from 'discord.js';
 
 export enum PermissionLevel {
   Disabled = -1,

@@ -1,6 +1,8 @@
-import Bot from 'Bot';
+import type Bot from 'Bot';
 
-import { Permissions, Message, GuildChannel, ThreadChannel, Role, CategoryChannel, GuildMember, MessageEmbed, NewsChannel, Snowflake, TextChannel, User } from 'discord.js';
+import {
+  Permissions, Message, GuildChannel, ThreadChannel, Role, CategoryChannel, GuildMember, MessageEmbed, NewsChannel, TextChannel, User,
+} from 'discord.js';
 import CommandUtils from './CommandUtils';
 
 export default class LockdownHelper {
@@ -14,13 +16,17 @@ export default class LockdownHelper {
     let preset = 'default';
 
     if (args.length > 0) {
-      preset = args[0];
+      [preset] = args;
     }
 
     // Try to get config
     const lockdownConfig = bot.db.lockdownPresets.getPreset(message.guild!.id, preset);
     if (lockdownConfig === undefined) {
-      await CommandUtils.sendMessage(`No lockdown config found, please make one with \`${await bot.commandManager.getPrefix(message.guild?.id)}managelockdown\`. The default preset is \`default\`.`, message.channel, bot);
+      await CommandUtils.sendMessage(
+        // eslint-disable-next-line max-len
+        `No lockdown config found, please make one with \`${await bot.commandManager.getPrefix(message.guild?.id)}managelockdown\`. The default preset is \`default\`.`,
+        message.channel, bot,
+      );
       return false;
     }
 
@@ -34,20 +40,20 @@ export default class LockdownHelper {
 
     // Make lists
     const channels: GuildChannel[] = [];
-    for (const channelId of lockdownChannels) {
+    lockdownChannels.forEach((channelId) => {
       const parsedChannel: GuildChannel | ThreadChannel | null = message.guild!.channels.resolve(channelId);
       if (parsedChannel && (parsedChannel as GuildChannel)) {
         channels.push(<GuildChannel>parsedChannel);
       }
-    }
+    });
 
     const roles: Role[] = [];
-    for (const roleId of lockdownRoles) {
+    lockdownRoles.forEach((roleId) => {
       const parsedRole: Role | null = message.guild!.roles.resolve(roleId);
       if (parsedRole) {
         roles.push(parsedRole);
       }
-    }
+    });
 
     // Try to lockdown server
     const result: boolean = await LockdownHelper.updateChannelPerms(channels, roles, lock, lockdownConfig.grant, message.author, preset, bot);
@@ -60,6 +66,7 @@ export default class LockdownHelper {
     return true;
   }
 
+  // eslint-disable-next-line max-len
   static async updateChannelPerms(channels: GuildChannel[], roles: Role[], lock: boolean, grant: boolean, executor: User, preset: string, bot: Bot): Promise<boolean> {
     let reason = `${executor.username}#${executor.discriminator} performed ${preset} `;
 
@@ -97,15 +104,17 @@ export default class LockdownHelper {
       }
     }
 
-    for (const channel of channels) {
+    return channels.every(async (channel) => {
       if (await CommandUtils.updateChannelPerms(channel, roles, [], grantedPerms, revokedPerms, neutralPerms, reason)) {
-        await CommandUtils.updateChannelPerms(channel, modAndAdminRoles, [channel.client.user!], new Permissions(this.PERMISSION), zeroPerms, zeroPerms, reason);
+        await CommandUtils.updateChannelPerms(
+          channel, modAndAdminRoles, [bot.client.user],
+          new Permissions(this.PERMISSION), zeroPerms, zeroPerms, reason,
+        );
         await this.trySendMessage(channel, lock, bot);
-      } else {
-        return false;
+        return true;
       }
-    }
-    return true;
+      return false;
+    });
   }
 
   static async trySendMessage(channel: GuildChannel, lock: boolean, bot: Bot): Promise<boolean> {
@@ -115,11 +124,11 @@ export default class LockdownHelper {
     }
     // If category, send in all children recursively
     if (channel.type === 'GUILD_CATEGORY') {
-      for (const childChannel of (<CategoryChannel>channel).children.values()) {
+      (channel as CategoryChannel).children.forEach(async (childChannel) => {
         if (childChannel.permissionsLocked) {
           await this.trySendMessage(childChannel, lock, bot);
         }
-      }
+      });
       return true;
     }
     // Check perms

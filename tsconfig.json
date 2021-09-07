@@ -4,7 +4,8 @@
         "noImplicitAny": true,
         "sourceMap": true,
         "outDir": "dist",
-        "baseUrl": "./src/"
+        "baseUrl": "./src/",
+        "importsNotUsedAsValues": "error"
     },
     "include": [
         "src/**/*"
