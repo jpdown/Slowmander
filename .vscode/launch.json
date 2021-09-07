@@ -18,7 +18,7 @@
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js"
             ],
-            "env": {"NODE_PATH": "./"}
+            "env": {"NODE_PATH": "${workspaceFolder}/dist"}
         }
     ]
 }
