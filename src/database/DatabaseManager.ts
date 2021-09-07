@@ -71,7 +71,7 @@ export default class DatabaseManager {
       ).run();
 
       this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS LockdownPresets('
+        'CREATE TABLE LockdownPresets('
         + '"guildId" TEXT NOT NULL,'
         + '"preset" TEXT NOT NULL,'
         + '"grant" BOOLEAN NOT NULL CHECK (grant IN (0, 1)),'
@@ -80,7 +80,7 @@ export default class DatabaseManager {
       ).run();
 
       this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS LockdownChannels('
+        'CREATE TABLE LockdownChannels('
         + '"guildId" TEXT NOT NULL,'
         + '"preset" TEXT NOT NULL,'
         + '"channelId" TEXT NOT NULL,'
@@ -90,7 +90,7 @@ export default class DatabaseManager {
       ).run();
 
       this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS LockdownRoles('
+        'CREATE TABLE LockdownRoles('
         + '"guildId" TEXT NOT NULL,'
         + '"preset" TEXT NOT NULL,'
         + '"roleId" TEXT NOT NULL,'
@@ -100,7 +100,7 @@ export default class DatabaseManager {
       ).run();
 
       this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS ReactionRoles('
+        'CREATE TABLE ReactionRoles('
         + '"channelId" TEXT NOT NULL,'
         + '"messageId" TEXT NOT NULL,'
         + '"emoteId" TEXT NOT NULL,'
@@ -111,7 +111,7 @@ export default class DatabaseManager {
       ).run();
 
       this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS TwitchClipModConfigs('
+        'CREATE TABLE TwitchClipModConfigs('
         + '"channelId" TEXT NOT NULL PRIMARY KEY,'
         + '"enabled" BOOLEAN NOT NULL DEFAULT 0 CHECK (enabled in (0, 1)),'
         + '"approvedOnly" BOOLEAN NOT NULL DEFAULT 0 CHECK (enabled in (0, 1))'
@@ -119,7 +119,7 @@ export default class DatabaseManager {
       ).run();
 
       this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS TwitchClipApprovedChannels('
+        'CREATE TABLE TwitchClipApprovedChannels('
         + '"channelId" TEXT NOT NULL,'
         + '"twitchChannel" TEXT NOT NULL,'
         + 'FOREIGN KEY(channelId) REFERENCES TwitchClipModConfigs(channelId),'
@@ -128,7 +128,7 @@ export default class DatabaseManager {
       ).run();
 
       this.db.prepare(
-        'CREATE TABLE IF NOT EXISTS VerificationConfigs('
+        'CREATE TABLE VerificationConfigs('
         + '"guildId" TEXT NOT NULL PRIMARY KEY,'
         + '"enabled" BOOLEAN NOT NULL DEFAULT 0 CHECK (enabled in (0, 1)),'
         + '"channelId" TEXT NOT NULL,'

@@ -334,13 +334,13 @@ export default class CommandUtils {
     return messageSent;
   }
 
-  public static async makeEmoteFromId(emoteId: string, message: Message): Promise<string | undefined> {
+  public static async makeEmoteFromId(emoteId: string, client: Client): Promise<string | undefined> {
     let emote: string | undefined;
 
     try {
       emoteId = emoteId.split(':').pop() ?? '';
       if (emoteId !== '') {
-        emote = message.client.emojis.resolve(emoteId)?.toString();
+        emote = client.emojis.resolve(emoteId)?.toString();
       }
     } catch (err) {
       if (emoteId.indexOf(':') === -1) {
