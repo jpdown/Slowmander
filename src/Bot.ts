@@ -6,8 +6,8 @@ import { Logger, LogLevel } from 'Logger';
 import EventLogger from 'eventlogs/EventLogger';
 import DatabaseManager from 'database/DatabaseManager';
 import VerificationManager from 'verification/VerificationManager';
-import TwitchAPIManager from 'twitch/TwitchAPIManager';
-import TwitchClipModManager from 'twitch/TwitchClipModManager';
+import TwitchAPIManager from './twitch/TwitchAPIManager';
+import TwitchClipModManager from './twitch/TwitchClipModManager';
 
 import { Client, Snowflake } from 'discord.js';
 import { Config } from 'config/Config';
