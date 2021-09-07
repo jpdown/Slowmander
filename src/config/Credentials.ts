@@ -13,8 +13,8 @@ export class Credentials {
   private logger: Logger;
 
   constructor(bot: Bot) {
-    this.credentialsObject = this.loadConfig();
     this.logger = Logger.getLogger(bot, this);
+    this.credentialsObject = this.loadConfig();
   }
 
   public loadConfig(): CredentialsObject {
@@ -33,17 +33,23 @@ export class Credentials {
 
     if (credsObject === undefined) {
       credsObject = this.generateConfig();
-      this.saveConfig();
+      this.saveConfig(credsObject);
       this.logger.logSync(LogLevel.INFO, 'Default credentials generated.');
     }
 
     return credsObject;
   }
 
-  public saveConfig() {
+  public saveConfig(creds?: CredentialsObject) {
     if (!existsSync('data')) mkdirSync('data');
     try {
-      const jsonData: string = JSON.stringify(this.credentialsObject);
+      let jsonData: string;
+      if (creds) {
+        jsonData = JSON.stringify(creds);
+      }
+      else {
+        jsonData = JSON.stringify(this.credentialsObject);
+      }
       writeFileSync(this.CREDENTIALS_PATH, jsonData);
     } catch (err) {
       this.logger.logSync(LogLevel.ERROR, 'Error saving main credentials file.', err);

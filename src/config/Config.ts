@@ -7,44 +7,50 @@ import {
 import { WebhookClient } from 'discord.js';
 
 export class Config {
-  readonly CONFIG_PATH: string = './data/config.json';
+  private readonly CONFIG_PATH: string = './data/config.json';
 
   private configObject: ConfigObject;
 
   private logger: Logger;
 
   constructor(bot: Bot) {
-    this.configObject = this.loadConfig();
     this.logger = Logger.getLogger(bot, this);
+    this.configObject = this.loadConfig();
   }
 
   public loadConfig(): ConfigObject {
     let jsonData: string;
-    let configObject: ConfigObject | undefined;
+    let tempConfig: ConfigObject | undefined;
 
     if (existsSync(this.CONFIG_PATH)) {
       try {
         jsonData = readFileSync(this.CONFIG_PATH).toString();
-        configObject = <ConfigObject>JSON.parse(jsonData);
+        tempConfig = <ConfigObject>JSON.parse(jsonData);
       } catch (err) {
         this.logger.logSync(LogLevel.ERROR, 'Error loading main config file.', err);
-        configObject = undefined;
+        tempConfig = undefined;
       }
     }
 
-    if (configObject === undefined) {
-      configObject = this.generateConfig();
-      this.saveConfig();
+    if (tempConfig === undefined) {
+      tempConfig = this.generateConfig();
+      this.saveConfig(tempConfig);
       this.logger.logSync(LogLevel.INFO, 'Default config generated.');
     }
 
-    return configObject;
+    return tempConfig;
   }
 
-  public saveConfig(): boolean {
+  public saveConfig(config?: ConfigObject): boolean {
     if (!existsSync('data')) mkdirSync('data');
     try {
-      const jsonData: string = JSON.stringify(this.configObject);
+      let jsonData: string;
+      if (config) {
+        jsonData = JSON.stringify(config);
+      }
+      else {
+        jsonData = JSON.stringify(this.configObject);
+      }
       writeFileSync(this.CONFIG_PATH, jsonData);
       return true;
     } catch (err) {
