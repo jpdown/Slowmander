@@ -1,13 +1,13 @@
-import CommandUtils from 'utils/CommandUtils';
+import { CommandUtils } from 'utils/CommandUtils';
 import type { Command } from 'commands/Command';
-import PermissionsHelper from 'utils/PermissionsHelper';
-import type Bot from 'Bot';
+import { PermissionsHelper } from 'utils/PermissionsHelper';
+import type { Bot } from 'Bot';
 
 import {
   MessageReaction, Message, MessageEmbed, User, ReactionCollector, TextBasedChannels, GuildMember,
 } from 'discord.js';
 
-export default class ReactionPaginator {
+export class ReactionPaginator {
   public static readonly NEXT_PAGE: string = '➡️';
 
   public static readonly PREV_PAGE: string = '⬅️';

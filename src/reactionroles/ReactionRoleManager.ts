@@ -1,14 +1,14 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 import { Logger } from 'Logger';
-import ModErrorLog from 'moderrorlog/ModErrorLog';
+import { ModErrorLog } from 'moderrorlog/ModErrorLog';
 import type { ReactionRole } from 'database/ReactionRoles';
-import CommandUtils from 'utils/CommandUtils';
+import { CommandUtils } from 'utils/CommandUtils';
 
 import {
   MessageReaction, User, GuildMember, TextChannel, NewsChannel, Role, Permissions, PartialMessageReaction, PartialUser, Message, ThreadChannel,
 } from 'discord.js';
 
-export default class ReactionRoleManager {
+export class ReactionRoleManager {
   private bot: Bot;
 
   private logger: Logger;

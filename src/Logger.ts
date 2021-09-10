@@ -1,4 +1,4 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 
 import type { WebhookClient } from 'discord.js';
 import {

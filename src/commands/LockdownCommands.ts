@@ -1,10 +1,10 @@
 /* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import CommandGroup from 'commands/CommandGroup';
-import type Bot from 'Bot';
-import CommandUtils from 'utils/CommandUtils';
-import ReactionPaginator from 'utils/ReactionPaginator';
-import LockdownHelper from 'utils/LockdownHelper';
+import { CommandGroup } from 'commands/CommandGroup';
+import type { Bot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
+import { ReactionPaginator } from 'utils/ReactionPaginator';
+import { LockdownHelper } from 'utils/LockdownHelper';
 
 import {
   Message, Permissions, Role, Guild, MessageEmbed,

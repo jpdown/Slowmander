@@ -1,10 +1,9 @@
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import type Bot from 'Bot';
-import HelpManager from 'HelpManager';
+import type { Bot } from 'Bot';
+import { HelpManager } from 'HelpManager';
 
 import type { Message } from 'discord.js';
 
-// eslint-disable-next-line import/prefer-default-export
 export class Help extends Command {
   constructor(bot: Bot) {
     super('help', PermissionLevel.Everyone, "You're using it!", bot, { usage: '[command]', aliases: ['h'] });

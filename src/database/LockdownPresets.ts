@@ -1,11 +1,11 @@
 import type BS3 from 'better-sqlite3';
 
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 import { Logger } from 'Logger';
 
 import type { Snowflake } from 'discord.js';
 
-export default class LockdownPresets {
+export class LockdownPresets {
   private readonly logger: Logger;
 
   private readonly db: BS3.Database;

@@ -1,10 +1,9 @@
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import type Bot from 'Bot';
-import CommandUtils from 'utils/CommandUtils';
+import type { Bot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
 
 import type { Message } from 'discord.js';
 
-// eslint-disable-next-line import/prefer-default-export
 export class Shutdown extends Command {
   constructor(bot: Bot) {
     super('shutdown', PermissionLevel.Owner, 'Shuts down the bot.', bot, { aliases: ['die', 'kill'] });

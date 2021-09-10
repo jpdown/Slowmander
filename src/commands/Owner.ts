@@ -1,8 +1,8 @@
 /* eslint-disable max-classes-per-file */
-import CommandGroup from 'commands/CommandGroup';
+import { CommandGroup } from 'commands/CommandGroup';
 import { Command, CommandResult, PermissionLevel } from 'commands/Command';
-import type Bot from 'Bot';
-import CommandUtils from 'utils/CommandUtils';
+import type { Bot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
 
 import type {
   Message, User, ActivityOptions, WebhookClient,
@@ -261,7 +261,6 @@ class GetInviteLink extends Command {
   }
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export class Owner extends CommandGroup {
   constructor(bot: Bot) {
     super('owner', 'Owner commands (you know this already)', bot);

@@ -1,11 +1,11 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 import { Logger } from 'Logger';
 
 import {
   GuildMember, Message, Collection, Snowflake, GuildBan, PartialGuildMember, PartialMessage, TextBasedChannels, MessageEmbed,
 } from 'discord.js';
 
-export default class EventLogger {
+export class EventLogger {
   private bot: Bot;
 
   private logger: Logger;

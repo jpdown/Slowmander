@@ -1,4 +1,4 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 
 import {
   ColorResolvable, User, Client, Collection, Snowflake, Guild,
@@ -7,7 +7,7 @@ import {
   Message, MessageReaction, ReactionEmoji, MessageEmbed, TextBasedChannels, MessageOptions,
 } from 'discord.js';
 
-export default class CommandUtils {
+export class CommandUtils {
   static async getSelfColor(channel: TextBasedChannels, bot: Bot): Promise<ColorResolvable> {
     let color: ColorResolvable | undefined;
 

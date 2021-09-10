@@ -1,10 +1,10 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 
 import {
   Guild, MessageEmbed, TextChannel, NewsChannel, Permissions,
 } from 'discord.js';
 
-export default class ModErrorLog {
+export class ModErrorLog {
   public static async log(message: string, guild: Guild, bot: Bot): Promise<boolean> {
     // Find mod error log channel
     const channelId = bot.db.guildConfigs.getModChannel(guild.id);

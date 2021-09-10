@@ -1,9 +1,9 @@
 /* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import type Bot from 'Bot';
-import CommandUtils from 'utils/CommandUtils';
-import PermissionsHelper from 'utils/PermissionsHelper';
-import ReactionPaginator from 'utils/ReactionPaginator';
+import type { Bot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
+import { PermissionsHelper } from 'utils/PermissionsHelper';
+import { ReactionPaginator } from 'utils/ReactionPaginator';
 
 import {
   Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client,

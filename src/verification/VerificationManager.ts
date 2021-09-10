@@ -1,13 +1,13 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 import { Logger } from 'Logger';
-import ModErrorLog from 'moderrorlog/ModErrorLog';
+import { ModErrorLog } from 'moderrorlog/ModErrorLog';
 
 import {
   GuildMember, MessageReaction, User, Role, Permissions, PartialMessageReaction, PartialUser, Message,
 } from 'discord.js';
 import type { VerificationConfig } from 'database/Verification';
 
-export default class VerificationManager {
+export class VerificationManager {
   private bot: Bot;
 
   private logger: Logger;

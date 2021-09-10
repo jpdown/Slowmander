@@ -1,14 +1,14 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 import { Command, PermissionLevel } from 'commands/Command';
-import PermissionsHelper from 'utils/PermissionsHelper';
-import CommandUtils from 'utils/CommandUtils';
-import CommandGroup from 'commands/CommandGroup';
+import { PermissionsHelper } from 'utils/PermissionsHelper';
+import { CommandUtils } from 'utils/CommandUtils';
+import { CommandGroup } from 'commands/CommandGroup';
 
 import {
   Message, MessageEmbed, GuildMember, User, Permissions,
 } from 'discord.js';
 
-export default class HelpManager {
+export class HelpManager {
   public static async sendCommandHelp(command: Command, message: Message, bot: Bot, extraArgs?: string[]) {
     // If we need to grab a subcommand, do so
     let commandToHelp: Command = command;

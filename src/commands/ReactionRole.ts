@@ -1,9 +1,9 @@
 /* eslint-disable max-classes-per-file */
-import CommandGroup from 'commands/CommandGroup';
+import { CommandGroup } from 'commands/CommandGroup';
 import { Command, CommandResult, PermissionLevel } from 'commands/Command';
-import type Bot from 'Bot';
-import ReactionPaginator from 'utils/ReactionPaginator';
-import CommandUtils from 'utils/CommandUtils';
+import type { Bot } from 'Bot';
+import { ReactionPaginator } from 'utils/ReactionPaginator';
+import { CommandUtils } from 'utils/CommandUtils';
 
 import {
   Message, Role, TextChannel, NewsChannel, Permissions, ReactionEmoji,
@@ -316,7 +316,6 @@ class ListReactionRoles extends Command {
   }
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export class ReactionRoleManagement extends CommandGroup {
   constructor(bot: Bot) {
     super('reactionrole', 'Manages reaction roles', bot, { runsInDm: false });

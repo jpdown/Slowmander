@@ -1,8 +1,8 @@
 /* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import type Bot from 'Bot';
-import CommandUtils from 'utils/CommandUtils';
-import CommandGroup from 'commands/CommandGroup';
+import type { Bot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
+import { CommandGroup } from 'commands/CommandGroup';
 
 import {
   Message, MessageEmbed, Permissions, Role, GuildEmoji, ReactionEmoji, GuildMember,
@@ -226,7 +226,6 @@ class VerificationStatus extends Command {
   }
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export class ManageVerification extends CommandGroup {
   constructor(bot: Bot) {
     super('verification', 'Manages lockdown presets', bot, { runsInDm: false });

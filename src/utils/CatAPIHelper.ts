@@ -1,4 +1,4 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 import { Logger } from 'Logger';
 
 import type { User } from 'discord.js';
