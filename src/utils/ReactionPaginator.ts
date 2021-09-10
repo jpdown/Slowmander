@@ -1,6 +1,6 @@
 import { CommandUtils } from 'utils/CommandUtils';
 import type { Command } from 'commands/Command';
-import { PermissionsHelper } from 'utils/PermissionsHelper';
+// import { PermissionsHelper } from 'utils/PermissionsHelper';
 import type { Bot } from 'Bot';
 
 import {
@@ -108,10 +108,10 @@ export class ReactionPaginator {
     if (reaction.message.guild) {
       const member: GuildMember | undefined = reaction.message.guild.members.cache.get(user.id);
       if (member) {
-        hasPerms = await PermissionsHelper.checkPermsAndDM(member, this.command, this.bot);
+        // hasPerms = await PermissionsHelper.checkPermsAndDM(member, this.command, this.bot);
       }
     } else {
-      hasPerms = await PermissionsHelper.checkPermsAndDM(user, this.command, this.bot);
+      // hasPerms = await PermissionsHelper.checkPermsAndDM(user, this.command, this.bot);
     }
 
     return hasPerms;

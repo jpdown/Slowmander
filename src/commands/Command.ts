@@ -1,8 +1,9 @@
-import type { Bot } from 'Bot';
-import type { CommandGroup } from 'commands/CommandGroup';
+// import type { Bot } from 'Bot';
+// import type { CommandGroup } from 'commands/CommandGroup';
 import { Logger } from 'Logger';
 
-import type { Message, PermissionResolvable } from 'discord.js';
+// import type { Message, PermissionResolvable } from 'discord.js';
+import type { CommandContext } from 'CommandContext';
 
 export enum PermissionLevel {
   Disabled = -1,
@@ -13,77 +14,85 @@ export enum PermissionLevel {
   Owner = 4,
 }
 
-export abstract class Command {
+export class Command {
   public readonly name: string;
 
-  public readonly aliases: string[];
+  // public readonly aliases: string[];
 
-  private readonly _permLevel: PermissionLevel;
+  // private readonly _permLevel: PermissionLevel;
 
-  public get permLevel(): PermissionLevel {
-    // eslint-disable-next-line no-underscore-dangle
-    return this._permLevel;
-  }
+  // public get permLevel(): PermissionLevel {
+  //   // eslint-disable-next-line no-underscore-dangle
+  //   return this._permLevel;
+  // }
 
-  private readonly _requiredPerm?: PermissionResolvable | undefined;
+  // private readonly _requiredPerm?: PermissionResolvable | undefined;
 
-  public get requiredPerm(): PermissionResolvable | undefined {
-    // eslint-disable-next-line no-underscore-dangle
-    return this._requiredPerm;
-  }
+  // public get requiredPerm(): PermissionResolvable | undefined {
+  //   // eslint-disable-next-line no-underscore-dangle
+  //   return this._requiredPerm;
+  // }
 
-  public readonly desc: string;
+  // public readonly desc: string;
 
-  public readonly longDesc: string;
+  // public readonly longDesc: string;
 
-  public readonly usage: string;
+  // public readonly usage: string;
 
-  public readonly runsInDm: boolean;
+  // public readonly runsInDm: boolean;
 
-  public readonly group?: CommandGroup;
+  // public readonly group?: CommandGroup;
 
   protected logger: Logger;
 
-  constructor(name: string, permLevel: PermissionLevel, desc: string, bot: Bot, params: CommandParameters = {}) {
+  private func: (ctx: CommandContext, ...args: any[]) => Promise<void>;
+
+  // constructor(name: string, permLevel: PermissionLevel, desc: string, bot: Bot, params: CommandParameters = {}) {
+  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>) {
     this.name = name;
+    this.func = func;
     // eslint-disable-next-line no-underscore-dangle
-    this._permLevel = permLevel;
-    this.desc = desc;
+    // this._permLevel = permLevel;
+    // this.desc = desc;
 
-    this.aliases = params.aliases ? params.aliases : [];
+    // this.aliases = params.aliases ? params.aliases : [];
     // eslint-disable-next-line no-underscore-dangle
-    this._requiredPerm = params.requiredPerm;
-    this.longDesc = params.longDesc ? params.longDesc : '';
-    this.usage = params.usage ? params.usage : '';
-    this.runsInDm = params.runsInDm !== undefined ? params.runsInDm : true;
-    this.group = params.group;
+    // this._requiredPerm = params.requiredPerm;
+    // this.longDesc = params.longDesc ? params.longDesc : '';
+    // this.usage = params.usage ? params.usage : '';
+    // this.runsInDm = params.runsInDm !== undefined ? params.runsInDm : true;
+    // this.group = params.group;
 
-    this.logger = Logger.getLogger(bot, this);
+    this.logger = Logger.getLogger(this);
   }
 
-  abstract run(bot: Bot, message: Message, args: string[]): Promise<CommandResult>;
-
-  public get fullName(): string {
-    let name = '';
-    if (this.group) {
-      name = `${this.group.fullName} `;
-    }
-    name += this.name;
-    return name;
+  // abstract run(bot: Bot, message: Message, args: string[]): Promise<CommandResult>;
+  public async invoke(ctx: CommandContext, ...args: any[]): Promise<boolean> {
+    await this.func(ctx, ...args);
+    return false;
   }
+
+  // public get fullName(): string {
+  //   let name = '';
+  //   if (this.group) {
+  //     name = `${this.group.fullName} `;
+  //   }
+  //   name += this.name;
+  //   return name;
+  // }
 }
 
-export interface CommandResult {
-  sendHelp: boolean;
-  command: Command | null;
-  message: Message;
-}
+// export interface CommandResult {
+//   sendHelp: boolean;
+//   command: Command | null;
+//   message: Message;
+// }
 
-export interface CommandParameters {
-  aliases?: string[];
-  requiredPerm?: PermissionResolvable;
-  longDesc?: string;
-  usage?: string;
-  runsInDm?: boolean;
-  group?: CommandGroup;
-}
+// export interface CommandParameters {
+//   aliases?: string[];
+//   requiredPerm?: PermissionResolvable;
+//   longDesc?: string;
+//   usage?: string;
+//   runsInDm?: boolean;
+//   group?: CommandGroup;
+// }

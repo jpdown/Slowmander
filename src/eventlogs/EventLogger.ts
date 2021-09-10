@@ -14,7 +14,7 @@ export class EventLogger {
 
   constructor(bot: Bot) {
     this.bot = bot;
-    this.logger = Logger.getLogger(bot, this);
+    this.logger = Logger.getLogger(this);
     this.channelMap = new Map<Snowflake, string>();
 
     // Register events

@@ -20,7 +20,7 @@ export class CatAPIHelper {
       const respJson: CatAPIResp[] = await (await fetch(newUrl, { method: 'get', headers })).json() as CatAPIResp[];
       imageUrl = respJson[0].url;
     } catch (err) {
-      await new Logger(bot, CatAPIHelper.name).error(`Error obtaining image from API ${api}`, err);
+      await new Logger(CatAPIHelper.name).error(`Error obtaining image from API ${api}`, err);
     }
 
     return imageUrl;

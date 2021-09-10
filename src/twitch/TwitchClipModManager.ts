@@ -17,7 +17,7 @@ export class TwitchClipModManager {
 
   constructor(bot: Bot) {
     this.bot = bot;
-    this.logger = Logger.getLogger(bot, this);
+    this.logger = Logger.getLogger(this);
   }
 
   public async onMessage(message: Message) {

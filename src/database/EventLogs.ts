@@ -13,7 +13,7 @@ export class EventLogs {
   private readonly db: BS3.Database;
 
   constructor(bot: Bot, db: BS3.Database) {
-    this.logger = Logger.getLogger(bot, this);
+    this.logger = Logger.getLogger(this);
     this.db = db;
   }
 

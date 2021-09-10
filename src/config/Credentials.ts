@@ -13,7 +13,7 @@ export class Credentials {
   private logger: Logger;
 
   constructor(bot: Bot) {
-    this.logger = Logger.getLogger(bot, this);
+    this.logger = Logger.getLogger(this);
     this.credentialsObject = this.loadConfig();
   }
 

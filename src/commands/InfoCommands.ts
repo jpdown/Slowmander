@@ -1,253 +1,253 @@
-/* eslint-disable max-classes-per-file */
-import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import type { Bot } from 'Bot';
-import { CommandUtils } from 'utils/CommandUtils';
-import { PermissionsHelper } from 'utils/PermissionsHelper';
-import { ReactionPaginator } from 'utils/ReactionPaginator';
+// /* eslint-disable max-classes-per-file */
+// import { Command, PermissionLevel, CommandResult } from 'commands/Command';
+// import type { Bot } from 'Bot';
+// import { CommandUtils } from 'utils/CommandUtils';
+// import { PermissionsHelper } from 'utils/PermissionsHelper';
+// import { ReactionPaginator } from 'utils/ReactionPaginator';
 
-import {
-  Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client,
-} from 'discord.js';
+// import {
+//   Message, GuildMember, MessageEmbed, Role, User, Collection, Snowflake, Permissions, Client,
+// } from 'discord.js';
 
-import { memoryUsage, uptime as process_uptime } from 'process';
-import { loadavg } from 'os';
+// import { memoryUsage, uptime as process_uptime } from 'process';
+// import { loadavg } from 'os';
 
-export class Whois extends Command {
-  constructor(bot: Bot) {
-    super('whois', PermissionLevel.Everyone, 'Gets information on a member', bot, { usage: '[member]', runsInDm: false, aliases: ['who'] });
-  }
+// export class Whois extends Command {
+//   constructor(bot: Bot) {
+//     super('whois', PermissionLevel.Everyone, 'Gets information on a member', bot, { usage: '[member]', runsInDm: false, aliases: ['who'] });
+//   }
 
-  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-    let member: GuildMember = <GuildMember>message.member;
+//   async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+//     let member: GuildMember = <GuildMember>message.member;
 
-    if (args.length > 0) {
-      const parsedMember: GuildMember | undefined = await CommandUtils.parseMember(args.join(' '), message.guild!);
-      if (parsedMember) {
-        member = parsedMember;
-      }
-    }
+//     if (args.length > 0) {
+//       const parsedMember: GuildMember | undefined = await CommandUtils.parseMember(args.join(' '), message.guild!);
+//       if (parsedMember) {
+//         member = parsedMember;
+//       }
+//     }
 
-    // Get member avatar
-    const avatarUrl: string = member.user.displayAvatarURL({ format: 'png', dynamic: true, size: 4096 });
+//     // Get member avatar
+//     const avatarUrl: string = member.user.displayAvatarURL({ format: 'png', dynamic: true, size: 4096 });
 
-    // Build embed
-    const embed: MessageEmbed = new MessageEmbed()
-      .setAuthor(`${member.user.username}#${member.user.discriminator}`, avatarUrl, avatarUrl)
-      .setThumbnail(avatarUrl)
-      .setColor(member.displayColor)
-      .setDescription(member.toString())
-      .setFooter(`ID: ${member.id}`, avatarUrl)
-      .setTimestamp(Date.now());
+//     // Build embed
+//     const embed: MessageEmbed = new MessageEmbed()
+//       .setAuthor(`${member.user.username}#${member.user.discriminator}`, avatarUrl, avatarUrl)
+//       .setThumbnail(avatarUrl)
+//       .setColor(member.displayColor)
+//       .setDescription(member.toString())
+//       .setFooter(`ID: ${member.id}`, avatarUrl)
+//       .setTimestamp(Date.now());
 
-    // If we have a nickname, add field
-    if (member.nickname) {
-      embed.addField('Nickname', member.nickname, false);
-    }
+//     // If we have a nickname, add field
+//     if (member.nickname) {
+//       embed.addField('Nickname', member.nickname, false);
+//     }
 
-    // Time related portions
-    embed.addField('Registered', member.user.createdAt.toUTCString(), true);
-    if (member.joinedAt) {
-      embed.addField('Joined', member.joinedAt.toUTCString(), true);
-    }
-    if (member.premiumSince) {
-      embed.addField('Boosted', member.premiumSince.toUTCString(), true);
-    }
+//     // Time related portions
+//     embed.addField('Registered', member.user.createdAt.toUTCString(), true);
+//     if (member.joinedAt) {
+//       embed.addField('Joined', member.joinedAt.toUTCString(), true);
+//     }
+//     if (member.premiumSince) {
+//       embed.addField('Boosted', member.premiumSince.toUTCString(), true);
+//     }
 
-    // Join pos
-    embed.addField('Join Position', (await Whois.getJoinPos(member)).toString(), false);
+//     // Join pos
+//     embed.addField('Join Position', (await Whois.getJoinPos(member)).toString(), false);
 
-    // Roles list
-    const rolesList: Collection<Snowflake, Role> = member.roles.cache.clone();
-    rolesList.sort((a, b) => b.position - a.position);
-    rolesList.delete(message.guild!.roles.everyone.id);
-    if (rolesList.size > 0) {
-      let rolesStr = '';
-      rolesList.forEach((role) => {
-        rolesStr += `${role.name}, `;
-      });
+//     // Roles list
+//     const rolesList: Collection<Snowflake, Role> = member.roles.cache.clone();
+//     rolesList.sort((a, b) => b.position - a.position);
+//     rolesList.delete(message.guild!.roles.everyone.id);
+//     if (rolesList.size > 0) {
+//       let rolesStr = '';
+//       rolesList.forEach((role) => {
+//         rolesStr += `${role.name}, `;
+//       });
 
-      embed.addField(`Roles (${rolesList.size})`, rolesStr.slice(0, -2), false);
-    }
+//       embed.addField(`Roles (${rolesList.size})`, rolesStr.slice(0, -2), false);
+//     }
 
-    // Bot permission
-    const permLevel: PermissionLevel = await PermissionsHelper.getMemberPermLevel(member, bot);
-    if (permLevel > PermissionLevel.Everyone) {
-      embed.addField('Bot Permission', PermissionLevel[permLevel], false);
-    }
+//     // Bot permission
+//     const permLevel: PermissionLevel = await PermissionsHelper.getMemberPermLevel(member, bot);
+//     if (permLevel > PermissionLevel.Everyone) {
+//       embed.addField('Bot Permission', PermissionLevel[permLevel], false);
+//     }
 
-    // Send
-    await message.channel.send({ embeds: [embed], reply: { messageReference: message } });
+//     // Send
+//     await message.channel.send({ embeds: [embed], reply: { messageReference: message } });
 
-    return { sendHelp: false, command: this, message };
-  }
+//     return { sendHelp: false, command: this, message };
+//   }
 
-  private static async getJoinPos(member: GuildMember): Promise<number> {
-    // Get all members
-    const allMembers: Collection<Snowflake, GuildMember> = await member.guild.members.fetch();
-    // Iterate, keeping track of join time
-    let joinPos = 1;
-    allMembers.forEach((currMember) => {
-      if (currMember.joinedTimestamp && member.joinedTimestamp
-          && currMember.joinedTimestamp < member.joinedTimestamp) {
-        joinPos += 1;
-      }
-    });
+//   private static async getJoinPos(member: GuildMember): Promise<number> {
+//     // Get all members
+//     const allMembers: Collection<Snowflake, GuildMember> = await member.guild.members.fetch();
+//     // Iterate, keeping track of join time
+//     let joinPos = 1;
+//     allMembers.forEach((currMember) => {
+//       if (currMember.joinedTimestamp && member.joinedTimestamp
+//           && currMember.joinedTimestamp < member.joinedTimestamp) {
+//         joinPos += 1;
+//       }
+//     });
 
-    return joinPos;
-  }
-}
+//     return joinPos;
+//   }
+// }
 
-export class Roles extends Command {
-  constructor(bot: Bot) {
-    super('roles', PermissionLevel.Mod, 'Gets list of roles', bot, {
-      runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ['rolelist'],
-    });
-  }
+// export class Roles extends Command {
+//   constructor(bot: Bot) {
+//     super('roles', PermissionLevel.Mod, 'Gets list of roles', bot, {
+//       runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ['rolelist'],
+//     });
+//   }
 
-  async run(bot: Bot, message: Message): Promise<CommandResult> {
-    // Roles list
-    await message.guild!.roles.fetch(); // Fetch all roles (just to be sure)
-    const rolesList: Collection<Snowflake, Role> = message.guild!.roles.cache.clone();
-    rolesList.sort((a, b) => b.position - a.position);
-    rolesList.delete(message.guild!.roles.everyone.id);
+//   async run(bot: Bot, message: Message): Promise<CommandResult> {
+//     // Roles list
+//     await message.guild!.roles.fetch(); // Fetch all roles (just to be sure)
+//     const rolesList: Collection<Snowflake, Role> = message.guild!.roles.cache.clone();
+//     rolesList.sort((a, b) => b.position - a.position);
+//     rolesList.delete(message.guild!.roles.everyone.id);
 
-    // List of strings
-    const stringList: string[] = [];
-    rolesList.forEach((role) => {
-      stringList.push(`${role.toString()} - ${role.members.size} members.`);
-    });
+//     // List of strings
+//     const stringList: string[] = [];
+//     rolesList.forEach((role) => {
+//       stringList.push(`${role.toString()} - ${role.members.size} members.`);
+//     });
 
-    // Make paginator
-    const paginator: ReactionPaginator = new ReactionPaginator(stringList, 10,
-      `Roles in ${message.guild!.name}`, message.channel, bot, this);
+//     // Make paginator
+//     const paginator: ReactionPaginator = new ReactionPaginator(stringList, 10,
+//       `Roles in ${message.guild!.name}`, message.channel, bot, this);
 
-    await paginator.postMessage();
+//     await paginator.postMessage();
 
-    return { sendHelp: false, command: this, message };
-  }
-}
+//     return { sendHelp: false, command: this, message };
+//   }
+// }
 
-export class Members extends Command {
-  constructor(bot: Bot) {
-    super('members', PermissionLevel.Mod, 'Gets list of members for given role', bot, {
-      usage: '<role>', runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ['rolemembers'],
-    });
-  }
+// export class Members extends Command {
+//   constructor(bot: Bot) {
+//     super('members', PermissionLevel.Mod, 'Gets list of members for given role', bot, {
+//       usage: '<role>', runsInDm: false, requiredPerm: Permissions.FLAGS.MANAGE_ROLES, aliases: ['rolemembers'],
+//     });
+//   }
 
-  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-    if (args.length < 1) {
-      return { sendHelp: true, command: this, message };
-    }
+//   async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+//     if (args.length < 1) {
+//       return { sendHelp: true, command: this, message };
+//     }
 
-    // Get role
-    const role: Role | null = await CommandUtils.parseRole(args.join(' '), message.guild!);
+//     // Get role
+//     const role: Role | null = await CommandUtils.parseRole(args.join(' '), message.guild!);
 
-    if (!role) {
-      return { sendHelp: true, command: this, message };
-    }
+//     if (!role) {
+//       return { sendHelp: true, command: this, message };
+//     }
 
-    const memberList: Collection<Snowflake, GuildMember> = role.members;
+//     const memberList: Collection<Snowflake, GuildMember> = role.members;
 
-    // List of strings
-    const stringList: string[] = [];
-    memberList.forEach((member) => {
-      stringList.push(`**${member.user.username}#${member.user.discriminator}** - ${member.id}`);
-    });
+//     // List of strings
+//     const stringList: string[] = [];
+//     memberList.forEach((member) => {
+//       stringList.push(`**${member.user.username}#${member.user.discriminator}** - ${member.id}`);
+//     });
 
-    // Make paginator
-    const paginator: ReactionPaginator = new ReactionPaginator(stringList, 10,
-      `Members of ${role.name}`, message.channel, bot, this);
+//     // Make paginator
+//     const paginator: ReactionPaginator = new ReactionPaginator(stringList, 10,
+//       `Members of ${role.name}`, message.channel, bot, this);
 
-    await paginator.postMessage();
+//     await paginator.postMessage();
 
-    return { sendHelp: false, command: this, message };
-  }
-}
+//     return { sendHelp: false, command: this, message };
+//   }
+// }
 
-export class Avatar extends Command {
-  constructor(bot: Bot) {
-    super('avatar', PermissionLevel.Everyone, 'Gets avatar for given user', bot, { usage: '<user>' });
-  }
+// export class Avatar extends Command {
+//   constructor(bot: Bot) {
+//     super('avatar', PermissionLevel.Everyone, 'Gets avatar for given user', bot, { usage: '<user>' });
+//   }
 
-  async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-    if (args.length < 1) {
-      return { sendHelp: true, command: this, message };
-    }
+//   async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
+//     if (args.length < 1) {
+//       return { sendHelp: true, command: this, message };
+//     }
 
-    // Get user
-    const user: User | undefined = await CommandUtils.parseUser(args.join(' '), message.client);
+//     // Get user
+//     const user: User | undefined = await CommandUtils.parseUser(args.join(' '), message.client);
 
-    if (user === undefined) {
-      return { sendHelp: true, command: this, message };
-    }
+//     if (user === undefined) {
+//       return { sendHelp: true, command: this, message };
+//     }
 
-    // Build the embed
-    const avatarUrl: string = user.displayAvatarURL({ size: 4096, format: 'png', dynamic: true });
-    const embed: MessageEmbed = new MessageEmbed()
-      .setColor(await CommandUtils.getSelfColor(message.channel, bot))
-      .setImage(avatarUrl)
-      .setAuthor(`${user.username}#${user.discriminator}`, avatarUrl, avatarUrl);
+//     // Build the embed
+//     const avatarUrl: string = user.displayAvatarURL({ size: 4096, format: 'png', dynamic: true });
+//     const embed: MessageEmbed = new MessageEmbed()
+//       .setColor(await CommandUtils.getSelfColor(message.channel, bot))
+//       .setImage(avatarUrl)
+//       .setAuthor(`${user.username}#${user.discriminator}`, avatarUrl, avatarUrl);
 
-    await message.channel.send({ embeds: [embed] });
+//     await message.channel.send({ embeds: [embed] });
 
-    return { sendHelp: false, command: this, message };
-  }
-}
+//     return { sendHelp: false, command: this, message };
+//   }
+// }
 
-export class Stats extends Command {
-  constructor(bot: Bot) {
-    super('stats', PermissionLevel.Everyone, 'Gets bot statistics', bot, { aliases: ['statistics'] });
-  }
+// export class Stats extends Command {
+//   constructor(bot: Bot) {
+//     super('stats', PermissionLevel.Everyone, 'Gets bot statistics', bot, { aliases: ['statistics'] });
+//   }
 
-  async run(bot: Bot, message: Message): Promise<CommandResult> {
-    const embed: MessageEmbed = new MessageEmbed()
-      .setColor(await CommandUtils.getSelfColor(message.channel, bot))
-      .addField('RAM Usage', `${Math.floor(memoryUsage().rss / 1048576)} MB`, true)
-      .addField('Load', Stats.getLoadString(), true)
-      .addField('Uptime', Stats.getFormattedUptime(), true)
-      .addField('User Count', Stats.getUserCount(message.client).toString(), true)
-      .addField('Guild Count', message.client.guilds.cache.size.toString(), true)
-      .addField('Channel Count', message.client.channels.cache.size.toString(), true);
-    if (message.client.user) {
-      embed.setAuthor(
-        `${message.client.user.username}#${message.client.user.discriminator}`,
-        message.client.user.displayAvatarURL({ format: 'png', dynamic: true, size: 4096 }),
-      );
-    }
+//   async run(bot: Bot, message: Message): Promise<CommandResult> {
+//     const embed: MessageEmbed = new MessageEmbed()
+//       .setColor(await CommandUtils.getSelfColor(message.channel, bot))
+//       .addField('RAM Usage', `${Math.floor(memoryUsage().rss / 1048576)} MB`, true)
+//       .addField('Load', Stats.getLoadString(), true)
+//       .addField('Uptime', Stats.getFormattedUptime(), true)
+//       .addField('User Count', Stats.getUserCount(message.client).toString(), true)
+//       .addField('Guild Count', message.client.guilds.cache.size.toString(), true)
+//       .addField('Channel Count', message.client.channels.cache.size.toString(), true);
+//     if (message.client.user) {
+//       embed.setAuthor(
+//         `${message.client.user.username}#${message.client.user.discriminator}`,
+//         message.client.user.displayAvatarURL({ format: 'png', dynamic: true, size: 4096 }),
+//       );
+//     }
 
-    await message.channel.send({ embeds: [embed] });
+//     await message.channel.send({ embeds: [embed] });
 
-    return { sendHelp: false, command: this, message };
-  }
+//     return { sendHelp: false, command: this, message };
+//   }
 
-  private static getFormattedUptime(): string {
-    let uptime: number = process_uptime();
-    const days: number = Math.floor(uptime / 86400);
-    uptime -= days * 86400;
+//   private static getFormattedUptime(): string {
+//     let uptime: number = process_uptime();
+//     const days: number = Math.floor(uptime / 86400);
+//     uptime -= days * 86400;
 
-    const hours: number = Math.floor(uptime / 3600);
-    uptime -= hours * 3600;
+//     const hours: number = Math.floor(uptime / 3600);
+//     uptime -= hours * 3600;
 
-    const minutes: number = Math.floor(uptime / 60);
-    uptime -= minutes * 60;
+//     const minutes: number = Math.floor(uptime / 60);
+//     uptime -= minutes * 60;
 
-    const seconds: number = Math.floor(uptime);
+//     const seconds: number = Math.floor(uptime);
 
-    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
-  }
+//     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+//   }
 
-  private static getUserCount(client: Client): number {
-    return client.users.cache.size;
-  }
+//   private static getUserCount(client: Client): number {
+//     return client.users.cache.size;
+//   }
 
-  private static getLoadString(): string {
-    const load: number[] = loadavg();
-    let loadString = '';
+//   private static getLoadString(): string {
+//     const load: number[] = loadavg();
+//     let loadString = '';
 
-    load.forEach((num) => {
-      loadString += `${num.toFixed(2)} `;
-    });
+//     load.forEach((num) => {
+//       loadString += `${num.toFixed(2)} `;
+//     });
 
-    return loadString.slice(0, loadString.length - 1);
-  }
-}
+//     return loadString.slice(0, loadString.length - 1);
+//   }
+// }

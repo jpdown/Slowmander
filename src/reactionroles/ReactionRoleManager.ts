@@ -15,7 +15,7 @@ export class ReactionRoleManager {
 
   constructor(bot: Bot) {
     this.bot = bot;
-    this.logger = Logger.getLogger(bot, this);
+    this.logger = Logger.getLogger(this);
   }
 
   public async onMessageReactionAdd(reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) {

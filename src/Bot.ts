@@ -42,7 +42,8 @@ export class Bot {
       ],
       partials: ['MESSAGE', 'REACTION', 'CHANNEL'],
     });
-    this.logger = Logger.getLogger(this, this);
+    Logger.bot = this;
+    this.logger = Logger.getLogger(this);
     this.credentials = new Credentials(this);
     this.config = new Config(this);
     this.db = new DatabaseManager(this);

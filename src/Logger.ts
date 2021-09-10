@@ -13,25 +13,24 @@ export enum LogLevel {
 }
 
 export class Logger {
-  private readonly CONSOLE_LOG_LEVEL = LogLevel.INFO;
+  private static readonly CONSOLE_LOG_LEVEL = LogLevel.INFO;
 
-  private readonly FILE_LOG_LEVEL = LogLevel.INFO;
+  private static readonly FILE_LOG_LEVEL = LogLevel.INFO;
 
-  private readonly DISCORD_LOG_LEVEL = LogLevel.WARNING;
+  private static readonly DISCORD_LOG_LEVEL = LogLevel.WARNING;
 
-  private readonly LOG_PATH = './logs/slowmander.log';
+  private static readonly LOG_PATH = './logs/slowmander.log';
 
-  private bot: Bot;
+  public static bot: Bot;
 
   private className: string;
 
-  constructor(bot: Bot, className: string) {
-    this.bot = bot;
+  constructor(className: string) {
     this.className = className;
   }
 
-  public static getLogger(bot: Bot, object: any): Logger {
-    return new Logger(bot, object.constructor.name);
+  public static getLogger(object: any): Logger {
+    return new Logger(object.constructor.name);
   }
 
   public logSync(logLevel: LogLevel, message: string, err?: any): void {
@@ -52,16 +51,16 @@ export class Logger {
     }
 
     // Log to console
-    if (logLevel >= this.CONSOLE_LOG_LEVEL) {
+    if (logLevel >= Logger.CONSOLE_LOG_LEVEL) {
       if (logLevel >= LogLevel.WARNING) console.error(logString);
       else console.log(logString);
     }
 
     // Log to file
-    if (logLevel >= this.FILE_LOG_LEVEL) this.logToFile(logString);
+    if (logLevel >= Logger.FILE_LOG_LEVEL) Logger.logToFile(logString);
 
     // Log to Discord
-    if (logLevel >= this.DISCORD_LOG_LEVEL) await this.logToDiscord(logString);
+    if (logLevel >= Logger.DISCORD_LOG_LEVEL) await Logger.logToDiscord(logString);
   }
 
   public async debug(message: string, err?: any) {
@@ -80,18 +79,18 @@ export class Logger {
     await this.log(LogLevel.ERROR, message, err);
   }
 
-  private logToFile(message: string) {
+  private static logToFile(message: string) {
     if (!existsSync('logs')) mkdirSync('logs');
-    if (!existsSync(this.LOG_PATH)) {
-      writeFileSync(this.LOG_PATH, `${message}\n`);
+    if (!existsSync(Logger.LOG_PATH)) {
+      writeFileSync(Logger.LOG_PATH, `${message}\n`);
     } else {
-      appendFileSync(this.LOG_PATH, `${message}\n`);
+      appendFileSync(Logger.LOG_PATH, `${message}\n`);
     }
   }
 
-  private async logToDiscord(message: string) {
+  private static async logToDiscord(message: string) {
     try {
-      const webhook: WebhookClient | null = this.bot.config.errorWebhook;
+      const webhook: WebhookClient | null = Logger.bot.config.errorWebhook;
       if (!webhook) {
         return;
       }

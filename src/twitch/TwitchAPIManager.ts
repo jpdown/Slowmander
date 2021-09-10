@@ -17,7 +17,7 @@ export class TwitchAPIManager {
 
   constructor(bot: Bot, clientId: string, clientSecret: string) {
     this.bot = bot;
-    this.logger = Logger.getLogger(bot, this);
+    this.logger = Logger.getLogger(this);
     this.client = undefined;
     this.clientId = clientId;
     this.clientSecret = clientSecret;
