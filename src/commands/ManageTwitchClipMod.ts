@@ -1,8 +1,8 @@
 /* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import type Bot from 'Bot';
-import CommandUtils from 'utils/CommandUtils';
-import CommandGroup from 'commands/CommandGroup';
+import type { Bot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
+import { CommandGroup } from 'commands/CommandGroup';
 
 import {
   Message, Permissions, MessageEmbed,
@@ -329,7 +329,6 @@ class ChannelModInfo extends Command {
   }
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export class ManageTwitchClipMod extends CommandGroup {
   constructor(bot: Bot) {
     super('twitchclip', 'Manages Twitch Clip moderation', bot, { runsInDm: false });

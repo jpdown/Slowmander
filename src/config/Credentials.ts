@@ -1,11 +1,11 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 import { LogLevel, Logger } from 'Logger';
 
 import {
   existsSync, readFileSync, mkdirSync, writeFileSync,
 } from 'fs';
 
-export default class Credentials {
+export class Credentials {
   readonly CREDENTIALS_PATH: string = './data/credentials.json';
 
   private credentialsObject: CredentialsObject;

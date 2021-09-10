@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import type Bot from 'Bot';
-import CommandUtils from 'utils/CommandUtils';
+import type { Bot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
 import { CatAPIHelper, DogAPIResp } from 'utils/CatAPIHelper';
 
 import { Message, MessageEmbed } from 'discord.js';

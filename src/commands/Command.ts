@@ -1,5 +1,5 @@
-import type Bot from 'Bot';
-import type CommandGroup from 'commands/CommandGroup';
+import type { Bot } from 'Bot';
+import type { CommandGroup } from 'commands/CommandGroup';
 import { Logger } from 'Logger';
 
 import type { Message, PermissionResolvable } from 'discord.js';

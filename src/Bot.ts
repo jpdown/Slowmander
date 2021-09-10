@@ -1,16 +1,16 @@
-import Credentials from 'config/Credentials';
-import CommandManager from 'CommandManager';
-import ReactionRoleManager from 'reactionroles/ReactionRoleManager';
+import { Credentials } from 'config/Credentials';
+import { CommandManager } from 'CommandManager';
+import { ReactionRoleManager } from 'reactionroles/ReactionRoleManager';
 import { Logger, LogLevel } from 'Logger';
-import EventLogger from 'eventlogs/EventLogger';
-import DatabaseManager from 'database/DatabaseManager';
-import VerificationManager from 'verification/VerificationManager';
+import { EventLogger } from 'eventlogs/EventLogger';
+import { DatabaseManager } from 'database/DatabaseManager';
+import { VerificationManager } from 'verification/VerificationManager';
 import { Client, Snowflake } from 'discord.js';
-import Config from 'config/Config';
-import TwitchAPIManager from './twitch/TwitchAPIManager';
-import TwitchClipModManager from './twitch/TwitchClipModManager';
+import { Config } from 'config/Config';
+import { TwitchAPIManager } from './twitch/TwitchAPIManager';
+import { TwitchClipModManager } from './twitch/TwitchClipModManager';
 
-export default class Bot {
+export class Bot {
   private readonly credentials: Credentials;
 
   private readonly verificationManager: VerificationManager;

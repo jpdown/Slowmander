@@ -1,11 +1,11 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 
 import {
   Permissions, Message, GuildChannel, ThreadChannel, Role, CategoryChannel, GuildMember, MessageEmbed, NewsChannel, TextChannel, User,
 } from 'discord.js';
-import CommandUtils from './CommandUtils';
+import { CommandUtils } from './CommandUtils';
 
-export default class LockdownHelper {
+export class LockdownHelper {
   static readonly PERMISSION = Permissions.FLAGS.SEND_MESSAGES;
 
   static readonly LOCK_MESSAGE = '🔒 Channel has been locked down.';

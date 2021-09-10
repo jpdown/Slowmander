@@ -1,4 +1,4 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 import { LogLevel, Logger } from 'Logger';
 
 import {
@@ -6,7 +6,7 @@ import {
 } from 'fs';
 import { WebhookClient } from 'discord.js';
 
-export default class Config {
+export class Config {
   private readonly CONFIG_PATH: string = './data/config.json';
 
   private configObject: ConfigObject;

@@ -1,17 +1,17 @@
 import type { Command, CommandResult } from 'commands/Command';
 import * as commands from 'commands';
-import type Bot from 'Bot';
-import CommandUtils from 'utils/CommandUtils';
-import PermissionsHelper from 'utils/PermissionsHelper';
-import type CommandGroup from 'commands/CommandGroup';
+import type { Bot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
+import { PermissionsHelper } from 'utils/PermissionsHelper';
+import type { CommandGroup } from 'commands/CommandGroup';
 import { Logger } from 'Logger';
 
 import {
   Message, MessageEmbed, PartialMessage,
 } from 'discord.js';
-import HelpManager from 'HelpManager';
+import { HelpManager } from 'HelpManager';
 
-export default class CommandManager {
+export class CommandManager {
   private commandMap: Map<string, Command>;
 
   private bot: Bot;

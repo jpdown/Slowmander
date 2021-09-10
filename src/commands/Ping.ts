@@ -1,10 +1,9 @@
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import type Bot from 'Bot';
-import CommandUtils from 'utils/CommandUtils';
+import type { Bot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
 
 import { Message, MessageEmbed } from 'discord.js';
 
-// eslint-disable-next-line import/prefer-default-export
 export class Ping extends Command {
   constructor(bot: Bot) {
     super('ping', PermissionLevel.Everyone, 'Gets current bot ping to API', bot);

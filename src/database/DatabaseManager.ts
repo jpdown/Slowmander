@@ -1,15 +1,15 @@
 import BS3 from 'better-sqlite3';
 
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 import { Logger } from 'Logger';
-import EventLogs from './EventLogs';
-import GuildConfigs from './GuildConfigs';
-import LockdownPresets from './LockdownPresets';
-import ReactionRoles from './ReactionRoles';
-import TwitchClipModeration from './TwitchClipModeration';
-import Verification from './Verification';
+import { EventLogs } from './EventLogs';
+import { GuildConfigs } from './GuildConfigs';
+import { LockdownPresets } from './LockdownPresets';
+import { ReactionRoles } from './ReactionRoles';
+import { TwitchClipModeration } from './TwitchClipModeration';
+import { Verification } from './Verification';
 
-export default class DatabaseManager {
+export class DatabaseManager {
   private readonly DB_PATH: string = './data/slowmander.db';
 
   private readonly DB_VERSION: number = 1;

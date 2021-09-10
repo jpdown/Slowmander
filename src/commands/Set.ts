@@ -1,8 +1,8 @@
 /* eslint-disable max-classes-per-file */
-import CommandGroup from 'commands/CommandGroup';
+import { CommandGroup } from 'commands/CommandGroup';
 import { Command, CommandResult, PermissionLevel } from 'commands/Command';
-import type Bot from 'Bot';
-import CommandUtils from 'utils/CommandUtils';
+import type { Bot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
 
 import {
   Message, GuildMember, Role, TextChannel, Channel, Permissions,
@@ -250,7 +250,6 @@ class SetModChannel extends Command {
   }
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export class Set extends CommandGroup {
   constructor(bot: Bot) {
     super('set', 'Sets various bot parameters', bot);

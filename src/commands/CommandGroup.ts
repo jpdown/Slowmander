@@ -1,12 +1,12 @@
 import {
   Command, PermissionLevel, CommandResult, CommandParameters,
 } from 'commands/Command';
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 
 import { Message, PermissionResolvable, Permissions } from 'discord.js';
-import CommandManager from 'CommandManager';
+import { CommandManager } from 'CommandManager';
 
-export default abstract class CommandGroup extends Command {
+export abstract class CommandGroup extends Command {
   public readonly subCommands: Map<string, Command>;
 
   constructor(name: string, desc: string, bot: Bot, params: CommandParameters = {}) {

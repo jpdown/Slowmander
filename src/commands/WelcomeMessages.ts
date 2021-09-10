@@ -1,10 +1,9 @@
 import { Command, PermissionLevel, CommandResult } from 'commands/Command';
-import type Bot from 'Bot';
-import CommandUtils from 'utils/CommandUtils';
+import type { Bot } from 'Bot';
+import { CommandUtils } from 'utils/CommandUtils';
 
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
 
-// eslint-disable-next-line import/prefer-default-export
 export class WelcomeMessages extends Command {
   private readonly CHANNEL_ID: string = '329371265372782593';
 

@@ -1,10 +1,10 @@
-import type Bot from 'Bot';
+import type { Bot } from 'Bot';
 import { Logger } from 'Logger';
 
 import { ApiClient, HelixClip, HelixUser } from 'twitch';
 import { ClientCredentialsAuthProvider } from 'twitch-auth';
 
-export default class TwitchAPIManager {
+export class TwitchAPIManager {
   private bot: Bot;
 
   private logger: Logger;
