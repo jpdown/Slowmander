@@ -1,28 +1,23 @@
-// import {
-//   Command, PermissionLevel, CommandResult, CommandParameters,
-// } from 'commands/Command';
-// import type { Bot } from 'Bot';
+import {
+  Command, PermissionLevel,
+} from 'commands/Command';
+import type { Bot } from 'Bot';
 
-// import { Message, PermissionResolvable, Permissions } from 'discord.js';
-// import { CommandManager } from 'CommandManager';
+import { Message, PermissionResolvable, Permissions } from 'discord.js';
+import { CommandManager } from 'CommandManager';
+import type { CommandContext } from 'CommandContext';
 
-// export abstract class CommandGroup extends Command {
-//   public readonly subCommands: Map<string, Command>;
+export class CommandGroup extends Command {
+  public readonly subCommands: Map<string, Command>;
 
-//   constructor(name: string, desc: string, bot: Bot, params: CommandParameters = {}) {
-//     const newParams = params;
-//     newParams.usage = '<subcommand>';
-//     super(name, PermissionLevel.Owner, desc, bot, newParams);
-//     this.subCommands = new Map<string, Command>();
-//   }
+  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>, parent?: CommandGroup) {
+    super(name, func, parent);
+    this.subCommands = new Map<string, Command>();
+  }
 
-//   public async run(bot: Bot, message: Message, args: string[]): Promise<CommandResult> {
-//     return CommandManager.parseSubCommand(this, args, message, bot);
-//   }
-
-//   public getSubCommand(arg: string): Command | undefined {
-//     return this.subCommands.get(arg);
-//   }
+  public getSubCommand(arg: string): Command | undefined {
+    return this.subCommands.get(arg);
+  }
 
 //   public get permLevel(): PermissionLevel {
 //     let lowestPerm = PermissionLevel.Owner;
@@ -54,12 +49,10 @@
 //     return perms;
 //   }
 
-//   protected registerSubCommand(command: Command): void {
-//     this.subCommands.set(command.name, command);
-//     command.aliases.forEach((alias) => {
-//       this.subCommands.set(alias, command);
-//     });
-//   }
-
-//   protected abstract registerSubCommands(bot: Bot): void;
-// }
+  public registerSubCommand(command: Command): void {
+    this.subCommands.set(command.name, command);
+    // command.aliases.forEach((alias) => {
+    //   this.subCommands.set(alias, command);
+    // });
+  }
+}

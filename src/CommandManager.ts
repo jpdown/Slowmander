@@ -4,7 +4,7 @@ import * as modules from 'modules';
 import type { Bot } from 'Bot';
 import { CommandUtils } from 'utils/CommandUtils';
 // import { PermissionsHelper } from 'utils/PermissionsHelper';
-// import type { CommandGroup } from 'commands/CommandGroup';
+import { CommandGroup } from 'commands/CommandGroup';
 import { Logger } from 'Logger';
 
 import {
@@ -67,14 +67,17 @@ export class CommandManager {
 
     // Split args, find command
     const args: string[] = await CommandUtils.splitCommandArgs(fullMessage.content, prefix.length);
-    const command: Command | undefined = this.getCommand(args.shift());
+    let command: Command | undefined = this.getCommand(args.shift());
     // If command not found, exit
     if (command === undefined) {
       return;
     }
 
     // Build ctx
-    const ctx = new CommandContext(this.bot, this.bot.client, fullMessage, fullMessage.channel, fullMessage.author, fullMessage.guild ?? undefined, fullMessage.member ?? undefined);
+    const ctx = new CommandContext(
+      this.bot, this.bot.client, fullMessage, fullMessage.channel, fullMessage.author,
+      fullMessage.guild ?? undefined, fullMessage.member ?? undefined,
+    );
 
     // Check perms/in DM and run
     // const user = fullMessage.member ?? fullMessage.author;
@@ -99,8 +102,13 @@ export class CommandManager {
     // run command
     try {
       await command.invoke(ctx);
+      // TODO: Replace with recursion in arg parsing
+      while (command instanceof CommandGroup && args.length > 0) {
+        command = command.getSubCommand(args.shift()!);
+        await command?.invoke(ctx);
+      }
     } catch (err) {
-      await this.logger.error(`Error running command "${command.name}".`, err);
+      await this.logger.error(`Error running command "${command?.name}".`, err);
       await message.channel.send({
         embeds: [new MessageEmbed()
           .setColor(0xFF0000)
@@ -118,10 +126,10 @@ export class CommandManager {
   //     return { sendHelp: true, command: group, message };
   //   }
 
-  //   // Check perms/in DM and run
-  //   if (await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, bot)) {
-  //     return command.run(bot, message, args);
-  //   }
+  //   // // Check perms/in DM and run
+  //   // if (await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, bot)) {
+  //   //   return command.run(bot, message, args);
+  //   // }
 
   //   return { sendHelp: false, command: null, message };
   // }

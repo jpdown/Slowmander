@@ -4,6 +4,7 @@ import { Logger } from 'Logger';
 
 // import type { Message, PermissionResolvable } from 'discord.js';
 import type { CommandContext } from 'CommandContext';
+import type { CommandGroup } from './CommandGroup';
 
 export enum PermissionLevel {
   Disabled = -1,
@@ -41,16 +42,17 @@ export class Command {
 
   // public readonly runsInDm: boolean;
 
-  // public readonly group?: CommandGroup;
+  public readonly parent?: CommandGroup;
 
   protected logger: Logger;
 
   private func: (ctx: CommandContext, ...args: any[]) => Promise<void>;
 
   // constructor(name: string, permLevel: PermissionLevel, desc: string, bot: Bot, params: CommandParameters = {}) {
-  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>) {
+  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>, parent?: CommandGroup) {
     this.name = name;
     this.func = func;
+    this.parent = parent;
     // eslint-disable-next-line no-underscore-dangle
     // this._permLevel = permLevel;
     // this.desc = desc;
