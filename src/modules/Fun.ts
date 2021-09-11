@@ -1,5 +1,6 @@
 import type { CommandContext } from 'CommandContext';
-import { Module, command, group, subcommand } from './Module';
+import { Module } from './Module';
+import { command, group, subcommand } from './ModuleDecorators';
 
 export class Fun extends Module {
   public constructor() {

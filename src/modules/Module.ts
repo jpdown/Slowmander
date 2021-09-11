@@ -1,5 +1,5 @@
 import type { CommandContext } from 'CommandContext';
-import { Command } from 'commands/Command';
+import { Command, CommandArg, CommandOptions } from 'commands/Command';
 import { CommandGroup } from 'commands/CommandGroup';
 
 import 'reflect-metadata';
@@ -15,11 +15,15 @@ export abstract class Module {
   private addCommands() {
     const proto = Reflect.getPrototypeOf(this);
     if (proto) {
+      // For each member, check for command metadata
       Reflect.ownKeys(proto).forEach((key) => {
         const commandType: string | undefined = Reflect.getMetadata('command:type', this, key);
+        // If we have a type, we have a command to register
         if (commandType) {
           const commandName: string = Reflect.getMetadata('command:name', this, key);
+          const commandOptions: CommandOptions = {};
 
+          // If we have a parent, find the group
           const commandParent: string | undefined = Reflect.getMetadata('command:parent', this, key);
           let foundGroup: CommandGroup | undefined;
           if (commandParent) {
@@ -32,17 +36,23 @@ export abstract class Module {
             }
           }
 
+          commandOptions.parent = foundGroup;
+          commandOptions.argNames = Reflect.getMetadata('command:argNames', this, key);
+          commandOptions.argTypes = Reflect.getMetadata('command:argTypes', this, key);
+
           let addedCommand: Command;
 
+          // Create the objects and register
           if (commandType === 'command') {
-            addedCommand = new Command(commandName, Reflect.get(this, key).bind(this), foundGroup);
+            addedCommand = new Command(commandName, Reflect.get(this, key).bind(this), commandOptions);
             this.commands.push(addedCommand);
           } else if (commandType === 'group') {
-            addedCommand = new CommandGroup(commandName, Reflect.get(this, key).bind(this), foundGroup);
+            addedCommand = new CommandGroup(commandName, Reflect.get(this, key).bind(this), commandOptions);
             this.commands.push(addedCommand);
           } else {
             throw new Error('Unknown command type');
           }
+          // Register subcommand in group if needed
           foundGroup?.registerSubCommand(addedCommand);
         }
       });
@@ -50,34 +60,4 @@ export abstract class Module {
       throw new Error('Something went wrong enumerating commands.');
     }
   }
-}
-
-export function command(name?: string) {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:type', 'command', target, propertyKey);
-  };
-}
-
-export function subcommand(parent: (ctx: CommandContext, ...args: any[]) => Promise<void>, name?: string) {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:type', 'command', target, propertyKey);
-    Reflect.defineMetadata('command:parent', parent.name, target, propertyKey);
-  };
-}
-
-export function group(name?: string) {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:type', 'group', target, propertyKey);
-  };
-}
-
-export function subgroup(parent: (ctx: CommandContext, ...args: any[]) => Promise<void>, name?: string) {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:type', 'group', target, propertyKey);
-    Reflect.defineMetadata('command:parent', parent.name, target, propertyKey);
-  };
 }

@@ -18,6 +18,10 @@ export enum PermissionLevel {
 export class Command {
   public readonly name: string;
 
+  public readonly argTypes?: CommandParam[];
+
+  public readonly argNames?: string[];
+
   // public readonly aliases: string[];
 
   // private readonly _permLevel: PermissionLevel;
@@ -46,11 +50,20 @@ export class Command {
 
   private func: (ctx: CommandContext, ...args: any[]) => Promise<void>;
 
+
   // constructor(name: string, permLevel: PermissionLevel, desc: string, bot: Bot, params: CommandParameters = {}) {
-  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>, parent?: CommandGroup) {
+  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>, options: CommandOptions) {
     this.name = name;
     this.func = func;
-    this.parent = parent;
+    this.parent = options.parent;
+
+    if (options.argTypes?.length !== options.argNames?.length) {
+      throw new Error('Mismatch between arg names and types');
+    }
+
+    this.argTypes = options.argTypes;
+    this.argNames = options.argNames;
+
     // this._permLevel = permLevel;
     // this.desc = desc;
 
@@ -94,3 +107,12 @@ export class Command {
 //   runsInDm?: boolean;
 //   group?: CommandGroup;
 // }
+
+export type CommandOptions = {
+  parent?: CommandGroup;
+  argTypes?: CommandArg[];
+  argNames?: string[];
+};
+
+export type CommandArg = 'string' | 'int' | 'float' | 'bool' | 'user' | 'channel' | 'role' | 'mentionable'
+| 'string?' | 'int?' | 'float?' | 'bool?' | 'user?' | 'channel?' | 'role?' | 'mentionable?';

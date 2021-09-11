@@ -1,5 +1,5 @@
 import {
-  Command, PermissionLevel,
+  Command, CommandOptions, PermissionLevel,
 } from 'commands/Command';
 import type { Bot } from 'Bot';
 
@@ -10,8 +10,8 @@ import type { CommandContext } from 'CommandContext';
 export class CommandGroup extends Command {
   public readonly subCommands: Map<string, Command>;
 
-  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>, parent?: CommandGroup) {
-    super(name, func, parent);
+  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>, options: CommandOptions) {
+    super(name, func, options);
     this.subCommands = new Map<string, Command>();
   }
 
