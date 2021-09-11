@@ -23,14 +23,12 @@ export class Command {
   // private readonly _permLevel: PermissionLevel;
 
   // public get permLevel(): PermissionLevel {
-  //   // eslint-disable-next-line no-underscore-dangle
   //   return this._permLevel;
   // }
 
   // private readonly _requiredPerm?: PermissionResolvable | undefined;
 
   // public get requiredPerm(): PermissionResolvable | undefined {
-  //   // eslint-disable-next-line no-underscore-dangle
   //   return this._requiredPerm;
   // }
 
@@ -53,12 +51,10 @@ export class Command {
     this.name = name;
     this.func = func;
     this.parent = parent;
-    // eslint-disable-next-line no-underscore-dangle
     // this._permLevel = permLevel;
     // this.desc = desc;
 
     // this.aliases = params.aliases ? params.aliases : [];
-    // eslint-disable-next-line no-underscore-dangle
     // this._requiredPerm = params.requiredPerm;
     // this.longDesc = params.longDesc ? params.longDesc : '';
     // this.usage = params.usage ? params.usage : '';

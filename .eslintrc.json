@@ -25,6 +25,7 @@
         "max-len": ["error", { "code": 150, "tabWidth": 2 }],
         "no-console": "off",
         "no-cond-assign": ["error", "except-parens"],
-        "import/prefer-default-export": "off"
+        "import/prefer-default-export": "off",
+        "no-underscore-dangle": "off"
     }
 }
