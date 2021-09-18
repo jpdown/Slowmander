@@ -26,6 +26,7 @@
         "no-console": "off",
         "no-cond-assign": ["error", "except-parens"],
         "import/prefer-default-export": "off",
-        "no-underscore-dangle": "off"
+        "no-underscore-dangle": "off",
+        "radix": ["error", "as-needed"]
     }
 }

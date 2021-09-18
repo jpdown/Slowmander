@@ -1,5 +1,4 @@
-import type { CommandContext } from 'CommandContext';
-import { Command, CommandArg, CommandOptions } from 'commands/Command';
+import { Command, CommandOptions } from 'commands/Command';
 import { CommandGroup } from 'commands/CommandGroup';
 
 import 'reflect-metadata';
@@ -37,8 +36,7 @@ export abstract class Module {
           }
 
           commandOptions.parent = foundGroup;
-          commandOptions.argNames = Reflect.getMetadata('command:argNames', this, key);
-          commandOptions.argTypes = Reflect.getMetadata('command:argTypes', this, key);
+          commandOptions.args = Reflect.getMetadata('command:args', this, key);
 
           let addedCommand: Command;
 

@@ -1,5 +1,4 @@
-import type { CommandContext } from 'CommandContext';
-import type { CommandArg } from 'commands/Command';
+import type { CommandArgument } from 'commands/Command';
 
 export function command(name?: string) {
   return (target: Object, propertyKey: string) => {
@@ -8,11 +7,11 @@ export function command(name?: string) {
   };
 }
 
-export function subcommand(parent: (ctx: CommandContext, ...args: any[]) => Promise<void>, name?: string) {
+export function subcommand(parent: string, name?: string) {
   return (target: Object, propertyKey: string) => {
     Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
     Reflect.defineMetadata('command:type', 'command', target, propertyKey);
-    Reflect.defineMetadata('command:parent', parent.name, target, propertyKey);
+    Reflect.defineMetadata('command:parent', parent, target, propertyKey);
   };
 }
 
@@ -23,22 +22,16 @@ export function group(name?: string) {
   };
 }
 
-export function subgroup(parent: (ctx: CommandContext, ...args: any[]) => Promise<void>, name?: string) {
+export function subgroup(parent: string, name?: string) {
   return (target: Object, propertyKey: string) => {
     Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
     Reflect.defineMetadata('command:type', 'group', target, propertyKey);
-    Reflect.defineMetadata('command:parent', parent.name, target, propertyKey);
+    Reflect.defineMetadata('command:parent', parent, target, propertyKey);
   };
 }
 
-export function argTypes(types: CommandArg[]) {
+export function args(types: CommandArgument[]) {
   return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:argTypes', types, target, propertyKey);
-  };
-}
-
-export function argNames(names: string[]) {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:argNames', names, target, propertyKey);
+    Reflect.defineMetadata('command:args', types, target, propertyKey);
   };
 }

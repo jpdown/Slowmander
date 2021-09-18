@@ -1,4 +1,4 @@
-import type { Command } from 'commands/Command';
+import type { Command, CommandParsedType } from 'commands/Command';
 // import * as commands from 'commands';
 import * as modules from 'modules';
 import type { Bot } from 'Bot';
@@ -12,6 +12,7 @@ import {
 // import { HelpManager } from 'HelpManager';
 import { CommandContext } from 'CommandContext';
 import type { Module } from 'modules/Module';
+import { ArgumentParser } from 'utils/ArgumentParser';
 
 export class CommandManager {
   private commandMap: Map<string, Command>;
@@ -66,18 +67,28 @@ export class CommandManager {
 
     // Split args, find command
     // TODO: Replace with new arg parser
-    // const args: string[] = await this.bot.utils.splitCommandArgs(fullMessage.content, prefix.length);
-    // let command: Command | undefined = this.getCommand(args.shift());
+    const split = fullMessage.content.slice(prefix.length).split(' ');
+    let command = this.getCommand(split[0]);
     // If command not found, exit
-    // if (command === undefined) {
-    //   return;
-    // }
+    if (command === undefined) {
+      return;
+    }
 
     // Build ctx
     const ctx = new CommandContext(
       this.bot, this.bot.client, fullMessage, fullMessage.channel, fullMessage.author,
       fullMessage.guild ?? undefined, fullMessage.member ?? undefined,
     );
+
+    // Parse arguments
+    let args: CommandParsedType[] | undefined;
+    if (command.args) {
+      args = await ArgumentParser.parseArgs(fullMessage.content.slice(prefix.length + split[0].length), command.args, ctx);
+      if (!args) {
+        // TODO: Send help
+        return;
+      }
+    }
 
     // Check perms/in DM and run
     // const user = fullMessage.member ?? fullMessage.author;
@@ -100,22 +111,22 @@ export class CommandManager {
     // }
 
     // run command
-    // try {
-    //   await command.invoke(ctx);
-    //   // TODO: Replace with recursion in arg parsing
-    //   while (command instanceof CommandGroup && args.length > 0) {
-    //     command = command.getSubCommand(args.shift()!);
-    //     await command?.invoke(ctx);
-    //   }
-    // } catch (err) {
-    //   await this.logger.error(`Error running command "${command?.name}".`, err);
-    //   await message.channel.send({
-    //     embeds: [new MessageEmbed()
-    //       .setColor(0xFF0000)
-    //       .setTitle('❌ Error running command.')
-    //       .setTimestamp(Date.now())],
-    //   });
-    // }
+    try {
+      await command.invoke(ctx, args);
+      // TODO: Replace with recursion in arg parsing
+      // while (command instanceof CommandGroup && args.length > 0) {
+      //   command = command.getSubCommand(args.shift()!);
+      //   await command?.invoke(ctx, args);
+      // }
+    } catch (err) {
+      await this.logger.error(`Error running command "${command?.name}".`, err);
+      await message.channel.send({
+        embeds: [new MessageEmbed()
+          .setColor(0xFF0000)
+          .setTitle('❌ Error running command.')
+          .setTimestamp(Date.now())],
+      });
+    }
   }
 
   // public static async parseSubCommand(group: CommandGroup, args: string[], message: Message, bot: Bot): Promise<CommandResult> {

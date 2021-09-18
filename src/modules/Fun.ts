@@ -1,6 +1,7 @@
 import type { CommandContext } from 'CommandContext';
+import type { Channel, User } from 'discord.js';
 import { Module } from './Module';
-import { command, group, subcommand } from './ModuleDecorators';
+import { args, command, group, subcommand } from './ModuleDecorators';
 
 export class Fun extends Module {
   public constructor() {
@@ -22,18 +23,12 @@ export class Fun extends Module {
     await ctx.reply('dadjoke');
   }
 
-  @group()
-  public async testGroup(ctx: CommandContext) {
-    await ctx.reply('in group');
-  }
-
-  @subcommand(Fun.prototype.testGroup)
-  public async testchild1(ctx: CommandContext) {
-    await ctx.reply('in testchild1');
-  }
-
-  @subcommand(Fun.prototype.testGroup)
-  public async testchild2(ctx: CommandContext) {
-    await ctx.reply('in testchild2');
+  @command()
+  @args([
+    { name: 'user', type: 'user' },
+    { name: 'channel', type: 'channel' },
+  ])
+  public async testArgs(ctx: CommandContext, user: User, channel: Channel) {
+    await ctx.reply(`User ID: ${user.id}, Channel ID: ${channel.id}`);
   }
 }
