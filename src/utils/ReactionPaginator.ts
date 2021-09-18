@@ -1,4 +1,3 @@
-import { CommandUtils } from 'utils/CommandUtils';
 import type { Command } from 'commands/Command';
 // import { PermissionsHelper } from 'utils/PermissionsHelper';
 import type { Bot } from 'Bot';
@@ -94,7 +93,7 @@ export class ReactionPaginator {
 
   private async generateEmbed(): Promise<MessageEmbed> {
     const embed: MessageEmbed = new MessageEmbed()
-      .setColor(await CommandUtils.getSelfColor(this.channel, this.bot))
+      .setColor(await this.bot.utils.getSelfColor(this.channel))
       .setFooter(`Page ${this.currPage + 1} of ${this.numPages}`)
       .setDescription(this.elements.slice(this.currPage * this.numPerPage, (this.currPage + 1) * this.numPerPage).join('\n'))
       .setTitle(this.title);
@@ -102,6 +101,7 @@ export class ReactionPaginator {
     return embed;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   private async checkPerms(reaction: MessageReaction, user: User): Promise<boolean> {
     let hasPerms = false;
 

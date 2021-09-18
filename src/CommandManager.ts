@@ -2,7 +2,6 @@ import type { Command } from 'commands/Command';
 // import * as commands from 'commands';
 import * as modules from 'modules';
 import type { Bot } from 'Bot';
-import { CommandUtils } from 'utils/CommandUtils';
 // import { PermissionsHelper } from 'utils/PermissionsHelper';
 import { CommandGroup } from 'commands/CommandGroup';
 import { Logger } from 'Logger';
@@ -66,12 +65,13 @@ export class CommandManager {
     }
 
     // Split args, find command
-    const args: string[] = await CommandUtils.splitCommandArgs(fullMessage.content, prefix.length);
-    let command: Command | undefined = this.getCommand(args.shift());
+    // TODO: Replace with new arg parser
+    // const args: string[] = await this.bot.utils.splitCommandArgs(fullMessage.content, prefix.length);
+    // let command: Command | undefined = this.getCommand(args.shift());
     // If command not found, exit
-    if (command === undefined) {
-      return;
-    }
+    // if (command === undefined) {
+    //   return;
+    // }
 
     // Build ctx
     const ctx = new CommandContext(
@@ -100,22 +100,22 @@ export class CommandManager {
     // }
 
     // run command
-    try {
-      await command.invoke(ctx);
-      // TODO: Replace with recursion in arg parsing
-      while (command instanceof CommandGroup && args.length > 0) {
-        command = command.getSubCommand(args.shift()!);
-        await command?.invoke(ctx);
-      }
-    } catch (err) {
-      await this.logger.error(`Error running command "${command?.name}".`, err);
-      await message.channel.send({
-        embeds: [new MessageEmbed()
-          .setColor(0xFF0000)
-          .setTitle('❌ Error running command.')
-          .setTimestamp(Date.now())],
-      });
-    }
+    // try {
+    //   await command.invoke(ctx);
+    //   // TODO: Replace with recursion in arg parsing
+    //   while (command instanceof CommandGroup && args.length > 0) {
+    //     command = command.getSubCommand(args.shift()!);
+    //     await command?.invoke(ctx);
+    //   }
+    // } catch (err) {
+    //   await this.logger.error(`Error running command "${command?.name}".`, err);
+    //   await message.channel.send({
+    //     embeds: [new MessageEmbed()
+    //       .setColor(0xFF0000)
+    //       .setTitle('❌ Error running command.')
+    //       .setTimestamp(Date.now())],
+    //   });
+    // }
   }
 
   // public static async parseSubCommand(group: CommandGroup, args: string[], message: Message, bot: Bot): Promise<CommandResult> {

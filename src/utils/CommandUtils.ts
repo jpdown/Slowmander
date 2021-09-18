@@ -1,14 +1,20 @@
 import type { Bot } from 'Bot';
 
 import {
-  ColorResolvable, User, Client, Collection, Snowflake, Guild,
+  ColorResolvable, User, Collection, Snowflake, Guild,
   GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil,
   DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions,
   Message, MessageReaction, ReactionEmoji, MessageEmbed, TextBasedChannels, MessageOptions,
 } from 'discord.js';
 
 export class CommandUtils {
-  static async getSelfColor(channel: TextBasedChannels, bot: Bot): Promise<ColorResolvable> {
+  private bot: Bot;
+
+  constructor(bot: Bot) {
+    this.bot = bot;
+  }
+
+  async getSelfColor(channel: TextBasedChannels): Promise<ColorResolvable> {
     let color: ColorResolvable | undefined;
 
     if (channel.type !== 'DM') {
@@ -17,19 +23,15 @@ export class CommandUtils {
 
     // If no color or color is black, we want default color
     if (!color || color === 0) {
-      color = bot.config.color;
+      color = this.bot.config.color;
     }
 
     return color;
   }
 
-  static async splitCommandArgs(args: string, startPos: number = 0): Promise<string[]> {
-    return args.slice(startPos).split(/ +/);
-  }
-
-  static async parseMember(potentialMember: string, guild: Guild): Promise<GuildMember | undefined> {
+  async parseMember(potentialMember: string, guild: Guild): Promise<GuildMember | undefined> {
     let parsedMember: GuildMember | undefined;
-    const parsedUser: User | undefined = await CommandUtils.parseUser(potentialMember, guild.client);
+    const parsedUser: User | undefined = await this.parseUser(potentialMember);
 
     if (!parsedUser) {
       parsedMember = await this.parseMemberNickname(potentialMember, guild);
@@ -40,7 +42,8 @@ export class CommandUtils {
     return parsedMember;
   }
 
-  static async parseMemberNickname(potentialMember: string, guild: Guild): Promise<GuildMember | undefined> {
+  // eslint-disable-next-line class-methods-use-this
+  async parseMemberNickname(potentialMember: string, guild: Guild): Promise<GuildMember | undefined> {
     const lowerMember = potentialMember.toLowerCase();
 
     const parsedMember = guild.members.cache.find((m) => m.nickname?.toLowerCase().startsWith(lowerMember) ?? false);
@@ -48,8 +51,8 @@ export class CommandUtils {
     return parsedMember;
   }
 
-  static async parseMemberPingOnly(potentialMember: string, guild: Guild): Promise<GuildMember | undefined> {
-    const parsedUser: User | undefined = await CommandUtils.parseUserPingOnly(potentialMember, guild.client);
+  async parseMemberPingOnly(potentialMember: string, guild: Guild): Promise<GuildMember | undefined> {
+    const parsedUser: User | undefined = await this.parseUserPingOnly(potentialMember);
 
     if (!parsedUser) {
       return undefined;
@@ -58,25 +61,25 @@ export class CommandUtils {
     return guild.members.cache.get(parsedUser.id);
   }
 
-  static async parseUser(potentialUser: string, client: Client): Promise<User | undefined> {
+  async parseUser(potentialUser: string): Promise<User | undefined> {
     let parsedUser: User | undefined;
 
-    parsedUser = await CommandUtils.parseUserPingOnly(potentialUser, client);
+    parsedUser = await this.parseUserPingOnly(potentialUser);
 
     if (!parsedUser) {
-      parsedUser = await CommandUtils.parseUserByName(potentialUser, client);
+      parsedUser = await this.parseUserByName(potentialUser);
     }
 
     return parsedUser;
   }
 
-  static async parseUserPingOnly(potentialUser: string, client: Client): Promise<User | undefined> {
+  async parseUserPingOnly(potentialUser: string): Promise<User | undefined> {
     let parsedUser: User | undefined;
 
     try {
-      const snowflake: Snowflake | undefined = await CommandUtils.parseUserID(potentialUser);
+      const snowflake: Snowflake | undefined = await this.parseUserID(potentialUser);
       if (snowflake) {
-        parsedUser = await client.users.fetch(snowflake);
+        parsedUser = await this.bot.client.users.fetch(snowflake);
       }
     } catch (err) {
       // Invalid snowflake
@@ -86,15 +89,15 @@ export class CommandUtils {
     return parsedUser;
   }
 
-  static async parseUserByName(potentialUser: string, client: Client): Promise<User | undefined> {
+  async parseUserByName(potentialUser: string): Promise<User | undefined> {
     const lowerUser: string = potentialUser.toLowerCase();
 
-    const parsedUser = client.users.cache.find((u) => u.username.toLowerCase().startsWith(lowerUser) || u.tag === potentialUser);
+    const parsedUser = this.bot.client.users.cache.find((u) => u.username.toLowerCase() === lowerUser || u.tag === potentialUser);
 
     return parsedUser;
   }
 
-  static async parseUserID(potentialUser: string): Promise<Snowflake | undefined> {
+  async parseUserID(potentialUser: string): Promise<Snowflake | undefined> {
     let snowflake: string | undefined = potentialUser;
 
     if (snowflake.startsWith('<@') && snowflake.endsWith('>')) {
@@ -104,29 +107,30 @@ export class CommandUtils {
       snowflake = snowflake.slice(1);
     }
 
-    if (!await CommandUtils.verifySnowflake(snowflake)) {
+    if (!await this.verifySnowflake(snowflake)) {
       snowflake = undefined;
     }
 
     return snowflake;
   }
 
-  static async parseRole(potentialRole: string, guild: Guild): Promise<Role | null> {
+  async parseRole(potentialRole: string, guild: Guild): Promise<Role | null> {
     let parsedRole: Role | null = null;
-    const snowflake: Snowflake | null = await CommandUtils.parseRoleID(potentialRole);
+    const snowflake: Snowflake | null = await this.parseRoleID(potentialRole);
 
     if (snowflake) {
       parsedRole = await guild.roles.fetch(snowflake);
     }
 
     if (!parsedRole) {
-      parsedRole = await CommandUtils.parseRoleByName(potentialRole, guild);
+      parsedRole = await this.parseRoleByName(potentialRole, guild);
     }
 
     return parsedRole;
   }
 
-  static async parseRoleByName(potentialRole: string, guild: Guild): Promise<Role | null> {
+  // eslint-disable-next-line class-methods-use-this
+  async parseRoleByName(potentialRole: string, guild: Guild): Promise<Role | null> {
     let parsedRole: Role | null = null;
     const roleCache: Collection<Snowflake, Role> = guild.roles.cache;
     const lowerRole = potentialRole.toLowerCase();
@@ -140,21 +144,21 @@ export class CommandUtils {
     return parsedRole;
   }
 
-  static async parseRoleID(potentialRole: string): Promise<Snowflake | null> {
+  async parseRoleID(potentialRole: string): Promise<Snowflake | null> {
     let snowflake: Snowflake | null = potentialRole;
     if (snowflake.startsWith('<@&') && snowflake.endsWith('>')) {
       snowflake = snowflake.substring(3, snowflake.length - 1);
     }
 
-    if (!await CommandUtils.verifySnowflake(snowflake)) {
+    if (!await this.verifySnowflake(snowflake)) {
       snowflake = null;
     }
 
     return snowflake;
   }
 
-  static async parseTextChannel(potentialChannel: string, client: Client): Promise<TextBasedChannels | null> {
-    const channel: Channel | null = await CommandUtils.parseChannel(potentialChannel, client);
+  async parseTextChannel(potentialChannel: string): Promise<TextBasedChannels | null> {
+    const channel: Channel | null = await this.parseChannel(potentialChannel);
     let parsedTextChannel: TextBasedChannels | null = null;
 
     if (!channel) {
@@ -168,20 +172,20 @@ export class CommandUtils {
     return parsedTextChannel;
   }
 
-  static async parseChannel(potentialChannel: string, client: Client): Promise<Channel | null> {
+  async parseChannel(potentialChannel: string): Promise<Channel | null> {
     let parsedChannel: Channel | null = null;
 
     try {
-      const snowflake = await CommandUtils.parseChannelID(potentialChannel);
+      const snowflake = await this.parseChannelID(potentialChannel);
       if (snowflake) {
-        parsedChannel = await client.channels.fetch(snowflake);
+        parsedChannel = await this.bot.client.channels.fetch(snowflake);
       }
     } catch (err) {
       parsedChannel = null;
     }
 
     if (!parsedChannel) {
-      const parsedUser: User | undefined = await CommandUtils.parseUserPingOnly(potentialChannel, client);
+      const parsedUser: User | undefined = await this.parseUserPingOnly(potentialChannel);
       if (parsedUser !== undefined) {
         parsedChannel = await parsedUser.createDM();
       }
@@ -189,64 +193,66 @@ export class CommandUtils {
     return parsedChannel;
   }
 
-  static async parseChannelID(potentialChannel: string): Promise<Snowflake | undefined> {
+  async parseChannelID(potentialChannel: string): Promise<Snowflake | undefined> {
     let snowflake: Snowflake | undefined = potentialChannel;
     if (snowflake.startsWith('<#') && snowflake.endsWith('>')) {
       snowflake = snowflake.substring(2, potentialChannel.length - 1);
     }
 
-    if (!await CommandUtils.verifySnowflake(snowflake)) {
+    if (!await this.verifySnowflake(snowflake)) {
       snowflake = undefined;
     }
 
     return snowflake;
   }
 
-  static async parseEmote(potentialEmote: string, client: Client): Promise<GuildEmoji | null> {
+  async parseEmote(potentialEmote: string): Promise<GuildEmoji | null> {
     let parsedEmote: GuildEmoji | null = null;
 
     try {
-      const snowflake: Snowflake | undefined = await CommandUtils.parseEmoteID(potentialEmote);
+      const snowflake: Snowflake | undefined = await this.parseEmoteID(potentialEmote);
       if (snowflake) {
-        parsedEmote = client.emojis.resolve(snowflake);
+        parsedEmote = this.bot.client.emojis.resolve(snowflake);
       }
     } catch (err) {
       parsedEmote = null;
     }
 
     if (!parsedEmote) {
-      parsedEmote = await CommandUtils.parseEmoteByName(potentialEmote, client) ?? null;
+      parsedEmote = await this.parseEmoteByName(potentialEmote) ?? null;
     }
     return parsedEmote;
   }
 
-  static async parseEmoteByName(potentialEmote: string, client: Client): Promise<GuildEmoji | undefined> {
+  async parseEmoteByName(potentialEmote: string): Promise<GuildEmoji | undefined> {
     const emoteName = potentialEmote.toLowerCase();
-    const currEmote: GuildEmoji | undefined = client.emojis.cache.find((e) => e.name?.toLowerCase() === emoteName);
+    const currEmote: GuildEmoji | undefined = this.bot.client.emojis.cache.find((e) => e.name?.toLowerCase() === emoteName);
 
     return currEmote;
   }
 
-  static async parseEmoteID(potentialEmote: string): Promise<Snowflake | undefined> {
+  async parseEmoteID(potentialEmote: string): Promise<Snowflake | undefined> {
     let snowflake: Snowflake | undefined = potentialEmote;
     if (snowflake.startsWith('<:') && snowflake.endsWith('>')) {
       snowflake = snowflake.substring(snowflake.lastIndexOf(':') + 1, snowflake.length - 1);
     }
 
-    if (!await CommandUtils.verifySnowflake(snowflake)) {
+    if (!await this.verifySnowflake(snowflake)) {
       snowflake = undefined;
     }
 
     return snowflake;
   }
 
-  static async parseWebhookUrl(potentialWebhook: string): Promise<WebhookClient> {
+  // eslint-disable-next-line class-methods-use-this
+  async parseWebhookUrl(potentialWebhook: string): Promise<WebhookClient> {
     const webhook: WebhookClient = new WebhookClient({ url: potentialWebhook });
 
     return webhook;
   }
 
-  static async verifySnowflake(potentialSnowflake: string): Promise<boolean> {
+  // eslint-disable-next-line class-methods-use-this
+  async verifySnowflake(potentialSnowflake: string): Promise<boolean> {
     // Deconstruct snowflake
     const deconstructedSnowflake: DeconstructedSnowflake = SnowflakeUtil.deconstruct(potentialSnowflake);
     if (deconstructedSnowflake.timestamp <= SnowflakeUtil.EPOCH) {
@@ -257,8 +263,12 @@ export class CommandUtils {
     return true;
   }
 
-  // eslint-disable-next-line max-len
-  static async updateChannelPerms(channel: GuildChannel, roles: Role[], users: User[], grantedPerms: Permissions, revokedPerms: Permissions, neutralPerms: Permissions, reason?: string): Promise<boolean> {
+  // eslint-disable-next-line class-methods-use-this
+  async updateChannelPerms(
+    channel: GuildChannel, roles: Role[], users: User[],
+    grantedPerms: Permissions, revokedPerms: Permissions, neutralPerms: Permissions,
+    reason?: string,
+  ): Promise<boolean> {
     // Check if we have permissions to edit channel
     if (!channel.guild.me || !channel.permissionsFor(channel.guild.me).has(Permissions.FLAGS.MANAGE_CHANNELS)) {
       return false;
@@ -298,10 +308,10 @@ export class CommandUtils {
     return true;
   }
 
-  static async getEmote(message: Message, bot: Bot): Promise<ReactionEmoji | GuildEmoji | undefined> {
+  async getEmote(message: Message): Promise<ReactionEmoji | GuildEmoji | undefined> {
     // Ask for emote
-    const sentMessage: Message = await CommandUtils.sendMessage(
-      'Please react on this message with the emote you would like to use.', message.channel, bot,
+    const sentMessage: Message = await this.sendMessage(
+      'Please react on this message with the emote you would like to use.', message.channel,
     );
     const reactions: Collection<string, MessageReaction> = await sentMessage.awaitReactions(
       { filter: (reaction, user) => user.id === message.author.id, time: 60000, max: 1 },
@@ -309,22 +319,22 @@ export class CommandUtils {
 
     // Check if unicode or if we have the custom emote
     if (reactions.size < 1) {
-      await CommandUtils.sendMessage('No reaction given, cancelling.', message.channel, bot);
+      await this.sendMessage('No reaction given, cancelling.', message.channel);
       return undefined;
     }
 
     let emote: ReactionEmoji | GuildEmoji | undefined = reactions.first()?.emoji;
     if (emote?.id && emote instanceof ReactionEmoji) {
-      await CommandUtils.sendMessage('I do not have access to the emote given, cancelling.', message.channel, bot);
+      await this.sendMessage('I do not have access to the emote given, cancelling.', message.channel);
       emote = undefined;
     }
 
     return emote;
   }
 
-  static async sendMessage(message: string, channel: TextBasedChannels, bot: Bot, repliedMessage?: Message): Promise<Message> {
+  async sendMessage(message: string, channel: TextBasedChannels, repliedMessage?: Message): Promise<Message> {
     const embed: MessageEmbed = new MessageEmbed()
-      .setColor(await CommandUtils.getSelfColor(channel, bot))
+      .setColor(await this.getSelfColor(channel))
       .setDescription(message);
 
     const options: MessageOptions = { embeds: [embed] };
@@ -335,14 +345,15 @@ export class CommandUtils {
     return channel.send(options);
   }
 
-  public static async makeEmoteFromId(emoteId: string, client: Client): Promise<string | undefined> {
+  // eslint-disable-next-line class-methods-use-this
+  public async makeEmoteFromId(emoteId: string): Promise<string | undefined> {
     let emote: string | undefined;
     let newEmoteId: string;
 
     try {
       newEmoteId = emoteId.split(':').pop() ?? '';
       if (newEmoteId !== '') {
-        emote = client.emojis.resolve(newEmoteId)?.toString();
+        emote = this.bot.client.emojis.resolve(newEmoteId)?.toString();
       }
     } catch (err) {
       if (emoteId.indexOf(':') === -1) {

@@ -2,7 +2,6 @@ import type { Bot } from 'Bot';
 import { Logger } from 'Logger';
 import { ModErrorLog } from 'moderrorlog/ModErrorLog';
 import type { ReactionRole } from 'database/ReactionRoles';
-import { CommandUtils } from 'utils/CommandUtils';
 
 import {
   MessageReaction, User, GuildMember, TextChannel, NewsChannel, Role, Permissions, PartialMessageReaction, PartialUser, Message, ThreadChannel,
@@ -145,7 +144,7 @@ export class ReactionRoleManager {
         // Broken reaction role, remove
         this.bot.db.reactionRoles.removeReactionRole(reactionRole.channelId, reactionRole.messageId, reactionRole.emoteId);
         // Get emote
-        const emote = await CommandUtils.makeEmoteFromId(reactionRole.emoteId, member.client);
+        const emote = await this.bot.utils.makeEmoteFromId(reactionRole.emoteId);
         await ModErrorLog.log(
           `The role for reaction role ${emote} in channel <#${reactionRole.channelId}> has been deleted due to missing role.`,
           member.guild, this.bot,
@@ -171,7 +170,7 @@ export class ReactionRoleManager {
         // Broken reaction role, remove
         this.bot.db.reactionRoles.removeReactionRole(reactionRole.channelId, reactionRole.messageId, reactionRole.emoteId);
         // Get emote
-        const emote = await CommandUtils.makeEmoteFromId(reactionRole.emoteId, member.client);
+        const emote = await this.bot.utils.makeEmoteFromId(reactionRole.emoteId);
         await ModErrorLog.log(
           `The role for reaction role ${emote} in channel <#${reactionRole.channelId}> has been deleted due to missing role.`,
           member.guild, this.bot,

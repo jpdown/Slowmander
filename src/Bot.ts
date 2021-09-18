@@ -7,6 +7,7 @@ import { DatabaseManager } from 'database/DatabaseManager';
 import { VerificationManager } from 'verification/VerificationManager';
 import { Client, Snowflake } from 'discord.js';
 import { Config } from 'config/Config';
+import { CommandUtils } from 'utils/CommandUtils';
 import { TwitchAPIManager } from './twitch/TwitchAPIManager';
 import { TwitchClipModManager } from './twitch/TwitchClipModManager';
 
@@ -33,6 +34,8 @@ export class Bot {
 
   public readonly twitch: TwitchAPIManager;
 
+  public readonly utils: CommandUtils;
+
   constructor() {
     this.client = new Client({
       intents: [
@@ -53,6 +56,7 @@ export class Bot {
     this.twitch = new TwitchAPIManager(this, this.credentials.twitchId, this.credentials.twitchSecret);
     this.twitchClipModManager = new TwitchClipModManager(this);
     this.reactionRoleManager = new ReactionRoleManager(this);
+    this.utils = new CommandUtils(this);
 
     this.client.on('ready', async () => {
       await this.logger.info(`Welcome to Slowmander! Logged in as ${this.client.user.tag} in ${this.client.guilds.cache.size} guild(s).`);

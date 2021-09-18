@@ -3,7 +3,6 @@ import type { Bot } from 'Bot';
 import {
   Permissions, Message, GuildChannel, ThreadChannel, Role, CategoryChannel, GuildMember, MessageEmbed, NewsChannel, TextChannel, User,
 } from 'discord.js';
-import { CommandUtils } from './CommandUtils';
 
 export class LockdownHelper {
   static readonly PERMISSION = Permissions.FLAGS.SEND_MESSAGES;
@@ -22,10 +21,10 @@ export class LockdownHelper {
     // Try to get config
     const lockdownConfig = bot.db.lockdownPresets.getPreset(message.guild!.id, preset);
     if (lockdownConfig === undefined) {
-      await CommandUtils.sendMessage(
+      await bot.utils.sendMessage(
         // eslint-disable-next-line max-len
         `No lockdown config found, please make one with \`${await bot.commandManager.getPrefix(message.guild?.id)}managelockdown\`. The default preset is \`default\`.`,
-        message.channel, bot,
+        message.channel,
       );
       return false;
     }
@@ -34,7 +33,7 @@ export class LockdownHelper {
     const lockdownRoles = bot.db.lockdownPresets.getPresetRoles(message.guild!.id, preset);
 
     if (!lockdownConfig || !lockdownChannels || !lockdownRoles) {
-      await CommandUtils.sendMessage('There was an error with the database, please try again later.', message.channel, bot);
+      await bot.utils.sendMessage('There was an error with the database, please try again later.', message.channel);
       return false;
     }
 
@@ -58,9 +57,9 @@ export class LockdownHelper {
     // Try to lockdown server
     const result: boolean = await LockdownHelper.updateChannelPerms(channels, roles, lock, lockdownConfig.grant, message.author, preset, bot);
     if (!result) {
-      await CommandUtils.sendMessage(`Missing permissions to ${lock ? 'lock' : 'unlock'} server.`, message.channel, bot);
+      await bot.utils.sendMessage(`Missing permissions to ${lock ? 'lock' : 'unlock'} server.`, message.channel);
     } else {
-      await CommandUtils.sendMessage(`Server ${lock ? 'locked' : 'unlocked'} successfully.`, message.channel, bot);
+      await bot.utils.sendMessage(`Server ${lock ? 'locked' : 'unlocked'} successfully.`, message.channel);
     }
 
     return true;
@@ -105,8 +104,8 @@ export class LockdownHelper {
     }
 
     return channels.every(async (channel) => {
-      if (await CommandUtils.updateChannelPerms(channel, roles, [], grantedPerms, revokedPerms, neutralPerms, reason)) {
-        await CommandUtils.updateChannelPerms(
+      if (await bot.utils.updateChannelPerms(channel, roles, [], grantedPerms, revokedPerms, neutralPerms, reason)) {
+        await bot.utils.updateChannelPerms(
           channel, modAndAdminRoles, [bot.client.user],
           new Permissions(this.PERMISSION), zeroPerms, zeroPerms, reason,
         );
@@ -137,7 +136,7 @@ export class LockdownHelper {
       return false;
     }
     const embed = new MessageEmbed()
-      .setColor(await CommandUtils.getSelfColor(<TextChannel | NewsChannel>channel, bot))
+      .setColor(await bot.utils.getSelfColor(<TextChannel | NewsChannel>channel))
       .setDescription(lock ? this.LOCK_MESSAGE : this.UNLOCK_MESSAGE);
 
     await (<TextChannel | NewsChannel>channel).send({ embeds: [embed] });
