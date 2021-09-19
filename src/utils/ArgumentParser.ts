@@ -1,27 +1,63 @@
 import type { CommandContext } from 'CommandContext';
-import type { CommandArgument, CommandParsedType } from 'commands/Command';
+import type { Command, CommandParsedType } from 'commands/Command';
+import { CommandGroup } from 'commands/CommandGroup';
 
 export class ArgumentParser {
   private static argsRegex = /((["'])((?:.(?!\2))*.?)\2)|(\S+)/g;
 
-  public static async parseArgs(content: string, argsList: CommandArgument[], ctx: CommandContext): Promise<CommandParsedType[] | undefined> {
+  public static async parseArgs(content: string, command: Command | CommandGroup, ctx: CommandContext): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
+    const splitArgs = [...content.matchAll(ArgumentParser.argsRegex)];
+    return await ArgumentParser.parseArgsRecurse(splitArgs, command, ctx);
+  }
+
+  private static async parseArgsRecurse(args: RegExpMatchArray[], command: Command | CommandGroup, ctx: CommandContext): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
+    if (command instanceof CommandGroup) {
+      return ArgumentParser.parseSubCommandArgs(args, command, ctx);
+    }
+    return { command: command, args: await ArgumentParser.parseCommandArgs(args, command, ctx) };
+  }
+
+  private static async parseSubCommandArgs(args: RegExpMatchArray[], command: CommandGroup, ctx: CommandContext): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
+    if (args.length === 0) {
+      return { command: command, args: undefined };
+    }
+
+    let currStr = args[0][4] ? args[0][4] : args[0][3];
+    let subcommand = command.getSubCommand(currStr);
+
+    if (!subcommand) {
+      return { command: command, args: undefined };
+    }
+
+    if (!subcommand.args) {
+      return { command: subcommand, args: [] };
+    }
+
+    return ArgumentParser.parseArgsRecurse(args.slice(1), subcommand, ctx);
+  }
+
+  private static async parseCommandArgs(args: RegExpMatchArray[], command: Command, ctx: CommandContext): Promise<CommandParsedType[] | undefined> {
     let allRequired = true;
     const parsedArgs: CommandParsedType[] = [];
-    const splitArgs = [...content.matchAll(ArgumentParser.argsRegex)];
     let currStr;
     let currParsedArg;
+
+    if (!command.args) {
+      return [];
+    }
+
     // Use every to short circuit on first fail
-    for (let i = 0; i < argsList.length; i += 1) {
-      if (splitArgs.length <= i && !argsList[i].optional) {
+    for (let i = 0; i < command.args.length; i += 1) {
+      if (args.length <= i && !command.args[i].optional) {
         allRequired = false;
         break;
       }
 
       // Match either space separated or quote separated
       // This could potentially be cleaned with a better RegEx
-      currStr = splitArgs[i][4] ? splitArgs[i][4] : splitArgs[i][3];
+      currStr = args[i][4] ? args[i][4] : args[i][3];
 
-      switch (argsList[i].type) {
+      switch (command.args[i].type) {
         case 'string':
           currParsedArg = currStr;
           break;
@@ -57,7 +93,7 @@ export class ArgumentParser {
           break;
       }
 
-      if (currParsedArg === undefined && !argsList[i].optional) {
+      if (currParsedArg === undefined && !command.args[i].optional) {
         allRequired = false;
         break;
       } else {

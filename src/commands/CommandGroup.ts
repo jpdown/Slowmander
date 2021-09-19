@@ -1,5 +1,5 @@
 import {
-  Command, CommandOptions, PermissionLevel,
+  Command, CommandOptions, CommandParsedType, PermissionLevel,
 } from 'commands/Command';
 import type { Bot } from 'Bot';
 
@@ -10,8 +10,8 @@ import type { CommandContext } from 'CommandContext';
 export class CommandGroup extends Command {
   public readonly subCommands: Map<string, Command>;
 
-  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>, options: CommandOptions) {
-    super(name, func, options);
+  constructor(name: string, func: (ctx: CommandContext) => Promise<void>, permLevel: PermissionLevel, options: CommandOptions) {
+    super(name, func, permLevel, options);
     this.subCommands = new Map<string, Command>();
   }
 
@@ -19,17 +19,17 @@ export class CommandGroup extends Command {
     return this.subCommands.get(arg);
   }
 
-//   public get permLevel(): PermissionLevel {
-//     let lowestPerm = PermissionLevel.Owner;
+  public override get permLevel(): PermissionLevel {
+    let lowestPerm = PermissionLevel.Owner;
 
-//     this.subCommands.forEach((subCommand) => {
-//       if (subCommand.permLevel < lowestPerm) {
-//         lowestPerm = subCommand.permLevel;
-//       }
-//     });
+    this.subCommands.forEach((subCommand) => {
+      if (subCommand.permLevel < lowestPerm) {
+        lowestPerm = subCommand.permLevel;
+      }
+    });
 
-//     return lowestPerm;
-//   }
+    return lowestPerm;
+  }
 
 //   public get requiredPerm(): PermissionResolvable | undefined {
 //     const perms: Permissions = new Permissions();

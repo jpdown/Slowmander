@@ -1,4 +1,4 @@
-import type { CommandArgument } from 'commands/Command';
+import { CommandArgument, PermissionLevel } from 'commands/Command';
 
 export function command(name?: string) {
   return (target: Object, propertyKey: string) => {
@@ -33,5 +33,35 @@ export function subgroup(parent: string, name?: string) {
 export function args(types: CommandArgument[]) {
   return (target: Object, propertyKey: string) => {
     Reflect.defineMetadata('command:args', types, target, propertyKey);
+  };
+}
+
+export function guildOnly() {
+  return (target: Object, propertyKey: string) => {
+    Reflect.defineMetadata('command:guildOnly', true, target, propertyKey);
+  };
+}
+
+export function isOwner() {
+  return (target: Object, propertyKey: string) => {
+    Reflect.defineMetadata('command:permLevel', PermissionLevel.Owner, target, propertyKey);
+  };
+}
+
+export function isAdmin() {
+  return (target: Object, propertyKey: string) => {
+    Reflect.defineMetadata('command:permLevel', PermissionLevel.Admin, target, propertyKey);
+  };
+}
+
+export function isMod() {
+  return (target: Object, propertyKey: string) => {
+    Reflect.defineMetadata('command:permLevel', PermissionLevel.Mod, target, propertyKey);
+  };
+}
+
+export function isVIP() {
+  return (target: Object, propertyKey: string) => {
+    Reflect.defineMetadata('command:permLevel', PermissionLevel.VIP, target, propertyKey);
   };
 }

@@ -13,6 +13,7 @@ import {
 import { CommandContext } from 'CommandContext';
 import type { Module } from 'modules/Module';
 import { ArgumentParser } from 'utils/ArgumentParser';
+import { PermissionsHelper } from 'utils/PermissionsHelper';
 
 export class CommandManager {
   private commandMap: Map<string, Command>;
@@ -74,6 +75,11 @@ export class CommandManager {
       return;
     }
 
+    // If guild only and not in guild
+    if (command.guildOnly && !fullMessage.guild) {
+      return;
+    }
+
     // Build ctx
     const ctx = new CommandContext(
       this.bot, this.bot.client, fullMessage, fullMessage.channel, fullMessage.author,
@@ -81,45 +87,28 @@ export class CommandManager {
     );
 
     // Parse arguments
-    let args: CommandParsedType[] | undefined;
-    if (command.args) {
-      args = await ArgumentParser.parseArgs(fullMessage.content.slice(prefix.length + split[0].length), command.args, ctx);
-      if (!args) {
-        // TODO: Send help
-        return;
-      }
+    const { command: commandToRun, args } = await ArgumentParser.parseArgs(fullMessage.content.slice(prefix.length + split[0].length), command, ctx);
+    if (!args) {
+      // TODO: Send help
+      await ctx.reply('help sent haha');
+      return;
     }
 
-    // Check perms/in DM and run
-    // const user = fullMessage.member ?? fullMessage.author;
-    // const allowed = user && await PermissionsHelper.checkPermsAndDM(user, command, this.bot);
-    // if (allowed) {
-    //   try {
-    //     const result: CommandResult = await command.run(this.bot, fullMessage, args);
-    //     if (result.sendHelp && result.command) {
-    //       await HelpManager.sendCommandHelp(result.command, result.message, this.bot);
-    //     }
-    //   } catch (err) {
-    //     await this.logger.error(`Error running command "${command.fullName}".`, err);
-    //     await message.channel.send({
-    //       embeds: [new MessageEmbed()
-    //         .setColor(0xFF0000)
-    //         .setTitle('❌ Error running command.')
-    //         .setTimestamp(Date.now())],
-    //     });
-    //   }
-    // }
+    // Check perms
+    if (!(await PermissionsHelper.checkPerms(ctx, commandToRun))) {
+      return;
+    }
 
-    // run command
+    // Run command
     try {
-      await command.invoke(ctx, args);
+      await commandToRun.invoke(ctx, args);
       // TODO: Replace with recursion in arg parsing
       // while (command instanceof CommandGroup && args.length > 0) {
       //   command = command.getSubCommand(args.shift()!);
       //   await command?.invoke(ctx, args);
       // }
     } catch (err) {
-      await this.logger.error(`Error running command "${command?.name}".`, err);
+      await this.logger.error(`Error running command "${commandToRun?.name}".`, err);
       await message.channel.send({
         embeds: [new MessageEmbed()
           .setColor(0xFF0000)

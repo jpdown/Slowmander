@@ -1,4 +1,4 @@
-import { Command, CommandOptions } from 'commands/Command';
+import { Command, CommandOptions, PermissionLevel } from 'commands/Command';
 import { CommandGroup } from 'commands/CommandGroup';
 
 import 'reflect-metadata';
@@ -30,22 +30,27 @@ export abstract class Module {
               (foundCommand) => foundCommand.name === commandParent && foundCommand instanceof CommandGroup,
             ) as CommandGroup | undefined;
 
-            if (!commandParent) {
+            if (!foundGroup) {
               throw new Error(`Could not find group ${commandParent}`);
             }
           }
 
           commandOptions.parent = foundGroup;
           commandOptions.args = Reflect.getMetadata('command:args', this, key);
+          commandOptions.guildOnly = Reflect.getMetadata('command:guildOnly', this, key);
 
           let addedCommand: Command;
+          let permLevel: PermissionLevel = Reflect.getMetadata('command:permLevel', this, key) ?? PermissionLevel.Everyone;
 
           // Create the objects and register
           if (commandType === 'command') {
-            addedCommand = new Command(commandName, Reflect.get(this, key).bind(this), commandOptions);
+            addedCommand = new Command(commandName, Reflect.get(this, key).bind(this), permLevel, commandOptions);
             this.commands.push(addedCommand);
           } else if (commandType === 'group') {
-            addedCommand = new CommandGroup(commandName, Reflect.get(this, key).bind(this), commandOptions);
+            if (commandOptions.args) {
+              throw new Error('Command groups cannot have arguments.')
+            }
+            addedCommand = new CommandGroup(commandName, Reflect.get(this, key).bind(this), permLevel, commandOptions);
             this.commands.push(addedCommand);
           } else {
             throw new Error('Unknown command type');

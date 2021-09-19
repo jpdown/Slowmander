@@ -23,11 +23,11 @@ export class Command {
 
   // public readonly aliases: string[];
 
-  // private readonly _permLevel: PermissionLevel;
+  private readonly _permLevel: PermissionLevel;
 
-  // public get permLevel(): PermissionLevel {
-  //   return this._permLevel;
-  // }
+  public get permLevel(): PermissionLevel {
+    return this._permLevel;
+  }
 
   // private readonly _requiredPerm?: PermissionResolvable | undefined;
 
@@ -41,21 +41,23 @@ export class Command {
 
   // public readonly usage: string;
 
-  // public readonly runsInDm: boolean;
+  public readonly guildOnly?: boolean;
 
   public readonly parent?: CommandGroup;
 
-  protected logger: Logger;
+  protected readonly logger: Logger;
 
-  private func: (ctx: CommandContext, ...args: any[]) => Promise<void>;
+  protected readonly func: (ctx: CommandContext, ...args: any[]) => Promise<void>;
 
   // constructor(name: string, permLevel: PermissionLevel, desc: string, bot: Bot, params: CommandParameters = {}) {
-  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>, options: CommandOptions) {
+  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>, permLevel: PermissionLevel, options: CommandOptions) {
     this.name = name;
     this.func = func;
+    this._permLevel = permLevel;
     this.parent = options.parent;
 
     this.args = options.args;
+    this.guildOnly = options.guildOnly;
 
     // this._permLevel = permLevel;
     // this.desc = desc;
@@ -72,6 +74,9 @@ export class Command {
 
   // abstract run(bot: Bot, message: Message, args: string[]): Promise<CommandResult>;
   public async invoke(ctx: CommandContext, args: CommandParsedType[] | undefined): Promise<boolean> {
+    if (this.parent) {
+      await this.parent.invoke(ctx, args);
+    }
     if (args) {
       await this.func(ctx, ...args);
     } else {
@@ -108,6 +113,7 @@ export class Command {
 export type CommandOptions = {
   parent?: CommandGroup;
   args?: CommandArgument[];
+  guildOnly?: boolean;
 };
 
 export type CommandArgument = {
