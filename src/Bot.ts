@@ -50,7 +50,6 @@ export class PantherBot {
             this._reactionRoleManager = new ReactionRoleManager(this);
             this._client.on('messageReactionAdd', this._reactionRoleManager.onMessageReactionAdd.bind(this._reactionRoleManager));
             this._client.on('messageReactionRemove', this._reactionRoleManager.onMessageReactionRemove.bind(this._reactionRoleManager));
-            this._client.on("ready", this._reactionRoleManager.onReady.bind(this._reactionRoleManager));
             this._client.on("guildMemberAdd", this._verificationManager.onGuildMemberAdd.bind(this._verificationManager));
             this._client.on("messageReactionAdd", this._verificationManager.onMessageReactionAdd.bind(this._verificationManager));
         }).catch((err) => {
