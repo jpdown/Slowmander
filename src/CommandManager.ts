@@ -67,16 +67,10 @@ export class CommandManager {
     }
 
     // Split args, find command
-    // TODO: Replace with new arg parser
     const split = fullMessage.content.slice(prefix.length).split(' ');
     let command = this.getCommand(split[0]);
     // If command not found, exit
     if (command === undefined) {
-      return;
-    }
-
-    // If guild only and not in guild
-    if (command.guildOnly && !fullMessage.guild) {
       return;
     }
 
@@ -94,6 +88,11 @@ export class CommandManager {
       return;
     }
 
+    // If guild only and not in guild
+    if (commandToRun.guildOnly && !fullMessage.guild) {
+      return;
+    }
+
     // Check perms
     if (!(await PermissionsHelper.checkPerms(ctx, commandToRun))) {
       return;
@@ -102,14 +101,9 @@ export class CommandManager {
     // Run command
     try {
       await commandToRun.invoke(ctx, args);
-      // TODO: Replace with recursion in arg parsing
-      // while (command instanceof CommandGroup && args.length > 0) {
-      //   command = command.getSubCommand(args.shift()!);
-      //   await command?.invoke(ctx, args);
-      // }
     } catch (err) {
       await this.logger.error(`Error running command "${commandToRun?.name}".`, err);
-      await message.channel.send({
+      await ctx.reply({
         embeds: [new MessageEmbed()
           .setColor(0xFF0000)
           .setTitle('❌ Error running command.')
@@ -117,22 +111,6 @@ export class CommandManager {
       });
     }
   }
-
-  // public static async parseSubCommand(group: CommandGroup, args: string[], message: Message, bot: Bot): Promise<CommandResult> {
-  //   // Find command
-  //   const command: Command | undefined = CommandManager.getCommandHelper(args.shift(), group.subCommands);
-  //   // If command not found, exit
-  //   if (command === undefined) {
-  //     return { sendHelp: true, command: group, message };
-  //   }
-
-  //   // // Check perms/in DM and run
-  //   // if (await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, bot)) {
-  //   //   return command.run(bot, message, args);
-  //   // }
-
-  //   return { sendHelp: false, command: null, message };
-  // }
 
   public getCommand(commandToGet: string | undefined): Command | undefined {
     return CommandManager.getCommandHelper(commandToGet, this.commandMap);
