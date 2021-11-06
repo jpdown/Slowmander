@@ -3,9 +3,13 @@
 import { Logger } from 'Logger';
 
 // import type { Message, PermissionResolvable } from 'discord.js';
+import type {
+  ApplicationCommandOptionChoice, Channel, Role, User,
+} from 'discord.js';
+import type { ChannelTypes } from 'discord.js/typings/enums';
+
 import type { CommandContext } from 'CommandContext';
-import type { Channel, Role, User } from 'discord.js';
-import type { CommandGroup } from './CommandGroup';
+import type { CommandGroup } from 'commands/CommandGroup';
 
 export enum PermissionLevel {
   Disabled = -1,
@@ -121,6 +125,9 @@ export type CommandArgument = {
   type: CommandArgumentType;
   optional?: boolean;
   description?: string;
+  autocomplete?: boolean;
+  choices?: ApplicationCommandOptionChoice[];
+  channelTypes?: ChannelTypes[];
 };
 
 export type CommandArgumentType = 'string' | 'int' | 'number' | 'bool' | 'user' | 'channel' | 'role';
