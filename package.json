@@ -4,15 +4,16 @@
   "description": "Discord bot written with TypeScript and discord.js",
   "main": "Bot.js",
   "dependencies": {
+    "@twurple/api": "^5.0.8",
+    "@twurple/auth": "^5.0.8",
     "@types/node-fetch": "^2.5.12",
     "@types/ws": "^7.4.7",
     "better-sqlite3": "^7.4.3",
     "bufferutil": "^4.0.3",
     "discord.js": "^13.0.1",
+    "erlpack": "github:discord/erlpack",
     "node-fetch": "^2.6.1",
     "reflect-metadata": "^0.1.13",
-    "twitch": "^4.6.5",
-    "twitch-auth": "^4.6.6",
     "utf-8-validate": "^5.0.5",
     "zlib-sync": "^0.1.7"
   },
@@ -40,6 +41,7 @@
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-airbnb-typescript": "^14.0.0",
+    "eslint-plugin-deprecation": "^1.2.1",
     "typescript": "^4.4.2"
   }
 }

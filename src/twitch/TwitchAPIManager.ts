@@ -1,8 +1,8 @@
 import type { Bot } from 'Bot';
 import { Logger } from 'Logger';
 
-import { ApiClient, HelixClip, HelixUser } from 'twitch';
-import { ClientCredentialsAuthProvider } from 'twitch-auth';
+import { ApiClient, HelixClip, HelixUser } from '@twurple/api';
+import { ClientCredentialsAuthProvider } from '@twurple/auth';
 
 export class TwitchAPIManager {
   private bot: Bot;
@@ -35,7 +35,7 @@ export class TwitchAPIManager {
     }
 
     // Get user
-    const twitchUser: HelixUser | null = await this.client.helix.users.getUserByName(username);
+    const twitchUser: HelixUser | null = await this.client.users.getUserByName(username);
 
     if (twitchUser === null) {
       return null;
@@ -55,7 +55,7 @@ export class TwitchAPIManager {
       return null;
     }
 
-    const twitchUsers: HelixUser[] = await this.client.helix.users.getUsersByNames(users);
+    const twitchUsers: HelixUser[] = await this.client.users.getUsersByNames(users);
     return twitchUsers;
   }
 
@@ -70,7 +70,7 @@ export class TwitchAPIManager {
       return null;
     }
 
-    const twitchUsers: HelixUser[] = await this.client.helix.users.getUsersByIds(userIds);
+    const twitchUsers: HelixUser[] = await this.client.users.getUsersByIds(userIds);
     return twitchUsers;
   }
 
@@ -86,7 +86,7 @@ export class TwitchAPIManager {
     }
 
     // Get clip
-    const twitchClip: HelixClip | null = await this.client.helix.clips.getClipById(clipId);
+    const twitchClip: HelixClip | null = await this.client.clips.getClipById(clipId);
 
     if (twitchClip === null) {
       return null;

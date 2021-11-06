@@ -5,7 +5,8 @@
         "project": "./tsconfig.json"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "deprecation"
     ],
     "extends": [
         "airbnb-base",
@@ -27,6 +28,7 @@
         "no-cond-assign": ["error", "except-parens"],
         "import/prefer-default-export": "off",
         "no-underscore-dangle": "off",
-        "radix": ["error", "as-needed"]
+        "radix": ["error", "as-needed"],
+        "deprecation/deprecation": "warn"
     }
 }
