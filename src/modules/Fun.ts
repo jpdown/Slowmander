@@ -1,7 +1,7 @@
 import type { CommandContext } from 'CommandContext';
 import type { Channel, User } from 'discord.js';
 import { Module } from './Module';
-import { args, command, group, guildOnly, isAdmin, isMod, isOwner, isVIP, subcommand } from './ModuleDecorators';
+import { args, command, group, guild, guildOnly, isAdmin, isMod, isOwner, isVIP, subcommand } from './ModuleDecorators';
 
 export class Fun extends Module {
   public constructor() {
@@ -9,6 +9,7 @@ export class Fun extends Module {
   }
 
   @command()
+  @guild("472222827421106201")
   public async cat(ctx: CommandContext) {
     await ctx.reply('cat');
   }

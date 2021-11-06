@@ -7,7 +7,7 @@ import { CommandGroup } from 'commands/CommandGroup';
 import { Logger } from 'Logger';
 
 import {
-  Message, MessageEmbed, PartialMessage,
+  Message, MessageEmbed, PartialMessage, Snowflake,
 } from 'discord.js';
 // import { HelpManager } from 'HelpManager';
 import { CommandContext } from 'CommandContext';
@@ -16,6 +16,7 @@ import { ArgumentParser } from 'utils/ArgumentParser';
 import { PermissionsHelper } from 'utils/PermissionsHelper';
 
 export class CommandManager {
+  // Map guild id and command name to command, just command name for global
   private commandMap: Map<string, Command>;
 
   private modules: Module[];
@@ -46,6 +47,11 @@ export class CommandManager {
       return;
     }
 
+    // Ignore bot and system messages
+    if (fullMessage.author?.bot || fullMessage.system) {
+      return;
+    }
+
     let prefix: string | undefined;
 
     if (fullMessage.guild) {
@@ -56,11 +62,6 @@ export class CommandManager {
 
     if (!prefix) return;
 
-    // Ignore bot and system messages
-    if (fullMessage.author?.bot || fullMessage.system) {
-      return;
-    }
-
     // Make sure we have prefix
     if (!fullMessage.content?.startsWith(prefix)) {
       return;
@@ -68,7 +69,7 @@ export class CommandManager {
 
     // Split args, find command
     const split = fullMessage.content.slice(prefix.length).split(' ');
-    let command = this.getCommand(split[0]);
+    let command = this.getCommand(fullMessage.guild?.id, split[0]);
     // If command not found, exit
     if (command === undefined) {
       return;
@@ -112,8 +113,9 @@ export class CommandManager {
     }
   }
 
-  public getCommand(commandToGet: string | undefined): Command | undefined {
-    return CommandManager.getCommandHelper(commandToGet, this.commandMap);
+  public getCommand(guildId: Snowflake | undefined, commandToGet: string): Command | undefined {
+    console.log(this.commandMap);
+    return this.commandMap.get(guildId + "," + commandToGet) ?? this.commandMap.get("GLOBAL," + commandToGet);
   }
 
   public getAllCommands(): Command[] {
@@ -139,7 +141,7 @@ export class CommandManager {
   }
 
   private registerCommand(command: Command) {
-    this.commandMap.set(command.name, command);
+    this.commandMap.set((command.guild ?? "GLOBAL") + "," + command.name, command);
     // command.aliases.forEach((alias) => {
     //   this.commandMap.set(alias, command);
     // });
@@ -157,13 +159,5 @@ export class CommandManager {
         this.registerCommand(command);
       });
     });
-  }
-
-  private static getCommandHelper(commandToGet: string | undefined, commandList: Map<string, Command>): Command | undefined {
-    if (commandToGet && commandList.has(commandToGet)) {
-      return commandList.get(commandToGet);
-    }
-
-    return undefined;
   }
 }

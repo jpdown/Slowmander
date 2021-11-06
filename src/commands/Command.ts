@@ -4,7 +4,7 @@ import { Logger } from 'Logger';
 
 // import type { Message, PermissionResolvable } from 'discord.js';
 import type {
-  ApplicationCommandOptionChoice, Channel, Role, User,
+  ApplicationCommandOptionChoice, Channel, Role, Snowflake, User,
 } from 'discord.js';
 import type { ChannelTypes } from 'discord.js/typings/enums';
 
@@ -45,6 +45,10 @@ export class Command {
 
   // public readonly usage: string;
 
+  // The guild this command is registered for
+  public readonly guild?: Snowflake;
+
+  // If global command that can only be run in guilds
   public readonly guildOnly?: boolean;
 
   public readonly parent?: CommandGroup;
@@ -61,6 +65,7 @@ export class Command {
     this.parent = options.parent;
 
     this.args = options.args;
+    this.guild = options.guild;
     this.guildOnly = options.guildOnly;
 
     // this._permLevel = permLevel;
@@ -117,7 +122,9 @@ export class Command {
 export type CommandOptions = {
   parent?: CommandGroup;
   args?: CommandArgument[];
+  guild?: Snowflake;
   guildOnly?: boolean;
+  slash?: boolean;
 };
 
 export type CommandArgument = {

@@ -1,4 +1,5 @@
 import { CommandArgument, PermissionLevel } from 'commands/Command';
+import type { Snowflake } from 'discord-api-types';
 
 export function command(name?: string) {
   return (target: Object, propertyKey: string) => {
@@ -33,6 +34,12 @@ export function subgroup(parent: string, name?: string) {
 export function args(types: CommandArgument[]) {
   return (target: Object, propertyKey: string) => {
     Reflect.defineMetadata('command:args', types, target, propertyKey);
+  };
+}
+
+export function guild(guildId: Snowflake) {
+  return (target: Object, propertyKey: string) => {
+    Reflect.defineMetadata('command:guild', guildId, target, propertyKey);
   };
 }
 

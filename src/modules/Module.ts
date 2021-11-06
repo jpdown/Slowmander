@@ -37,6 +37,7 @@ export abstract class Module {
 
           commandOptions.parent = foundGroup;
           commandOptions.args = Reflect.getMetadata('command:args', this, key);
+          commandOptions.guild = Reflect.getMetadata('command:guild', this, key);
           commandOptions.guildOnly = Reflect.getMetadata('command:guildOnly', this, key);
 
           let addedCommand: Command;
