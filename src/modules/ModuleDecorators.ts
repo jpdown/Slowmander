@@ -8,6 +8,13 @@ export function command(name?: string) {
   };
 }
 
+export function desc(desc: string) {
+  return (target: Object, propertyKey: string) => {
+    Reflect.defineMetadata('command:desc', desc, target, propertyKey);
+    Reflect.defineMetadata('command:type', 'command', target, propertyKey);
+  };
+}
+
 export function subcommand(parent: string, name?: string) {
   return (target: Object, propertyKey: string) => {
     Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);

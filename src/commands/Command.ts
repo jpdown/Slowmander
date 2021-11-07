@@ -4,12 +4,12 @@ import { Logger } from 'Logger';
 
 // import type { Message, PermissionResolvable } from 'discord.js';
 import type {
-  ApplicationCommandOptionChoice, Channel, Role, Snowflake, User,
+  Channel, Role, Snowflake, User,
 } from 'discord.js';
-import type { ChannelTypes } from 'discord.js/typings/enums';
 
 import type { CommandContext } from 'CommandContext';
 import type { CommandGroup } from 'commands/CommandGroup';
+import type { ChannelType } from 'discord-api-types';
 
 export enum PermissionLevel {
   Disabled = -1,
@@ -39,7 +39,7 @@ export class Command {
   //   return this._requiredPerm;
   // }
 
-  // public readonly desc: string;
+  public readonly desc?: string;
 
   // public readonly longDesc: string;
 
@@ -50,6 +50,9 @@ export class Command {
 
   // If global command that can only be run in guilds
   public readonly guildOnly?: boolean;
+
+  // If a slash command
+  public readonly slash?: boolean;
 
   public readonly parent?: CommandGroup;
 
@@ -64,12 +67,13 @@ export class Command {
     this._permLevel = permLevel;
     this.parent = options.parent;
 
+    this.desc = options.desc;
     this.args = options.args;
     this.guild = options.guild;
     this.guildOnly = options.guildOnly;
+    this.slash = options.slash;
 
     // this._permLevel = permLevel;
-    // this.desc = desc;
 
     // this.aliases = params.aliases ? params.aliases : [];
     // this._requiredPerm = params.requiredPerm;
@@ -120,6 +124,7 @@ export class Command {
 // }
 
 export type CommandOptions = {
+  desc?: string;
   parent?: CommandGroup;
   args?: CommandArgument[];
   guild?: Snowflake;
@@ -133,9 +138,9 @@ export type CommandArgument = {
   optional?: boolean;
   description?: string;
   autocomplete?: boolean;
-  choices?: ApplicationCommandOptionChoice[];
-  channelTypes?: ChannelTypes[];
-};
+  choices?: [name: string, value: string | number][];
+  channelTypes?: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[];
+}
 
 export type CommandArgumentType = 'string' | 'int' | 'number' | 'bool' | 'user' | 'channel' | 'role';
 export type CommandParsedType = string | number | boolean | User | Channel | Role | undefined;

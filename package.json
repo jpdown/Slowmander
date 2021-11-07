@@ -4,6 +4,7 @@
   "description": "Discord bot written with TypeScript and discord.js",
   "main": "Bot.js",
   "dependencies": {
+    "@discordjs/builders": "^0.8.2",
     "@discordjs/rest": "^0.1.0-canary.0",
     "@twurple/api": "^5.0.8",
     "@twurple/auth": "^5.0.8",
