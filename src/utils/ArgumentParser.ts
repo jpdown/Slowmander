@@ -3,6 +3,7 @@ import type { Command, CommandParsedType } from 'commands/Command';
 import { CommandGroup } from 'commands/CommandGroup';
 
 export class ArgumentParser {
+  // Splits on space but keeps quoted strings together
   private static argsRegex = /((["'])((?:.(?!\2))*.?)\2)|(\S+)/g;
 
   public static async parseArgs(content: string, command: Command | CommandGroup, ctx: CommandContext): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
