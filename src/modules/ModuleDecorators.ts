@@ -1,38 +1,41 @@
 import { CommandArgument, PermissionLevel } from 'commands/Command';
 import type { Snowflake } from 'discord-api-types';
 
-export function command(name?: string) {
+export function command(desc: string, name?: string) {
   return (target: Object, propertyKey: string) => {
     Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
+    Reflect.defineMetadata('command:desc', desc ?? propertyKey, target, propertyKey);
     Reflect.defineMetadata('command:type', 'command', target, propertyKey);
   };
 }
 
-export function desc(desc: string) {
+export function noSlash() {
   return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:desc', desc, target, propertyKey);
-    Reflect.defineMetadata('command:type', 'command', target, propertyKey);
+    Reflect.defineMetadata('command:slash', false, target, propertyKey);
   };
 }
 
-export function subcommand(parent: string, name?: string) {
+export function subcommand(parent: string, desc: string, name?: string) {
   return (target: Object, propertyKey: string) => {
     Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
+    Reflect.defineMetadata('command:desc', desc ?? propertyKey, target, propertyKey);
     Reflect.defineMetadata('command:type', 'command', target, propertyKey);
     Reflect.defineMetadata('command:parent', parent, target, propertyKey);
   };
 }
 
-export function group(name?: string) {
+export function group(desc: string, name?: string) {
   return (target: Object, propertyKey: string) => {
     Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
+    Reflect.defineMetadata('command:desc', desc ?? propertyKey, target, propertyKey);
     Reflect.defineMetadata('command:type', 'group', target, propertyKey);
   };
 }
 
-export function subgroup(parent: string, name?: string) {
+export function subgroup(parent: string, desc: string, name?: string) {
   return (target: Object, propertyKey: string) => {
     Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
+    Reflect.defineMetadata('command:desc', desc ?? propertyKey, target, propertyKey);
     Reflect.defineMetadata('command:type', 'group', target, propertyKey);
     Reflect.defineMetadata('command:parent', parent, target, propertyKey);
   };

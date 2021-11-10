@@ -145,6 +145,24 @@ export class CommandManager {
     return this.bot.config.prefix;
   }
 
+  public async deploySlashCommands() {
+    let commands = this.generateSlashObjs();
+    let globalCommands: ApplicationCommandData[] | undefined;
+
+    // Deploy global commands
+    // TODO: Detect changes and only deploy changed commands
+    globalCommands = commands.get("GLOBAL");
+    if (globalCommands) {
+      await this.bot.client.application.commands.set(globalCommands);
+    }
+    commands.delete("GLOBAL");
+
+    // Deploy guild commands
+    for (let [guild, cmds] of commands) {
+      await this.bot.client.guilds.cache.get(guild)?.commands.set(cmds);
+    }
+  }
+
   private registerCommand(command: Command) {
     this.commandMap.set((command.guild ?? "GLOBAL") + "," + command.name, command);
     // command.aliases.forEach((alias) => {
@@ -155,7 +173,7 @@ export class CommandManager {
   private registerAll(): void {
     // Register every module
     Object.values(modules).forEach((ModuleToRegister) => {
-      this.modules.push(new ModuleToRegister());
+      this.modules.push(new ModuleToRegister(this.bot));
     });
 
     // Register every command from every module
@@ -166,29 +184,13 @@ export class CommandManager {
     });
   }
 
-  private deploySlashCommands() {
-    let commands = this.generateSlashObjs();
-    let globalCommands: ApplicationCommandData[] | undefined;
-
-    // Deploy global commands
-    // TODO: Detect changes and only deploy changed commands
-    globalCommands = commands.get("GLOBAL");
-    if (globalCommands) {
-      this.bot.client.application.commands.set(globalCommands);
-    }
-    commands.delete("GLOBAL");
-
-    // Deploy guild commands
-    commands.forEach((cmds, guild) => {
-      this.bot.client.guilds.cache.get(guild)?.commands.set(cmds);
-    });
-  }
 
   private generateSlashObjs(): Map<Snowflake, ApplicationCommandData[]> {
     let commands = new Map<Snowflake, ApplicationCommandData[]>();
 
     let currGuild: Snowflake;
     let currSlash: ApplicationCommandData;
+    let args: ApplicationCommandOptionData[];
     let currArg: ApplicationCommandOptionData;
 
     // Convert every command to slash command JSON
@@ -207,7 +209,7 @@ export class CommandManager {
       }
 
       if (v.args) {
-        currSlash.options = [];
+        args = [];
         v.args.forEach((arg) => {
           // Will change type later
           currArg = { 
@@ -223,7 +225,10 @@ export class CommandManager {
           if (arg.channelTypes && currArg.type === "CHANNEL") {
             currArg.channelTypes = arg.channelTypes;
           }
+
+          args.push(currArg);
         });
+        currSlash.options = args;
       }
 
       commands.get(currGuild)?.push(currSlash);

@@ -41,7 +41,7 @@ export class Command {
   //   return this._requiredPerm;
   // }
 
-  public readonly desc?: string;
+  public readonly desc: string;
 
   // public readonly longDesc: string;
 
@@ -63,13 +63,13 @@ export class Command {
   protected readonly func: (ctx: CommandContext, ...args: any[]) => Promise<void>;
 
   // constructor(name: string, permLevel: PermissionLevel, desc: string, bot: Bot, params: CommandParameters = {}) {
-  constructor(name: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>, permLevel: PermissionLevel, options: CommandOptions) {
+  constructor(name: string, desc: string, func: (ctx: CommandContext, ...args: any[]) => Promise<void>, permLevel: PermissionLevel, options: CommandOptions) {
     this.name = name;
+    this.desc = desc;
     this.func = func;
     this._permLevel = permLevel;
     this.parent = options.parent;
 
-    this.desc = options.desc;
     this.args = options.args;
     this.guild = options.guild;
     this.guildOnly = options.guildOnly;
@@ -127,7 +127,6 @@ export class Command {
 // }
 
 export type CommandOptions = {
-  desc?: string;
   parent?: CommandGroup;
   args?: CommandArgument[];
   guild?: Snowflake;

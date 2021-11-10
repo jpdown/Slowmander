@@ -1,65 +1,87 @@
+import type { Bot } from 'Bot';
 import type { CommandContext } from 'CommandContext';
 import type { Channel, User } from 'discord.js';
 import { Module } from './Module';
 import { args, command, group, guild, guildOnly, isAdmin, isMod, isOwner, isVIP, subcommand } from './ModuleDecorators';
 
 export class Fun extends Module {
-  public constructor() {
-    super();
+  public constructor(bot: Bot) {
+    super(bot);
   }
 
-  @command()
+  @command("cats")
   @guild("472222827421106201")
   public async cat(ctx: CommandContext) {
     await ctx.reply('cat');
   }
 
-  @command()
+  @command("dogs")
+  @guild("472222827421106201")
   public async dog(ctx: CommandContext) {
     await ctx.reply('dog');
   }
 
-  @group()
+  @group("dad jokes")
+  @guild("472222827421106201")
   public async dadjoke(ctx: CommandContext) {
     await ctx.reply('dadjoke');
   }
 
-  @subcommand('dadjoke')
+  @subcommand('dadjoke', "sub of dadjokes")
+  @guild("472222827421106201")
   public async sub(ctx: CommandContext) {
     await ctx.reply('dadjoke sub');
   }
 
-  @subcommand('dadjoke')
+  @subcommand('dadjoke', "another sub of dadjokes")
+  @guild("472222827421106201")
   @args([
     { name: 'user', type: 'user' },
     { name: 'channel', type: 'channel' },
   ])
   @guildOnly()
-  public async testArgs(ctx: CommandContext, user: User, channel: Channel) {
+  public async testargs(ctx: CommandContext, user: User, channel: Channel) {
     await ctx.reply(`User ID: ${user.id}, Channel ID: ${channel.id}`);
   }
 
-  @command()
+  @command("owner test")
+  @guild("472222827421106201")
   @isOwner()
-  public async testOwner(ctx: CommandContext) {
+  public async testowner(ctx: CommandContext) {
     await ctx.reply('you passed the test');
   }
 
-  @command()
+  @command("admin test")
+  @guild("472222827421106201")
   @isAdmin()
-  public async testAdmin(ctx: CommandContext) {
+  public async testadmin(ctx: CommandContext) {
     await ctx.reply('you passed the test');
   }
 
-  @command()
+  @command("mod test")
+  @guild("472222827421106201")
   @isMod()
-  public async testMod(ctx: CommandContext) {
+  public async testmod(ctx: CommandContext) {
     await ctx.reply('you passed the test');
   }
 
-  @command()
+  @command("vip test")
+  @guild("472222827421106201")
   @isVIP()
-  public async testVIP(ctx: CommandContext) {
+  public async testvip(ctx: CommandContext) {
     await ctx.reply('you passed the test');
+  }
+
+  @command("slash deploying")
+  @isOwner()
+  @guild("472222827421106201")
+  public async deployslash(ctx: CommandContext) {
+    try {
+      await this.bot.commandManager.deploySlashCommands()
+      await ctx.reply('slash commands theoretically deployed');
+    }
+    catch(err) {
+      console.log(err);
+    }
   }
 }

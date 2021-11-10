@@ -10,8 +10,8 @@ import type { CommandContext } from 'CommandContext';
 export class CommandGroup extends Command {
   public readonly subCommands: Map<string, Command>;
 
-  constructor(name: string, func: (ctx: CommandContext) => Promise<void>, permLevel: PermissionLevel, options: CommandOptions) {
-    super(name, func, permLevel, options);
+  constructor(name: string, desc: string, func: (ctx: CommandContext) => Promise<void>, permLevel: PermissionLevel, options: CommandOptions) {
+    super(name, desc, func, permLevel, options);
     this.subCommands = new Map<string, Command>();
   }
 
