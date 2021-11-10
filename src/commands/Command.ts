@@ -4,12 +4,14 @@ import { Logger } from 'Logger';
 
 // import type { Message, PermissionResolvable } from 'discord.js';
 import type {
-  Channel, Role, Snowflake, User,
+  ApplicationCommandOptionChoice,
+  ApplicationCommandOptionType,
+  Channel, ExcludeEnum, Role, Snowflake, User,
 } from 'discord.js';
+import type { ChannelTypes } from 'discord.js/typings/enums';
 
 import type { CommandContext } from 'CommandContext';
 import type { CommandGroup } from 'commands/CommandGroup';
-import type { ChannelType } from 'discord-api-types';
 
 export enum PermissionLevel {
   Disabled = -1,
@@ -106,6 +108,7 @@ export class Command {
   //   name += this.name;
   //   return name;
   // }
+
 }
 
 // export interface CommandResult {
@@ -138,8 +141,8 @@ export type CommandArgument = {
   optional?: boolean;
   description?: string;
   autocomplete?: boolean;
-  choices?: [name: string, value: string | number][];
-  channelTypes?: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[];
+  choices?: ApplicationCommandOptionChoice[];
+  channelTypes?: ExcludeEnum<typeof ChannelTypes, "UNKNOWN">[];
 }
 
 export type CommandArgumentType = 'string' | 'int' | 'number' | 'bool' | 'user' | 'channel' | 'role';

@@ -1,17 +1,21 @@
 import type { Bot } from 'Bot';
+import type { CommandArgumentType } from 'commands/Command';
 
 import {
   ColorResolvable, User, Collection, Snowflake, Guild,
   GuildMember, Role, Channel, GuildEmoji, WebhookClient, SnowflakeUtil,
   DeconstructedSnowflake, GuildChannel, Permissions, PermissionOverwriteOptions,
-  Message, MessageReaction, ReactionEmoji, MessageEmbed, TextBasedChannels, MessageOptions,
+  Message, MessageReaction, ReactionEmoji, MessageEmbed, TextBasedChannels, MessageOptions, ApplicationCommandOptionType,
 } from 'discord.js';
+import { Logger } from 'Logger';
 
 export class CommandUtils {
   private bot: Bot;
+  private logger: Logger;
 
   constructor(bot: Bot) {
     this.bot = bot;
+    this.logger = Logger.getLogger(this);
   }
 
   async getSelfColor(channel: TextBasedChannels): Promise<ColorResolvable> {
@@ -364,5 +368,27 @@ export class CommandUtils {
     }
 
     return emote;
+  }
+
+  public getSlashArgType(type: CommandArgumentType): ApplicationCommandOptionType {
+    switch (type) {
+      case 'string':
+        return "STRING";
+      case 'int':
+        return "INTEGER";
+      case 'number':
+        return "NUMBER";
+      case 'bool':
+        return "BOOLEAN";
+      case 'user':
+        return "USER";
+      case 'channel':
+        return "CHANNEL";
+      case 'role':
+        return "ROLE";
+      default:
+        this.logger.debug("Default STRING case on SlashArgType " + type);
+        return "STRING";
+    }
   }
 }

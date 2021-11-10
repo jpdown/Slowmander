@@ -7,6 +7,10 @@ import { CommandGroup } from 'commands/CommandGroup';
 import { Logger } from 'Logger';
 
 import {
+  ApplicationCommandChoicesOption,
+  ApplicationCommandData,
+  ApplicationCommandOptionChoice,
+  ApplicationCommandOptionData,
   Message, MessageEmbed, PartialMessage, Snowflake,
 } from 'discord.js';
 // import { HelpManager } from 'HelpManager';
@@ -14,8 +18,7 @@ import { CommandContext } from 'CommandContext';
 import type { Module } from 'modules/Module';
 import { ArgumentParser } from 'utils/ArgumentParser';
 import { PermissionsHelper } from 'utils/PermissionsHelper';
-import { SlashCommandBooleanOption, SlashCommandBuilder, SlashCommandChannelOption, SlashCommandIntegerOption, SlashCommandNumberOption, SlashCommandRoleOption, SlashCommandStringOption, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder, SlashCommandUserOption } from '@discordjs/builders';
-import type { RESTPostAPIApplicationCommandsJSONBody } from 'discord-api-types';
+import { args } from 'modules/ModuleDecorators';
 
 export class CommandManager {
   // Map guild id and command name to command, just command name for global
@@ -164,113 +167,68 @@ export class CommandManager {
   }
 
   private deploySlashCommands() {
-    const globalCommands: RESTPostAPIApplicationCommandsJSONBody[] = [];
-    const guildCommands = new Map<Snowflake, RESTPostAPIApplicationCommandsJSONBody[]>();
+    let commands = this.generateSlashObjs();
+    let globalCommands: ApplicationCommandData[] | undefined;
+
+    // Deploy global commands
+    // TODO: Detect changes and only deploy changed commands
+    globalCommands = commands.get("GLOBAL");
+    if (globalCommands) {
+      this.bot.client.application.commands.set(globalCommands);
+    }
+    commands.delete("GLOBAL");
+
+    // Deploy guild commands
+    commands.forEach((cmds, guild) => {
+      this.bot.client.guilds.cache.get(guild)?.commands.set(cmds);
+    });
+  }
+
+  private generateSlashObjs(): Map<Snowflake, ApplicationCommandData[]> {
+    let commands = new Map<Snowflake, ApplicationCommandData[]>();
+
     let currGuild: Snowflake;
-    let currSlash: SlashCommandBuilder;
+    let currSlash: ApplicationCommandData;
+    let currArg: ApplicationCommandOptionData;
 
     // Convert every command to slash command JSON
     this.commandMap.forEach((v, k) => {
       // Ignore non slash commands and subcommands
       if (!v.slash || v.parent) return;
+      // TODO: Handle command groups
+      if (v instanceof CommandGroup) return; 
 
+      // TODO: Support USER and MESSAGE commands
+      currSlash = { name: v.name, description: v.desc ?? "", type: "CHAT_INPUT" }
       currGuild = k.split(",")[0];
 
-      // TODO: Handle command groups
-      currSlash = new SlashCommandBuilder();
-      currSlash.setName(v.name);
-
-      if (v.desc) {
-        currSlash.setDescription(v.desc);
+      if (!commands.has(currGuild)) {
+        commands.set(currGuild, []);
       }
 
       if (v.args) {
+        currSlash.options = [];
         v.args.forEach((arg) => {
-          switch(arg.type) {
-            case "bool":
-              new SlashCommand
+          // Will change type later
+          currArg = { 
+            name: arg.name, description: arg.description ?? "", 
+            type: this.bot.utils.getSlashArgType(arg.type), required: !arg.optional, 
+            autocomplete: arg.autocomplete,
+          }
+
+          if (arg.choices && (currArg.type === "STRING" || currArg.type === "INTEGER" || currArg.type === "NUMBER")) {
+            currArg.choices = arg.choices;
+          }
+
+          if (arg.channelTypes && currArg.type === "CHANNEL") {
+            currArg.channelTypes = arg.channelTypes;
           }
         });
       }
+
+      commands.get(currGuild)?.push(currSlash);
     });
-  }
 
-  private slashAddString(arg: CommandArgument, slash: SlashCommandBuilder) {
-    const strOption = new SlashCommandStringOption();
-    strOption.setName(arg.name);
-    strOption.setDescription(arg.description ?? "");
-    strOption.setRequired(!arg.optional);
-
-    if (arg.choices) {
-      strOption.addChoices(arg.choices as [name: string, value: string][]);
-    }
-
-    return strOption;
-  }
-
-  private slashAddInt(arg: CommandArgument, slash: SlashCommandBuilder) {
-    const intOption = new SlashCommandIntegerOption();
-    intOption.setName(arg.name);
-    intOption.setDescription(arg.description ?? "");
-    intOption.setRequired(!arg.optional);
-
-    if (arg.choices) {
-      intOption.addChoices(arg.choices as [name: string, value: number][]);
-    }
-
-    return intOption;
-  }
-
-  private slashAddNumber(arg: CommandArgument, slash: SlashCommandBuilder) {
-    const numOption = new SlashCommandNumberOption();
-    numOption.setName(arg.name);
-    numOption.setDescription(arg.description ?? "");
-    numOption.setRequired(!arg.optional);
-
-    if (arg.choices) {
-      numOption.addChoices(arg.choices as [name: string, value: number][]);
-    }
-
-    return numOption;
-  }
-
-  private slashAddBool(arg: CommandArgument, slash: SlashCommandBuilder) {
-    const boolOption = new SlashCommandBooleanOption();
-    boolOption.setName(arg.name);
-    boolOption.setDescription(arg.description ?? "");
-    boolOption.setRequired(!arg.optional);
-
-    return boolOption;
-  }
-
-  private slashAddUser(arg: CommandArgument, slash: SlashCommandBuilder) {
-    const userOption = new SlashCommandUserOption();
-    userOption.setName(arg.name);
-    userOption.setDescription(arg.description ?? "");
-    userOption.setRequired(!arg.optional);
-
-    return userOption;
-  }
-
-  private slashAddChannel(arg: CommandArgument, slash: SlashCommandBuilder) {
-    const channelOption = new SlashCommandChannelOption();
-    channelOption.setName(arg.name);
-    channelOption.setDescription(arg.description ?? "");
-    channelOption.setRequired(!arg.optional);
-
-    if (arg.channelTypes) {
-      channelOption.addChannelTypes(arg.channelTypes);
-    }
-
-    return channelOption;
-  }
-
-  private slashAddRole(arg: CommandArgument, slash: SlashCommandBuilder) {
-    const roleOption = new SlashCommandRoleOption();
-    roleOption.setName(arg.name);
-    roleOption.setDescription(arg.description ?? "");
-    roleOption.setRequired(!arg.optional);
-
-    return roleOption;
+    return commands;
   }
 }
