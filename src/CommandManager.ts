@@ -11,6 +11,8 @@ import {
   ApplicationCommandData,
   ApplicationCommandOptionChoice,
   ApplicationCommandOptionData,
+  GuildMember,
+  Interaction,
   Message, MessageEmbed, PartialMessage, Snowflake,
 } from 'discord.js';
 // import { HelpManager } from 'HelpManager';
@@ -19,6 +21,7 @@ import type { Module } from 'modules/Module';
 import { ArgumentParser } from 'utils/ArgumentParser';
 import { PermissionsHelper } from 'utils/PermissionsHelper';
 import { args } from 'modules/ModuleDecorators';
+import type { APIInteractionGuildMember } from 'discord-api-types';
 
 export class CommandManager {
   // Map guild id and command name to command, just command name for global
@@ -82,7 +85,7 @@ export class CommandManager {
 
     // Build ctx
     const ctx = new CommandContext(
-      this.bot, this.bot.client, fullMessage, fullMessage.channel, fullMessage.author,
+      this.bot, this.bot.client, fullMessage, fullMessage.author, fullMessage.channel,
       fullMessage.guild ?? undefined, fullMessage.member ?? undefined,
     );
 
@@ -109,6 +112,54 @@ export class CommandManager {
       await commandToRun.invoke(ctx, args);
     } catch (err) {
       await this.logger.error(`Error running command "${commandToRun?.name}".`, err);
+      await ctx.reply({
+        embeds: [new MessageEmbed()
+          .setColor(0xFF0000)
+          .setTitle('❌ Error running command.')
+          .setTimestamp(Date.now())],
+      });
+    }
+  }
+
+  public async handleSlash(interaction: Interaction): Promise<void> {
+    if (!interaction.isCommand()) {
+      return;
+    }
+    
+    // Get command
+    const cmd = this.getCommand(interaction.guildId, interaction.commandName);
+    if (!cmd) {
+      return;
+    }
+
+    // Warn me if we get an APIGuildMember
+    if (!(interaction.member instanceof GuildMember)) {
+      this.logger.warning(`We got an APIGuildMember\nchannel:${interaction.channelId},guild:${interaction.guildId},user:${interaction.user.tag},command:${interaction.commandName}`);
+      return;
+    }
+
+    // Build ctx
+    const ctx = new CommandContext(
+      this.bot, this.bot.client, interaction, interaction.user, 
+      interaction.channel ?? undefined, interaction.guild ?? undefined, interaction.member
+    );
+
+    // Parse arguments
+    const args = await ArgumentParser.parseSlashArgs(interaction.options, cmd);
+    if (!args) {
+      return;
+    }
+
+    // If guild only and not in guild
+    if (cmd.guildOnly && !interaction.inGuild()) {
+      return;
+    }
+
+    // Run command
+    try {
+      await cmd.invoke(ctx, args);
+    } catch (err) {
+      await this.logger.error(`Error running command "${cmd?.name}".`, err);
       await ctx.reply({
         embeds: [new MessageEmbed()
           .setColor(0xFF0000)
@@ -194,6 +245,7 @@ export class CommandManager {
     let currArg: ApplicationCommandOptionData;
 
     // Convert every command to slash command JSON
+    // TODO: Add permissions
     this.commandMap.forEach((v, k) => {
       // Ignore non slash commands and subcommands
       if (!v.slash || v.parent) return;

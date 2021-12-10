@@ -12,7 +12,7 @@ export class CommandContext {
 
   public readonly interaction?: CommandInteraction;
 
-  public readonly channel: TextBasedChannels;
+  public readonly channel?: TextBasedChannels;
 
   public readonly user: User;
 
@@ -24,7 +24,7 @@ export class CommandContext {
 
   constructor(
     bot: Bot, client: Client<true>, msgOrInteraction: Message | CommandInteraction,
-    channel: TextBasedChannels, user: User, guild?: Guild, member?: GuildMember,
+    user: User, channel?: TextBasedChannels, guild?: Guild, member?: GuildMember,
   ) {
     this.bot = bot;
     this.client = client;

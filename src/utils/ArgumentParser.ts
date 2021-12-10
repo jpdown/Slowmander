@@ -1,6 +1,8 @@
 import type { CommandContext } from 'CommandContext';
 import type { Command, CommandParsedType } from 'commands/Command';
 import { CommandGroup } from 'commands/CommandGroup';
+import { CacheType, Channel, CommandInteractionOptionResolver } from 'discord.js';
+import { Logger } from 'Logger';
 
 export class ArgumentParser {
   // Splits on space but keeps quoted strings together
@@ -106,6 +108,57 @@ export class ArgumentParser {
     if (!allRequired) {
       return undefined;
     }
+    return parsedArgs;
+  }
+
+  public static async parseSlashArgs(options: Omit<CommandInteractionOptionResolver<CacheType>, "getMessage" | "getFocused">, cmd: Command): Promise<CommandParsedType[] | undefined> {
+    if (!cmd.args) {
+      return [];
+    }
+
+    const parsedArgs: CommandParsedType[] = [];
+    let currArg: CommandParsedType;
+    // Get args in order, we know that we have all required
+    try {
+      for (let arg of cmd.args) {
+        switch (arg.type) {
+          case 'string':
+            currArg = options.getString(arg.name, !arg.optional) ?? undefined;
+            break;
+          case 'int':
+            currArg = options.getInteger(arg.name, !arg.optional) ?? undefined;
+            break;
+          case 'number':
+            currArg = options.getNumber(arg.name, !arg.optional) ?? undefined;
+            break;
+          case 'bool':
+            currArg = options.getBoolean(arg.name, !arg.optional) ?? undefined;
+            break;
+          case 'user':
+            currArg = options.getUser(arg.name, !arg.optional) ?? undefined;
+            break;
+          case 'channel':
+            let channel = options.getChannel(arg.name, !arg.optional) ?? undefined;
+            if (!(channel instanceof Channel) && channel !== undefined) {
+              Logger.getLogger(this).warning("We got an APIChannel", channel);
+              return undefined;
+            }
+            currArg = channel;
+            break;
+          case 'role':
+            currArg = options.getString(arg.name, !arg.optional) ?? undefined;
+            break;
+          default:
+            currArg = undefined;
+        }
+
+        parsedArgs.push(currArg);
+      }
+    }
+    catch (e) {
+      Logger.getLogger(this).warning("A required arg was not found in a slash command", e);
+    }
+
     return parsedArgs;
   }
 }

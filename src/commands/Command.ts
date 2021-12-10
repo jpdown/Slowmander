@@ -144,5 +144,6 @@ export type CommandArgument = {
   channelTypes?: ExcludeEnum<typeof ChannelTypes, "UNKNOWN">[];
 }
 
+// TODO: Add member, mentionable, message
 export type CommandArgumentType = 'string' | 'int' | 'number' | 'bool' | 'user' | 'channel' | 'role';
 export type CommandParsedType = string | number | boolean | User | Channel | Role | undefined;

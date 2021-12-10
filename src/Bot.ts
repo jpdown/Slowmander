@@ -72,6 +72,7 @@ export class Bot {
 
     this.client.login(token).then(() => {
       this.client.on('messageCreate', this.commandManager.parseCommand.bind(this.commandManager));
+      this.client.on('interactionCreate', this.commandManager.handleSlash.bind(this.commandManager));
       this.client.on('messageReactionAdd', this.reactionRoleManager.onMessageReactionAdd.bind(this.reactionRoleManager));
       this.client.on('messageReactionRemove', this.reactionRoleManager.onMessageReactionRemove.bind(this.reactionRoleManager));
       this.client.on('guildMemberAdd', this.verificationManager.onGuildMemberAdd.bind(this.verificationManager));
