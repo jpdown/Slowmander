@@ -1,8 +1,9 @@
 import type { Bot } from 'Bot';
 import type { CommandContext } from 'CommandContext';
+import type { Command } from 'commands/Command';
 import type { Channel, User } from 'discord.js';
 import { Module } from './Module';
-import { args, command, group, guild, guildOnly, isAdmin, isMod, isOwner, isVIP, subcommand } from './ModuleDecorators';
+import { args, command, group, guild, guildOnly, isAdmin, isMod, isOwner, isVIP, subcommand, subgroup } from './ModuleDecorators';
 
 export class Fun extends Module {
   public constructor(bot: Bot) {
@@ -33,7 +34,14 @@ export class Fun extends Module {
     await ctx.reply('dadjoke sub');
   }
 
-  @subcommand('dadjoke', "another sub of dadjokes")
+  @subgroup('dadjoke', "another sub of dadjokes")
+  @guild("472222827421106201")
+  @guildOnly()
+  public async testargs2(ctx: CommandContext) {
+    await ctx.reply(`hi`);
+  }
+
+  @subcommand('testargs2', "another sub of testartgs2")
   @guild("472222827421106201")
   @args([
     { name: 'user', type: 'user' },
@@ -83,5 +91,23 @@ export class Fun extends Module {
     catch(err) {
       console.log(err);
     }
+  }
+
+  @group("parent")
+  @guild("472222827421106201")
+  public async group(ctx: CommandContext) {
+    await ctx.reply("parent");
+  }
+
+  @subgroup("group", "subgroup")
+  @guild("472222827421106201")
+  public async subgroup(ctx: CommandContext) {
+    await ctx.reply("subgroup");
+  }
+
+  @subcommand("subgroup", "subcommand1")
+  @guild("472222827421106201")
+  public async subcommand(ctx: CommandContext) {
+    await ctx.reply("subcommand1");
   }
 }

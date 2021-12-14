@@ -32,7 +32,7 @@ export class ArgumentParser {
       return { command: command, args: undefined };
     }
 
-    if (!subcommand.args) {
+    if (!subcommand.args && !(subcommand instanceof CommandGroup)) {
       return { command: subcommand, args: [] };
     }
 

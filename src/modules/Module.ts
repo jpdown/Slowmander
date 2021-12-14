@@ -53,18 +53,23 @@ export abstract class Module {
           // Create the objects and register
           if (commandType === 'command') {
             addedCommand = new Command(commandName, commandDesc, Reflect.get(this, key).bind(this), permLevel, commandOptions);
-            this.commands.push(addedCommand);
-          } else if (commandType === 'group') {
+          } 
+          else if (commandType === 'group') {
             if (commandOptions.args) {
               throw new Error('Command groups cannot have arguments.')
             }
+            if (commandOptions.parent && commandOptions.parent.parent) {
+              throw new Error("Command subgroups cannot have children.");
+            }
             addedCommand = new CommandGroup(commandName, commandDesc, Reflect.get(this, key).bind(this), permLevel, commandOptions);
-            this.commands.push(addedCommand);
-          } else {
+          } 
+          else {
             throw new Error('Unknown command type');
           }
-          // Register subcommand in group if needed
-          foundGroup?.registerSubCommand(addedCommand);
+            
+          this.commands.push(addedCommand);
+          // Register subcommand if needed
+          commandOptions.parent?.registerSubCommand(addedCommand);
         }
       });
     } else {
