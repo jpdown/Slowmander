@@ -1,7 +1,8 @@
 import type { Bot } from 'Bot';
 import type {
-  Client, CommandInteraction, Guild, GuildMember, InteractionReplyOptions, Message, MessageOptions, TextBasedChannels, User,
+  Client, CommandInteraction, Guild, GuildMember, InteractionReplyOptions, MessageOptions, TextBasedChannels, User,
 } from 'discord.js';
+import { Message } from 'discord.js';
 
 export class CommandContext {
   public readonly bot: Bot;
@@ -28,7 +29,7 @@ export class CommandContext {
   ) {
     this.bot = bot;
     this.client = client;
-    if (msgOrInteraction as Message) {
+    if (msgOrInteraction instanceof Message) {
       this.message = msgOrInteraction as Message;
       this.interaction = undefined;
     } else {
@@ -52,7 +53,7 @@ export class CommandContext {
     }
 
     if (this.interaction) {
-      (msgOptions as InteractionReplyOptions).ephemeral = ephemeral; // todo fix this not working lmao
+      (msgOptions as InteractionReplyOptions).ephemeral = ephemeral;
       await this.interaction.reply(msgOptions);
     } else {
       if (msgOptions.allowedMentions) {
