@@ -41,6 +41,7 @@ export class CommandContext {
     this.member = member;
   }
 
+  // todo implement followup and defer
   public async reply(message: string | MessageOptions | InteractionReplyOptions, ephemeral = false): Promise<void> {
     let msgOptions: MessageOptions | InteractionReplyOptions;
 
@@ -51,7 +52,7 @@ export class CommandContext {
     }
 
     if (this.interaction) {
-      (msgOptions as InteractionReplyOptions).ephemeral = ephemeral;
+      (msgOptions as InteractionReplyOptions).ephemeral = ephemeral; // todo fix this not working lmao
       await this.interaction.reply(msgOptions);
     } else {
       if (msgOptions.allowedMentions) {
