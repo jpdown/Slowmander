@@ -137,8 +137,8 @@ export type CommandOptions = {
 export type CommandArgument = {
   name: string;
   type: CommandArgumentType;
+  description: string;
   optional?: boolean;
-  description?: string;
   autocomplete?: boolean;
   choices?: ApplicationCommandOptionChoice[];
   channelTypes?: ExcludeEnum<typeof ChannelTypes, "UNKNOWN">[];

@@ -11,6 +11,8 @@ import {
   ApplicationCommandData,
   ApplicationCommandOptionChoice,
   ApplicationCommandOptionData,
+  ApplicationCommandSubCommandData,
+  ApplicationCommandSubGroupData,
   GuildMember,
   Interaction,
   Message, MessageEmbed, PartialMessage, Snowflake,
@@ -20,7 +22,6 @@ import { CommandContext } from 'CommandContext';
 import type { Module } from 'modules/Module';
 import { ArgumentParser } from 'utils/ArgumentParser';
 import { PermissionsHelper } from 'utils/PermissionsHelper';
-import { args } from 'modules/ModuleDecorators';
 import type { APIInteractionGuildMember } from 'discord-api-types';
 
 export class CommandManager {
@@ -127,7 +128,16 @@ export class CommandManager {
     }
     
     // Get command
-    const cmd = this.getCommand(interaction.guildId, interaction.commandName);
+    let subGroup = interaction.options.getSubcommandGroup(false);
+    let subCmd = interaction.options.getSubcommand(false);
+
+    let cmd = this.getCommand(interaction.guildId, interaction.commandName);
+    if (subGroup && cmd instanceof CommandGroup) {
+      cmd = cmd.getSubCommand(subGroup);
+    }
+    if (subCmd && cmd instanceof CommandGroup) {
+      cmd = cmd.getSubCommand(subCmd);
+    }
     if (!cmd) {
       return;
     }
@@ -241,16 +251,12 @@ export class CommandManager {
 
     let currGuild: Snowflake;
     let currSlash: ApplicationCommandData;
-    let args: ApplicationCommandOptionData[];
-    let currArg: ApplicationCommandOptionData;
 
     // Convert every command to slash command JSON
     // TODO: Add permissions
     this.commandMap.forEach((v, k) => {
       // Ignore non slash commands and subcommands
       if (!v.slash || v.parent) return;
-      // TODO: Handle command groups
-      if (v instanceof CommandGroup) return; 
 
       // TODO: Support USER and MESSAGE commands
       currSlash = { name: v.name, description: v.desc ?? "", type: "CHAT_INPUT" }
@@ -261,31 +267,63 @@ export class CommandManager {
       }
 
       if (v.args) {
-        args = [];
-        v.args.forEach((arg) => {
-          // Will change type later
-          currArg = { 
-            name: arg.name, description: arg.description ?? "", 
-            type: this.bot.utils.getSlashArgType(arg.type), required: !arg.optional, 
-            autocomplete: arg.autocomplete,
-          }
-
-          if (arg.choices && (currArg.type === "STRING" || currArg.type === "INTEGER" || currArg.type === "NUMBER")) {
-            currArg.choices = arg.choices;
-          }
-
-          if (arg.channelTypes && currArg.type === "CHANNEL") {
-            currArg.channelTypes = arg.channelTypes;
-          }
-
-          args.push(currArg);
-        });
-        currSlash.options = args;
+        currSlash.options = this.getSlashArgs(v);
+      }
+      else if (v instanceof CommandGroup) {
+        currSlash.options = this.getSlashSubs(v);
       }
 
       commands.get(currGuild)?.push(currSlash);
     });
 
     return commands;
+  }
+
+  private getSlashSubs(group: CommandGroup): (ApplicationCommandSubCommandData | ApplicationCommandSubGroupData)[] {
+    const subs: (ApplicationCommandSubCommandData | ApplicationCommandSubGroupData)[] = [];
+    let currSub: ApplicationCommandSubCommandData | ApplicationCommandSubGroupData;
+
+    group.subCommands.forEach((sub) => {
+      if (sub instanceof CommandGroup) {
+        currSub = {
+          type: "SUB_COMMAND_GROUP", name: sub.name, description: sub.desc
+        };
+        // We can do this because subgroups cannot contain subgroups
+        currSub.options = this.getSlashSubs(sub) as ApplicationCommandSubCommandData[];
+      }
+      else {
+        currSub = {
+          type: "SUB_COMMAND", name: sub.name, description: sub.desc
+        };
+        currSub.options = this.getSlashArgs(sub);
+      }
+      subs.push(currSub);
+    });
+
+    return subs;
+  }
+
+  private getSlashArgs(cmd: Command): Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] | undefined {
+    let args: Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] = [];
+    cmd.args?.forEach((arg) => {
+      // Will change type later
+      let currArg: Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData> = { 
+        name: arg.name, description: arg.description ?? "", 
+        type: this.bot.utils.getSlashArgType(arg.type), required: !arg.optional, 
+        autocomplete: arg.autocomplete,
+      }
+
+      if (arg.choices && (currArg.type === "STRING" || currArg.type === "INTEGER" || currArg.type === "NUMBER")) {
+        currArg.choices = arg.choices;
+      }
+
+      if (arg.channelTypes && currArg.type === "CHANNEL") {
+        currArg.channelTypes = arg.channelTypes;
+      }
+
+      args.push(currArg);
+    });
+
+    return args.length > 0 ? args : undefined;
   }
 }

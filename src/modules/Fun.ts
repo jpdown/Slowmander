@@ -44,8 +44,8 @@ export class Fun extends Module {
   @subcommand('testargs2', "another sub of testartgs2")
   @guild("472222827421106201")
   @args([
-    { name: 'user', type: 'user' },
-    { name: 'channel', type: 'channel' },
+    { name: 'user', type: 'user', description: "the user" },
+    { name: 'channel', type: 'channel', description: "the channel" },
   ])
   @guildOnly()
   public async testargs(ctx: CommandContext, user: User, channel: Channel) {

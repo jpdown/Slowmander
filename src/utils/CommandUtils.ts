@@ -370,7 +370,7 @@ export class CommandUtils {
     return emote;
   }
 
-  public getSlashArgType(type: CommandArgumentType): ApplicationCommandOptionType {
+  public getSlashArgType(type: CommandArgumentType): Exclude<ApplicationCommandOptionType, "SUB_COMMAND" | "SUB_COMMAND_GROUP"> {
     switch (type) {
       case 'string':
         return "STRING";
