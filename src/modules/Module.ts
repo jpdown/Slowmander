@@ -46,7 +46,6 @@ export abstract class Module {
           commandOptions.guild = Reflect.getMetadata('command:guild', this, key);
           commandOptions.guildOnly = Reflect.getMetadata('command:guildOnly', this, key);
           commandOptions.slash = Reflect.getMetadata('command:slash', this, key) ?? true;
-          commandOptions.aliases = Reflect.getMetadata('command:aliases', this, key);
 
           let addedCommand: Command;
           let permLevel: PermissionLevel = Reflect.getMetadata('command:permLevel', this, key) ?? PermissionLevel.Everyone;

@@ -51,8 +51,8 @@ export class CommandGroup extends Command {
 
   public registerSubCommand(command: Command): void {
     this.subCommands.set(command.name, command);
-    command.aliases?.forEach((alias) => {
-      this.subCommands.set(alias, command);
-    });
+    // command.aliases.forEach((alias) => {
+    //   this.subCommands.set(alias, command);
+    // });
   }
 }
