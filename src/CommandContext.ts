@@ -23,6 +23,8 @@ export class CommandContext {
 
   private _replyMessage?: Message;
 
+  private _interactionReplied = false;
+
   constructor(
     bot: Bot, client: Client<true>, msgOrInteraction: Message | CommandInteraction,
     user: User, channel?: TextBasedChannels, guild?: Guild, member?: GuildMember,
@@ -42,7 +44,6 @@ export class CommandContext {
     this.member = member;
   }
 
-  // todo implement followup and defer
   public async reply(message: string | MessageOptions | InteractionReplyOptions, ephemeral = false): Promise<void> {
     let msgOptions: MessageOptions | InteractionReplyOptions;
 
@@ -54,7 +55,13 @@ export class CommandContext {
 
     if (this.interaction) {
       (msgOptions as InteractionReplyOptions).ephemeral = ephemeral;
-      await this.interaction.reply(msgOptions);
+      if (!this._interactionReplied) {
+        await this.interaction.reply(msgOptions);
+        this._interactionReplied = true;
+      }
+      else {
+        await this.interaction.followUp(msgOptions);
+      }
     } else {
       if (msgOptions.allowedMentions) {
         msgOptions.allowedMentions.repliedUser = false;
@@ -87,7 +94,22 @@ export class CommandContext {
     }
   }
 
-  public get replyMessage(): Message | undefined {
-    return this._replyMessage;
+  public async defer() {
+    if (this.interaction) {
+      await this.interaction.deferReply();
+      this._interactionReplied = true;
+    }
+    else {
+      await this.reply("Slowmander is thinking...");
+    }
+  }
+
+  public async edit(message: string | MessageOptions | InteractionReplyOptions) {
+    if (this.interaction && this._interactionReplied) {
+      await this.interaction.editReply(message);
+    }
+    else if (this._replyMessage) {
+      await this._replyMessage.edit(message);
+    }
   }
 }
