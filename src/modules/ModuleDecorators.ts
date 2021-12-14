@@ -59,6 +59,12 @@ export function guildOnly() {
   };
 }
 
+export function aliases(...a: string[]) {
+  return (target: Object, propertyKey: string) => {
+    Reflect.defineMetadata('command:aliases', a, target, propertyKey);
+  };
+}
+
 export function isOwner() {
   return (target: Object, propertyKey: string) => {
     Reflect.defineMetadata('command:permLevel', PermissionLevel.Owner, target, propertyKey);

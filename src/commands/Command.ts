@@ -27,7 +27,7 @@ export class Command {
 
   public readonly args?: CommandArgument[];
 
-  // public readonly aliases: string[];
+  public readonly aliases?: string[];
 
   private readonly _permLevel: PermissionLevel;
 
@@ -74,6 +74,7 @@ export class Command {
     this.guild = options.guild;
     this.guildOnly = options.guildOnly;
     this.slash = options.slash;
+    this.aliases = options.aliases;
 
     // this._permLevel = permLevel;
 
@@ -132,6 +133,7 @@ export type CommandOptions = {
   guild?: Snowflake;
   guildOnly?: boolean;
   slash?: boolean;
+  aliases?: string[];
 };
 
 export type CommandArgument = {

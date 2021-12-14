@@ -3,7 +3,7 @@ import type { CommandContext } from 'CommandContext';
 import type { Command } from 'commands/Command';
 import type { Channel, User } from 'discord.js';
 import { Module } from './Module';
-import { args, command, group, guild, guildOnly, isAdmin, isMod, isOwner, isVIP, subcommand, subgroup } from './ModuleDecorators';
+import { aliases, args, command, group, guild, guildOnly, isAdmin, isMod, isOwner, isVIP, subcommand, subgroup } from './ModuleDecorators';
 
 export class Fun extends Module {
   public constructor(bot: Bot) {
@@ -12,6 +12,7 @@ export class Fun extends Module {
 
   @command("cats")
   @guild("472222827421106201")
+  @aliases("meow", "kitty")
   public async cat(ctx: CommandContext) {
     await ctx.reply('cat');
   }
@@ -48,6 +49,7 @@ export class Fun extends Module {
     { name: 'channel', type: 'channel' },
   ])
   @guildOnly()
+  @aliases("testing", "haha")
   public async testargs(ctx: CommandContext, user: User, channel: Channel) {
     await ctx.reply(`User ID: ${user.id}, Channel ID: ${channel.id}`);
   }

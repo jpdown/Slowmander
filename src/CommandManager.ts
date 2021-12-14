@@ -216,9 +216,9 @@ export class CommandManager {
 
   private registerCommand(command: Command) {
     this.commandMap.set((command.guild ?? "GLOBAL") + "," + command.name, command);
-    // command.aliases.forEach((alias) => {
-    //   this.commandMap.set(alias, command);
-    // });
+    command.aliases?.forEach((alias) => {
+      this.commandMap.set((command.guild ?? "GLOBAL") + "," + alias, command);
+    });
   }
 
   private registerAll(): void {
