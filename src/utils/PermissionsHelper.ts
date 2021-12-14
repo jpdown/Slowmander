@@ -15,7 +15,7 @@ export class PermissionsHelper {
       permLevel = await PermissionsHelper.getMemberPermLevel(ctx);
     }
 
-    return (permLevel >= command.permLevel);
+    return permLevel >= command.permLevel;
   }
 
   public static async getUserPermLevel(ctx: CommandContext): Promise<PermissionLevel> {
