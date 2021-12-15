@@ -24,7 +24,7 @@ export class Help extends Module {
                 names.push(cmd.name);
             }
         }
-        const paginator: ButtonPaginator = new ButtonPaginator(names, "Use /help [command] to get information on a specific command!", 5, "Help", c.channel, c.bot);
+        const paginator: ButtonPaginator = new ButtonPaginator(names, 5, "Help", c.channel, c.bot);
         await paginator.postMessage();
         // if (args?.length === 1) {
         // } else {

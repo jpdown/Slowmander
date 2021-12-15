@@ -7,16 +7,14 @@ export class ButtonPaginator {
     private numPerPage: number;
     private page: number;
     private title: string;
-    private heaader: string;
     private msg: Message | undefined;
     private channel: TextBasedChannels;
     private bot: Bot;
     // private command: Command;
     private pages;
 
-    constructor(elements: string[], header: string, numPerPage: number, title: string, channel: TextBasedChannels, bot: Bot) {
+    constructor(elements: string[], numPerPage: number, title: string, channel: TextBasedChannels, bot: Bot) {
         this.elements = elements;
-        this.heaader = header;
         this.numPerPage = numPerPage;
         this.page = 0;
         this.title = title;
