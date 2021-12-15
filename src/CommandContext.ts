@@ -72,8 +72,8 @@ export class CommandContext {
         this._replyMessage = await this.message!.reply(msgOptions);
       }
       else {
-        // Reply to the previous sent bot message
-        this._replyMessage = await this._replyMessage.reply(msgOptions);
+        // Reply to the first sent reply
+        await this._replyMessage.reply(msgOptions);
       }
     }
   }
