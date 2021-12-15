@@ -68,7 +68,13 @@ export class CommandContext {
       } else {
         msgOptions.allowedMentions = { repliedUser: false };
       }
-      this._replyMessage = await this.message!.reply(msgOptions);
+      if (!this._replyMessage) {
+        this._replyMessage = await this.message!.reply(msgOptions);
+      }
+      else {
+        // Reply to the previous sent bot message
+        this._replyMessage = await this._replyMessage.reply(msgOptions);
+      }
     }
   }
 
