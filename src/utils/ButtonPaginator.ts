@@ -7,25 +7,27 @@ export class ButtonPaginator {
     private numPerPage: number;
     private page: number;
     private title: string;
+    private heaader: string;
     private msg: Message | undefined;
     private channel: TextBasedChannels;
     private bot: Bot;
-    private command: Command;
+    // private command: Command;
     private pages;
 
-    constructor(elements: string[], numPerPage: number, title: string, channel: TextBasedChannels, bot: Bot, command: Command) {
+    constructor(elements: string[], header: string, numPerPage: number, title: string, channel: TextBasedChannels, bot: Bot) {
         this.elements = elements;
+        this.heaader = header;
         this.numPerPage = numPerPage;
         this.page = 0;
         this.title = title;
         this.channel = channel;
         this.bot = bot;
-        this.command = command;
         this.pages = Math.ceil(this.elements.length / this.numPerPage);
     }
 
     public async postMessage(): Promise<Message> {
-        this.msg = await this.channel.send({ embeds: [await this.generateEmbed()] });
+        let emb = await this.generateEmbed();
+        this.msg = await this.channel.send({ embeds: [emb] });
         let buttons;
         if (this.pages > 1) {
             buttons = new MessageActionRow()
@@ -37,6 +39,7 @@ export class ButtonPaginator {
                 componentType: 'BUTTON',
                 time: 60000
             });
+            this.msg.edit({components: [buttons]})
             intCollector.on('collect', this.onClick.bind(this));
             intCollector.on('end', async () => {
                 await this.msg?.delete();
@@ -66,7 +69,8 @@ export class ButtonPaginator {
             .setColor(await this.bot.utils.getSelfColor(this.channel))
             .setFooter(`Page ${this.page + 1} of ${this.pages}`)
             .setDescription(this.elements.slice(this.page * this.numPerPage, (this.page + 1) * this.numPerPage).join('\n'))
-            .setTitle(this.title);
+            .setTitle(this.title)
+            .setTimestamp();
         return embed;
     }
 }
