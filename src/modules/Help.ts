@@ -14,8 +14,6 @@ export class Help extends Module {
     @command("help")
     @guild("472222827421106201")
     public async help(c: CommandContext) {
-        if (!c.interaction) return;
-        let i = c.interaction;
         let commands = c.bot.commandManager.getAllCommands();
         let map = new Map();
         let names: string[] = [];
@@ -26,7 +24,7 @@ export class Help extends Module {
                 names.push(cmd.name);
             }
         }
-        const paginator: ButtonPaginator = new ButtonPaginator(names, i, c, 5, "Help", "Slowmander Command Help");
+        const paginator: ButtonPaginator = new ButtonPaginator(names, c, 5, "Help", "Slowmander Command Help");
         await paginator.postMessage();
         // if (args?.length === 1) {
         // } else {

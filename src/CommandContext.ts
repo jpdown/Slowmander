@@ -3,6 +3,7 @@ import type {
   Client, CommandInteraction, Guild, GuildMember, InteractionReplyOptions, MessageOptions, TextBasedChannels, User,
 } from 'discord.js';
 import { Message } from 'discord.js';
+import type { APIMessage } from 'discord-api-types/v9';
 
 export class CommandContext {
   public readonly bot: Bot;
@@ -44,8 +45,9 @@ export class CommandContext {
     this.member = member;
   }
 
-  public async reply(message: string | MessageOptions | InteractionReplyOptions, ephemeral = false): Promise<void> {
+  public async reply(message: string | MessageOptions | InteractionReplyOptions, ephemeral = false): Promise<Message | APIMessage | undefined> {
     let msgOptions: MessageOptions | InteractionReplyOptions;
+    let msg: Message | APIMessage | undefined = undefined;
 
     if (typeof message === 'string') {
       msgOptions = { content: message };
@@ -54,13 +56,16 @@ export class CommandContext {
     }
 
     if (this.interaction) {
-      (msgOptions as InteractionReplyOptions).ephemeral = ephemeral;
+      let intOptions = msgOptions as InteractionReplyOptions;
+      intOptions.ephemeral = ephemeral;
+      intOptions.fetchReply = true;
       if (!this._interactionReplied) {
-        await this.interaction.reply(msgOptions);
+        await this.interaction.reply(intOptions);
+        msg = await this.interaction.fetchReply();
         this._interactionReplied = true;
       }
       else {
-        await this.interaction.followUp(msgOptions);
+        await this.interaction.followUp(intOptions);
       }
     } else {
       if (msgOptions.allowedMentions) {
@@ -70,12 +75,15 @@ export class CommandContext {
       }
       if (!this._replyMessage) {
         this._replyMessage = await this.message!.reply(msgOptions);
+        msg = this._replyMessage;
       }
       else {
         // Reply to the first sent reply
         await this._replyMessage.reply(msgOptions);
       }
     }
+
+    return msg;
   }
 
   public async replyPing(message: string | MessageOptions | InteractionReplyOptions, ephemeral = false) {
