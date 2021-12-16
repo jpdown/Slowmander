@@ -32,7 +32,6 @@ export class ButtonPaginator {
 
     public async postMessage() { //TODO still getting unkown interaction and idk why anymore
         let emb = await this.generateEmbed();
-        this.msg = await this.channel.send({ embeds: [emb] });
         this.inter.deferReply({ephemeral: true}).then(console.log).catch(console.error)
         let buttons;
         if (this.pages > 1) {
@@ -47,8 +46,7 @@ export class ButtonPaginator {
             });
             buttons.components[0].setDisabled(true);
             buttons.components
-            this.msg.edit({ components: [buttons] })
-            this.inter.reply(this.title);
+            this.inter.reply({embeds: [emb], components: [buttons]})
             intCollector.on('collect', i => {
                 this.onClick.bind(this);
             })
