@@ -48,7 +48,7 @@ export class ButtonPaginator {
                     new MessageButton().setCustomId('prev').setLabel('Previous').setStyle('PRIMARY'),
                     new MessageButton().setCustomId('next').setLabel('Next').setStyle('PRIMARY'));
             const intCollector = this.msg.createMessageComponentCollector({
-                // filter: (interaction: ButtonInteraction, user: User) => !user.bot,
+                filter: (interaction: ButtonInteraction) => interaction.message.id === this.msg?.id,
                 componentType: 'BUTTON',
                 time: 60000
             });
@@ -64,7 +64,6 @@ export class ButtonPaginator {
 
     public async onClick(inter: Interaction) { //TODO add proper filtering, only work in given instance
         // TODO check for perms maybe?
-        console.log("lol");
         if (!(inter instanceof ButtonInteraction)) return;
         let com = inter.message?.components;
         if (!com) return;
