@@ -49,9 +49,15 @@ export abstract class Module {
 
           let addedCommand: Command;
           let permLevel: PermissionLevel = Reflect.getMetadata('command:permLevel', this, key) ?? PermissionLevel.Everyone;
-          // TODO: Should this just copy parent's permLevel instead? Is it better to overspecify or underspecify here?
           if (commandOptions.parent && permLevel !== commandOptions.parent.permLevel) {
-            //throw new Error("Command children cannot have different permLevel to their parent.")
+            // If permLevel is less than parent, just copy parent
+            if (permLevel < commandOptions.parent.permLevel) {
+              permLevel = commandOptions.parent.permLevel
+            }
+            // If trying to specify more restrictive, error
+            else {
+              throw new Error("Command children cannot have stricter permLevel than their parent.")
+            }
           }
 
           // Create the objects and register
