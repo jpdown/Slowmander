@@ -84,14 +84,15 @@ export class CommandManager {
       return;
     }
 
+    // Parse arguments
+    const { command: commandToRun, args } = await ArgumentParser.parseArgs(fullMessage.content.slice(prefix.length + split[0].length), command, this.bot, fullMessage.guild ?? undefined);
+
     // Build ctx
     const ctx = new CommandContext(
       this.bot, this.bot.client, fullMessage, fullMessage.author, fullMessage.channel,
-      fullMessage.guild ?? undefined, fullMessage.member ?? undefined,
+      fullMessage.guild ?? undefined, fullMessage.member ?? undefined, args
     );
 
-    // Parse arguments
-    const { command: commandToRun, args } = await ArgumentParser.parseArgs(fullMessage.content.slice(prefix.length + split[0].length), command, ctx);
     if (!args) {
       // TODO: Send help
       await ctx.reply('help sent haha');
@@ -154,17 +155,18 @@ export class CommandManager {
       return;
     }
 
-    // Build ctx
-    const ctx = new CommandContext(
-      this.bot, this.bot.client, interaction, interaction.user, 
-      interaction.channel, interaction.guild ?? undefined, interaction.member
-    );
-
     // Parse arguments
     const args = await ArgumentParser.parseSlashArgs(interaction.options, cmd);
     if (!args) {
       return;
     }
+
+    // Build ctx
+    const ctx = new CommandContext(
+      this.bot, this.bot.client, interaction, interaction.user, 
+      interaction.channel, interaction.guild ?? undefined, interaction.member, args
+    );
+    
 
     // If guild only and not in guild
     if (cmd.guildOnly && !interaction.inGuild()) {

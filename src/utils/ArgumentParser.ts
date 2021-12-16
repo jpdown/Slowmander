@@ -1,26 +1,27 @@
+import type { Bot } from 'Bot';
 import type { CommandContext } from 'CommandContext';
 import type { Command, CommandParsedType } from 'commands/Command';
 import { CommandGroup } from 'commands/CommandGroup';
-import { CacheType, Channel, CommandInteractionOptionResolver } from 'discord.js';
+import { CacheType, Channel, CommandInteractionOptionResolver, Guild } from 'discord.js';
 import { Logger } from 'Logger';
 
 export class ArgumentParser {
   // Splits on space but keeps quoted strings together
   private static argsRegex = /((["'])((?:.(?!\2))*.?)\2)|(\S+)/g;
 
-  public static async parseArgs(content: string, command: Command | CommandGroup, ctx: CommandContext): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
+  public static async parseArgs(content: string, command: Command | CommandGroup, bot: Bot, guild?: Guild): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
     const splitArgs = [...content.matchAll(ArgumentParser.argsRegex)];
-    return await ArgumentParser.parseArgsRecurse(splitArgs, command, ctx);
+    return await ArgumentParser.parseArgsRecurse(splitArgs, command, bot, guild);
   }
 
-  private static async parseArgsRecurse(args: RegExpMatchArray[], command: Command | CommandGroup, ctx: CommandContext): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
+  private static async parseArgsRecurse(args: RegExpMatchArray[], command: Command | CommandGroup, bot: Bot, guild?: Guild): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
     if (command instanceof CommandGroup) {
-      return ArgumentParser.parseSubCommandArgs(args, command, ctx);
+      return ArgumentParser.parseSubCommandArgs(args, command, bot, guild);
     }
-    return { command: command, args: await ArgumentParser.parseCommandArgs(args, command, ctx) };
+    return { command: command, args: await ArgumentParser.parseCommandArgs(args, command, bot, guild) };
   }
 
-  private static async parseSubCommandArgs(args: RegExpMatchArray[], command: CommandGroup, ctx: CommandContext): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
+  private static async parseSubCommandArgs(args: RegExpMatchArray[], command: CommandGroup, bot: Bot, guild?: Guild): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
     if (args.length === 0) {
       return { command: command, args: undefined };
     }
@@ -36,10 +37,10 @@ export class ArgumentParser {
       return { command: subcommand, args: [] };
     }
 
-    return ArgumentParser.parseArgsRecurse(args.slice(1), subcommand, ctx);
+    return ArgumentParser.parseArgsRecurse(args.slice(1), subcommand, bot, guild);
   }
 
-  private static async parseCommandArgs(args: RegExpMatchArray[], command: Command, ctx: CommandContext): Promise<CommandParsedType[] | undefined> {
+  private static async parseCommandArgs(args: RegExpMatchArray[], command: Command, bot: Bot, guild?: Guild): Promise<CommandParsedType[] | undefined> {
     let allRequired = true;
     const parsedArgs: CommandParsedType[] = [];
     let currStr;
@@ -88,7 +89,7 @@ export class ArgumentParser {
           break;
         case 'role':
           // eslint-disable-next-line no-await-in-loop
-          if (ctx.guild) currParsedArg = await ctx.bot.utils.parseRole(currStr, ctx.guild);
+          if (guild) currParsedArg = await bot.utils.parseRole(currStr, guild);
           if (currParsedArg === null) currParsedArg = undefined;
           break;
         default:

@@ -4,6 +4,7 @@ import type {
 } from 'discord.js';
 import { Message } from 'discord.js';
 import type { APIMessage } from 'discord-api-types/v9';
+import type { CommandParsedType } from 'commands/Command';
 
 export class CommandContext {
   public readonly bot: Bot;
@@ -22,13 +23,15 @@ export class CommandContext {
 
   public readonly member?: GuildMember;
 
+  public readonly args?: CommandParsedType[];
+
   private _replyMessage?: Message;
 
   private _interactionReplied = false;
 
   constructor(
     bot: Bot, client: Client<true>, msgOrInteraction: Message | CommandInteraction,
-    user: User, channel: TextBasedChannels, guild?: Guild, member?: GuildMember,
+    user: User, channel: TextBasedChannels, guild?: Guild, member?: GuildMember, args?: CommandParsedType[]
   ) {
     this.bot = bot;
     this.client = client;
@@ -43,6 +46,7 @@ export class CommandContext {
     this.user = user;
     this.guild = guild;
     this.member = member;
+    this.args = args;
   }
 
   public async reply(message: string | MessageOptions | InteractionReplyOptions, ephemeral = false): Promise<Message | APIMessage | undefined> {
