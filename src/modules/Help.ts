@@ -6,7 +6,7 @@ import { Module } from './Module';
 import { args, command, group, guild, guildOnly, isAdmin, isMod, isOwner, isVIP, subcommand } from './ModuleDecorators';
 import { ButtonPaginator } from 'utils/ButtonPaginator';
 
-export class Help extends Module { 
+export class Help extends Module {
     public constructor(bot: Bot) {
         super(bot);
     }
@@ -14,6 +14,8 @@ export class Help extends Module {
     @command("help")
     @guild("472222827421106201")
     public async help(c: CommandContext) {
+        if (!c.interaction) return;
+        let i = c.interaction;
         let commands = c.bot.commandManager.getAllCommands();
         let map = new Map();
         let names: string[] = [];
@@ -24,7 +26,7 @@ export class Help extends Module {
                 names.push(cmd.name);
             }
         }
-        const paginator: ButtonPaginator = new ButtonPaginator(names, 5, "Help", c.channel, c.bot);
+        const paginator: ButtonPaginator = new ButtonPaginator(names, i, c, 5, "Help", "Slowmander Command Help");
         await paginator.postMessage();
         // if (args?.length === 1) {
         // } else {
