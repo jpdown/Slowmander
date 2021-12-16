@@ -80,11 +80,11 @@ export class ArgumentParser {
           break;
         case 'user':
           // eslint-disable-next-line no-await-in-loop
-          currParsedArg = await ctx.bot.utils.parseUser(currStr);
+          currParsedArg = await bot.utils.parseUser(currStr);
           break;
         case 'channel':
           // eslint-disable-next-line no-await-in-loop
-          currParsedArg = await ctx.bot.utils.parseChannel(currStr);
+          currParsedArg = await bot.utils.parseChannel(currStr);
           if (currParsedArg === null) currParsedArg = undefined;
           break;
         case 'role':
