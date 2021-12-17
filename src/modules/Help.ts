@@ -30,7 +30,7 @@ export class Help extends Module {
             const paginator: ButtonPaginator = new ButtonPaginator(Array.from(map.keys()), c, 5, "Help");
             await paginator.postMessage();
         } else {
-            let cmdName = args[1]?.toString();
+            let cmdName = args[0]?.toString();
             if (!cmdName) return; // is this the best way to handle something possibly being undefined?
             if (!map.get(cmdName)) {
                 await c.reply("Command not found!");
