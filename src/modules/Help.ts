@@ -1,9 +1,9 @@
 import type { Bot } from 'Bot';
 import type { CommandContext } from 'CommandContext';
-import { Channel, CommandOptionSubOptionResolvableType, MessageEmbed, User, MessageActionRow, MessageButton, TextBasedChannels } from 'discord.js';
+import { MessageEmbed, TextBasedChannels } from 'discord.js';
 import { PermissionsHelper } from 'utils/PermissionsHelper';
 import { Module } from './Module';
-import { args, command, group, guild, guildOnly, isAdmin, isMod, isOwner, isVIP, subcommand } from './ModuleDecorators';
+import { args, command, guild} from './ModuleDecorators';
 import { ButtonPaginator } from 'utils/ButtonPaginator';
 
 export class Help extends Module {
