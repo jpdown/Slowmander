@@ -155,6 +155,9 @@ export class ArgumentParser {
             currArg = undefined;
         }
 
+        if (!currArg) {
+          break;
+        }
         parsedArgs.push(currArg);
       }
     }
