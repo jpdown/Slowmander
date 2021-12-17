@@ -1,6 +1,6 @@
 import type { Bot } from 'Bot';
 import type { CommandContext } from 'CommandContext';
-import { Channel, CommandOptionSubOptionResolvableType, MessageEmbed, User, MessageActionRow, MessageButton } from 'discord.js';
+import { Channel, CommandOptionSubOptionResolvableType, MessageEmbed, User, MessageActionRow, MessageButton, TextBasedChannels } from 'discord.js';
 import { PermissionsHelper } from 'utils/PermissionsHelper';
 import { Module } from './Module';
 import { args, command, group, guild, guildOnly, isAdmin, isMod, isOwner, isVIP, subcommand } from './ModuleDecorators';
@@ -13,22 +13,38 @@ export class Help extends Module {
 
     @command("help")
     @guild("472222827421106201")
+    @args([
+        {name: 'name', type: 'string', description: 'specific command', optional: true}
+    ])
     public async help(c: CommandContext) {
         let commands = c.bot.commandManager.getAllCommands();
         let map = new Map();
-        let names: string[] = [];
-        let args = c.message?.content.split(' ');;
+        let args = c.args;
+        c.defer();
         for (let cmd of commands) {
             if (await PermissionsHelper.checkPerms(c, cmd)) {
                 map.set(cmd.name, cmd.desc);
-                names.push(cmd.name);
             }
         }
-        const paginator: ButtonPaginator = new ButtonPaginator(names, c, 5, "Help", "Slowmander Command Help");
-        await paginator.postMessage();
-        // if (args?.length === 1) {
-        // } else {
-        //     await c.reply("lol tyler hasn't implemented this yet");
-        // }
+        if (!args) {
+            const paginator: ButtonPaginator = new ButtonPaginator(Array.from(map.keys()), c, 5, "Help");
+            await paginator.postMessage();
+        } else {
+            let cmdName = args[1]?.toString();
+            if (!cmdName) return; // is this the best way to handle something possibly being undefined?
+            if (!map.get(cmdName)) {
+                await c.reply("Command not found!");
+            }
+            await c.reply({embeds: [await this.generateEmbed(cmdName, map.get(cmdName), c.channel)]});
+        }
+    }
+
+    private async generateEmbed(title: string, desc: string, channel: TextBasedChannels): Promise<MessageEmbed> {
+        const embed: MessageEmbed = new MessageEmbed()
+            .setColor(await this.bot.utils.getSelfColor(channel))
+            .setDescription(desc)
+            .setTitle(title)
+            .setTimestamp();
+        return embed;
     }
 }
