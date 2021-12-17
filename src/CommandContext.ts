@@ -69,7 +69,7 @@ export class CommandContext {
         this._interactionReplied = true;
       }
       else {
-        await this.interaction.followUp(intOptions);
+        msg = await this.interaction.followUp(intOptions);
       }
     } else {
       if (msgOptions.allowedMentions) {
@@ -83,7 +83,7 @@ export class CommandContext {
       }
       else {
         // Reply to the first sent reply
-        await this._replyMessage.reply(msgOptions);
+        msg = await this._replyMessage.reply(msgOptions);
       }
     }
 
