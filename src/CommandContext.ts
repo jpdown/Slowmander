@@ -29,6 +29,8 @@ export class CommandContext {
 
   private _interactionReplied = false;
 
+  private _deferred = false;
+
   constructor(
     bot: Bot, client: Client<true>, msgOrInteraction: Message | CommandInteraction,
     user: User, channel: TextBasedChannels, guild?: Guild, member?: GuildMember, args?: CommandParsedType[]
@@ -81,11 +83,16 @@ export class CommandContext {
         this._replyMessage = await this.message!.reply(msgOptions);
         msg = this._replyMessage;
       }
+      else if (this._deferred) {
+        msg = await this._replyMessage.edit(msgOptions);
+      }
       else {
         // Reply to the first sent reply
         msg = await this._replyMessage.reply(msgOptions);
       }
     }
+
+    this._deferred = false;
 
     return msg;
   }
@@ -118,8 +125,9 @@ export class CommandContext {
       this._interactionReplied = true;
     }
     else {
-      await this.reply("Slowmander is thinking...");
+      this._replyMessage = await this.message!.reply("Slowmander is thinking...");
     }
+    this._deferred = true;
   }
 
   public async edit(message: string | MessageOptions | InteractionReplyOptions) {
