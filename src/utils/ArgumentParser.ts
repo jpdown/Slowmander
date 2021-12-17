@@ -52,8 +52,10 @@ export class ArgumentParser {
 
     // Use every to short circuit on first fail
     for (let i = 0; i < command.args.length; i += 1) {
-      if (args.length - 1 <= i && !command.args[i].optional) {
-        allRequired = false;
+      if (args.length <= i) {
+        if (!command.args[i].optional) {
+          allRequired = false;
+        }
         break;
       }
 
