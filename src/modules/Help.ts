@@ -20,13 +20,13 @@ export class Help extends Module {
         let commands = c.bot.commandManager.getAllCommands();
         let map = new Map();
         let args = c.args;
-        c.defer();
+        await c.defer();
         for (let cmd of commands) {
             if (await PermissionsHelper.checkPerms(c, cmd)) {
                 map.set(cmd.name, cmd.desc);
             }
         }
-        if (!args) {
+        if (!args || args.length === 0) {
             const paginator: ButtonPaginator = new ButtonPaginator(Array.from(map.keys()), c, 5, "Help");
             await paginator.postMessage();
         } else {
