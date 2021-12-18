@@ -1,6 +1,5 @@
-import type { Command } from "commands/Command";
 import type { Bot } from "Bot";
-import { MessageActionRow, Message, MessageEmbed, User, InteractionCollector, TextBasedChannels, GuildMember, MessageButton, Interaction, MessageInteraction, ButtonInteraction, CommandInteraction } from 'discord.js';
+import { MessageActionRow, Message, MessageEmbed, TextBasedChannels, MessageButton, Interaction, ButtonInteraction} from 'discord.js';
 import type { CommandContext } from "CommandContext";
 import { Logger } from "Logger";
 

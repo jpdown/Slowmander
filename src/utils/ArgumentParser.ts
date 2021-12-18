@@ -1,5 +1,4 @@
 import type { Bot } from 'Bot';
-import type { CommandContext } from 'CommandContext';
 import type { Command, CommandParsedType } from 'commands/Command';
 import { CommandGroup } from 'commands/CommandGroup';
 import { CacheType, Channel, CommandInteractionOptionResolver, Guild } from 'discord.js';
