@@ -1,47 +1,48 @@
 {
-  "name": "slowmander",
-  "version": "1.0.0",
-  "description": "Discord bot written with TypeScript and discord.js",
-  "main": "Bot.js",
-  "dependencies": {
-    "@twurple/api": "^5.0.8",
-    "@twurple/auth": "^5.0.8",
-    "@types/node-fetch": "^2.5.12",
-    "@types/ws": "^7.4.7",
-    "better-sqlite3": "^7.4.3",
-    "bufferutil": "^4.0.3",
-    "discord.js": "^13.3.1",
-    "erlpack": "github:discord/erlpack",
-    "node-fetch": "^2.6.1",
-    "reflect-metadata": "^0.1.13",
-    "utf-8-validate": "^5.0.5",
-    "zlib-sync": "^0.1.7"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "tsc -p tsconfig.json -w",
-    "build": "tsc -p tsconfig.json",
-    "start": "cd dist && node Bot.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jpdown/Slowmander.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/jpdown/Slowmander/issues"
-  },
-  "homepage": "https://github.com/jpdown/Slowmander#readme",
-  "devDependencies": {
-    "@tsconfig/node16": "^1.0.2",
-    "@types/better-sqlite3": "^7.4.0",
-    "@typescript-eslint/eslint-plugin": "^4.30.0",
-    "@typescript-eslint/parser": "^4.30.0",
-    "eslint": "^7.32.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-config-airbnb-typescript": "^14.0.0",
-    "eslint-plugin-deprecation": "^1.2.1",
-    "typescript": "^4.4.2"
-  }
+    "name": "slowmander",
+    "version": "1.0.0",
+    "description": "Discord bot written with TypeScript and discord.js",
+    "main": "Bot.js",
+    "dependencies": {
+        "@twurple/api": "^5.0.8",
+        "@twurple/auth": "^5.0.8",
+        "@types/node-fetch": "^2.5.12",
+        "@types/ws": "^7.4.7",
+        "better-sqlite3": "^7.4.3",
+        "bufferutil": "^4.0.3",
+        "discord.js": "^13.3.1",
+        "erlpack": "github:discord/erlpack",
+        "node-fetch": "^2.6.1",
+        "reflect-metadata": "^0.1.13",
+        "utf-8-validate": "^5.0.5",
+        "zlib-sync": "^0.1.7"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "watch": "tsc -p tsconfig.json -w",
+        "build": "tsc -p tsconfig.json",
+        "start": "cd dist && node Bot.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/jpdown/Slowmander.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/jpdown/Slowmander/issues"
+    },
+    "homepage": "https://github.com/jpdown/Slowmander#readme",
+    "devDependencies": {
+        "@tsconfig/node16": "^1.0.2",
+        "@types/better-sqlite3": "^7.4.0",
+        "@typescript-eslint/eslint-plugin": "^4.30.0",
+        "@typescript-eslint/parser": "^4.30.0",
+        "eslint": "^7.32.0",
+        "eslint-config-airbnb-base": "^14.2.1",
+        "eslint-config-airbnb-typescript": "^14.0.0",
+        "eslint-plugin-deprecation": "^1.2.1",
+        "prettier": "2.5.1",
+        "typescript": "^4.4.2"
+    }
 }

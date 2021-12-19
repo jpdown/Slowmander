@@ -8,17 +8,13 @@
             "type": "pwa-node",
             "request": "launch",
             "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
+            "skipFiles": ["<node_internals>/**"],
             "program": "${workspaceFolder}/dist/Bot.js",
             "sourceMaps": true,
             "cwd": "${workspaceFolder}/dist",
             "preLaunchTask": "tsc: build - tsconfig.json",
-            "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
-            ],
-            "env": {"NODE_PATH": "${workspaceFolder}/dist"}
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "env": { "NODE_PATH": "${workspaceFolder}/dist" }
         }
     ]
 }

@@ -1,84 +1,144 @@
-import { CommandArgument, PermissionLevel } from 'commands/Command';
-import type { Snowflake } from 'discord-api-types';
+import { CommandArgument, PermissionLevel } from "commands/Command";
+import type { Snowflake } from "discord-api-types";
 
 export function command(desc: string, name?: string) {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:desc', desc ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:type', 'command', target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata(
+            "command:name",
+            name ?? propertyKey,
+            target,
+            propertyKey
+        );
+        Reflect.defineMetadata(
+            "command:desc",
+            desc ?? propertyKey,
+            target,
+            propertyKey
+        );
+        Reflect.defineMetadata("command:type", "command", target, propertyKey);
+    };
 }
 
 export function noSlash() {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:slash', false, target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata("command:slash", false, target, propertyKey);
+    };
 }
 
 export function subcommand(parent: string, desc: string, name?: string) {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:desc', desc ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:type', 'command', target, propertyKey);
-    Reflect.defineMetadata('command:parent', parent, target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata(
+            "command:name",
+            name ?? propertyKey,
+            target,
+            propertyKey
+        );
+        Reflect.defineMetadata(
+            "command:desc",
+            desc ?? propertyKey,
+            target,
+            propertyKey
+        );
+        Reflect.defineMetadata("command:type", "command", target, propertyKey);
+        Reflect.defineMetadata("command:parent", parent, target, propertyKey);
+    };
 }
 
 export function group(desc: string, name?: string) {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:desc', desc ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:type', 'group', target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata(
+            "command:name",
+            name ?? propertyKey,
+            target,
+            propertyKey
+        );
+        Reflect.defineMetadata(
+            "command:desc",
+            desc ?? propertyKey,
+            target,
+            propertyKey
+        );
+        Reflect.defineMetadata("command:type", "group", target, propertyKey);
+    };
 }
 
 export function subgroup(parent: string, desc: string, name?: string) {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:name', name ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:desc', desc ?? propertyKey, target, propertyKey);
-    Reflect.defineMetadata('command:type', 'group', target, propertyKey);
-    Reflect.defineMetadata('command:parent', parent, target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata(
+            "command:name",
+            name ?? propertyKey,
+            target,
+            propertyKey
+        );
+        Reflect.defineMetadata(
+            "command:desc",
+            desc ?? propertyKey,
+            target,
+            propertyKey
+        );
+        Reflect.defineMetadata("command:type", "group", target, propertyKey);
+        Reflect.defineMetadata("command:parent", parent, target, propertyKey);
+    };
 }
 
 export function args(types: CommandArgument[]) {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:args', types, target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata("command:args", types, target, propertyKey);
+    };
 }
 
 export function guild(guildId: Snowflake) {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:guild', guildId, target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata("command:guild", guildId, target, propertyKey);
+    };
 }
 
 export function guildOnly() {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:guildOnly', true, target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata("command:guildOnly", true, target, propertyKey);
+    };
 }
 
 export function isOwner() {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:permLevel', PermissionLevel.Owner, target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata(
+            "command:permLevel",
+            PermissionLevel.Owner,
+            target,
+            propertyKey
+        );
+    };
 }
 
 export function isAdmin() {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:permLevel', PermissionLevel.Admin, target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata(
+            "command:permLevel",
+            PermissionLevel.Admin,
+            target,
+            propertyKey
+        );
+    };
 }
 
 export function isMod() {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:permLevel', PermissionLevel.Mod, target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata(
+            "command:permLevel",
+            PermissionLevel.Mod,
+            target,
+            propertyKey
+        );
+    };
 }
 
 export function isVIP() {
-  return (target: Object, propertyKey: string) => {
-    Reflect.defineMetadata('command:permLevel', PermissionLevel.VIP, target, propertyKey);
-  };
+    return (target: Object, propertyKey: string) => {
+        Reflect.defineMetadata(
+            "command:permLevel",
+            PermissionLevel.VIP,
+            target,
+            propertyKey
+        );
+    };
 }

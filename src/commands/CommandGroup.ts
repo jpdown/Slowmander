@@ -1,58 +1,67 @@
 import {
-  Command, CommandOptions, CommandParsedType, PermissionLevel,
-} from 'commands/Command';
-import type { Bot } from 'Bot';
+    Command,
+    CommandOptions,
+    CommandParsedType,
+    PermissionLevel,
+} from "commands/Command";
+import type { Bot } from "Bot";
 
-import { Message, PermissionResolvable, Permissions } from 'discord.js';
-import { CommandManager } from 'CommandManager';
-import type { CommandContext } from 'CommandContext';
+import { Message, PermissionResolvable, Permissions } from "discord.js";
+import { CommandManager } from "CommandManager";
+import type { CommandContext } from "CommandContext";
 
 export class CommandGroup extends Command {
-  public readonly subCommands: Map<string, Command>;
+    public readonly subCommands: Map<string, Command>;
 
-  constructor(name: string, desc: string, func: (ctx: CommandContext) => Promise<void>, permLevel: PermissionLevel, options: CommandOptions) {
-    super(name, desc, func, permLevel, options);
-    this.subCommands = new Map<string, Command>();
-  }
+    constructor(
+        name: string,
+        desc: string,
+        func: (ctx: CommandContext) => Promise<void>,
+        permLevel: PermissionLevel,
+        options: CommandOptions
+    ) {
+        super(name, desc, func, permLevel, options);
+        this.subCommands = new Map<string, Command>();
+    }
 
-  public getSubCommand(arg: string): Command | undefined {
-    return this.subCommands.get(arg);
-  }
+    public getSubCommand(arg: string): Command | undefined {
+        return this.subCommands.get(arg);
+    }
 
-  public override get permLevel(): PermissionLevel {
-    let lowestPerm = PermissionLevel.Owner;
+    public override get permLevel(): PermissionLevel {
+        let lowestPerm = PermissionLevel.Owner;
 
-    this.subCommands.forEach((subCommand) => {
-      if (subCommand.permLevel < lowestPerm) {
-        lowestPerm = subCommand.permLevel;
-      }
-    });
+        this.subCommands.forEach((subCommand) => {
+            if (subCommand.permLevel < lowestPerm) {
+                lowestPerm = subCommand.permLevel;
+            }
+        });
 
-    return lowestPerm;
-  }
+        return lowestPerm;
+    }
 
-//   public get requiredPerm(): PermissionResolvable | undefined {
-//     const perms: Permissions = new Permissions();
-//     let numWithPerms = 0;
+    //   public get requiredPerm(): PermissionResolvable | undefined {
+    //     const perms: Permissions = new Permissions();
+    //     let numWithPerms = 0;
 
-//     this.subCommands.forEach((subCommand) => {
-//       if (subCommand.requiredPerm && !perms.any(subCommand.requiredPerm)) {
-//         perms.add(subCommand.requiredPerm);
-//         numWithPerms += 1;
-//       }
-//     });
+    //     this.subCommands.forEach((subCommand) => {
+    //       if (subCommand.requiredPerm && !perms.any(subCommand.requiredPerm)) {
+    //         perms.add(subCommand.requiredPerm);
+    //         numWithPerms += 1;
+    //       }
+    //     });
 
-//     if (numWithPerms === 0) {
-//       return undefined;
-//     }
+    //     if (numWithPerms === 0) {
+    //       return undefined;
+    //     }
 
-//     return perms;
-//   }
+    //     return perms;
+    //   }
 
-  public registerSubCommand(command: Command): void {
-    this.subCommands.set(command.name, command);
-    // command.aliases.forEach((alias) => {
-    //   this.subCommands.set(alias, command);
-    // });
-  }
+    public registerSubCommand(command: Command): void {
+        this.subCommands.set(command.name, command);
+        // command.aliases.forEach((alias) => {
+        //   this.subCommands.set(alias, command);
+        // });
+    }
 }

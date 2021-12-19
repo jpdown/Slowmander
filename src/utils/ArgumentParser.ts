@@ -1,26 +1,64 @@
-import type { Bot } from 'Bot';
-import type { Command, CommandParsedType } from 'commands/Command';
-import { CommandGroup } from 'commands/CommandGroup';
-import { CacheType, Channel, CommandInteractionOptionResolver, Guild } from 'discord.js';
-import { Logger } from 'Logger';
+import type { Bot } from "Bot";
+import type { Command, CommandParsedType } from "commands/Command";
+import { CommandGroup } from "commands/CommandGroup";
+import {
+    CacheType,
+    Channel,
+    CommandInteractionOptionResolver,
+    Guild,
+} from "discord.js";
+import { Logger } from "Logger";
 
 export class ArgumentParser {
     // Splits on space but keeps quoted strings together
     private static argsRegex = /((["'])((?:.(?!\2))*.?)\2)|(\S+)/g;
 
-    public static async parseArgs(content: string, command: Command | CommandGroup, bot: Bot, guild?: Guild): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
+    public static async parseArgs(
+        content: string,
+        command: Command | CommandGroup,
+        bot: Bot,
+        guild?: Guild
+    ): Promise<{ command: Command; args: CommandParsedType[] | undefined }> {
         const splitArgs = [...content.matchAll(ArgumentParser.argsRegex)];
-        return await ArgumentParser.parseArgsRecurse(splitArgs, command, bot, guild);
+        return await ArgumentParser.parseArgsRecurse(
+            splitArgs,
+            command,
+            bot,
+            guild
+        );
     }
 
-    private static async parseArgsRecurse(args: RegExpMatchArray[], command: Command | CommandGroup, bot: Bot, guild?: Guild): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
+    private static async parseArgsRecurse(
+        args: RegExpMatchArray[],
+        command: Command | CommandGroup,
+        bot: Bot,
+        guild?: Guild
+    ): Promise<{ command: Command; args: CommandParsedType[] | undefined }> {
         if (command instanceof CommandGroup) {
-            return ArgumentParser.parseSubCommandArgs(args, command, bot, guild);
+            return ArgumentParser.parseSubCommandArgs(
+                args,
+                command,
+                bot,
+                guild
+            );
         }
-        return { command: command, args: await ArgumentParser.parseCommandArgs(args, command, bot, guild) };
+        return {
+            command: command,
+            args: await ArgumentParser.parseCommandArgs(
+                args,
+                command,
+                bot,
+                guild
+            ),
+        };
     }
 
-    private static async parseSubCommandArgs(args: RegExpMatchArray[], command: CommandGroup, bot: Bot, guild?: Guild): Promise<{ command: Command, args: CommandParsedType[] | undefined }> {
+    private static async parseSubCommandArgs(
+        args: RegExpMatchArray[],
+        command: CommandGroup,
+        bot: Bot,
+        guild?: Guild
+    ): Promise<{ command: Command; args: CommandParsedType[] | undefined }> {
         if (args.length === 0) {
             return { command: command, args: undefined };
         }
@@ -36,10 +74,20 @@ export class ArgumentParser {
             return { command: subcommand, args: [] };
         }
 
-        return ArgumentParser.parseArgsRecurse(args.slice(1), subcommand, bot, guild);
+        return ArgumentParser.parseArgsRecurse(
+            args.slice(1),
+            subcommand,
+            bot,
+            guild
+        );
     }
 
-    private static async parseCommandArgs(args: RegExpMatchArray[], command: Command, bot: Bot, guild?: Guild): Promise<CommandParsedType[] | undefined> {
+    private static async parseCommandArgs(
+        args: RegExpMatchArray[],
+        command: Command,
+        bot: Bot,
+        guild?: Guild
+    ): Promise<CommandParsedType[] | undefined> {
         let allRequired = true;
         const parsedArgs: CommandParsedType[] = [];
         let currStr;
@@ -63,34 +111,39 @@ export class ArgumentParser {
             currStr = args[i][4] ? args[i][4] : args[i][3];
 
             switch (command.args[i].type) {
-                case 'string':
+                case "string":
                     currParsedArg = currStr;
                     break;
-                case 'int':
+                case "int":
                     currParsedArg = parseInt(currStr);
                     if (Number.isNaN(currParsedArg)) currParsedArg = undefined;
                     break;
-                case 'number':
+                case "number":
                     currParsedArg = Number(currStr);
                     if (Number.isNaN(currParsedArg)) currParsedArg = undefined;
                     break;
-                case 'bool':
-                    if (currStr.toLowerCase() === 'true') currParsedArg = true;
-                    else if (currStr.toLowerCase() === 'false') currParsedArg = false;
+                case "bool":
+                    if (currStr.toLowerCase() === "true") currParsedArg = true;
+                    else if (currStr.toLowerCase() === "false")
+                        currParsedArg = false;
                     else currParsedArg = undefined;
                     break;
-                case 'user':
+                case "user":
                     // eslint-disable-next-line no-await-in-loop
                     currParsedArg = await bot.utils.parseUser(currStr);
                     break;
-                case 'channel':
+                case "channel":
                     // eslint-disable-next-line no-await-in-loop
                     currParsedArg = await bot.utils.parseChannel(currStr);
                     if (currParsedArg === null) currParsedArg = undefined;
                     break;
-                case 'role':
+                case "role":
                     // eslint-disable-next-line no-await-in-loop
-                    if (guild) currParsedArg = await bot.utils.parseRole(currStr, guild);
+                    if (guild)
+                        currParsedArg = await bot.utils.parseRole(
+                            currStr,
+                            guild
+                        );
                     if (currParsedArg === null) currParsedArg = undefined;
                     break;
                 default:
@@ -113,7 +166,13 @@ export class ArgumentParser {
         return parsedArgs;
     }
 
-    public static async parseSlashArgs(options: Omit<CommandInteractionOptionResolver<CacheType>, "getMessage" | "getFocused">, cmd: Command): Promise<CommandParsedType[] | undefined> {
+    public static async parseSlashArgs(
+        options: Omit<
+            CommandInteractionOptionResolver<CacheType>,
+            "getMessage" | "getFocused"
+        >,
+        cmd: Command
+    ): Promise<CommandParsedType[] | undefined> {
         if (!cmd.args) {
             return [];
         }
@@ -124,31 +183,51 @@ export class ArgumentParser {
         try {
             for (let arg of cmd.args) {
                 switch (arg.type) {
-                    case 'string':
-                        currArg = options.getString(arg.name, !arg.optional) ?? undefined;
+                    case "string":
+                        currArg =
+                            options.getString(arg.name, !arg.optional) ??
+                            undefined;
                         break;
-                    case 'int':
-                        currArg = options.getInteger(arg.name, !arg.optional) ?? undefined;
+                    case "int":
+                        currArg =
+                            options.getInteger(arg.name, !arg.optional) ??
+                            undefined;
                         break;
-                    case 'number':
-                        currArg = options.getNumber(arg.name, !arg.optional) ?? undefined;
+                    case "number":
+                        currArg =
+                            options.getNumber(arg.name, !arg.optional) ??
+                            undefined;
                         break;
-                    case 'bool':
-                        currArg = options.getBoolean(arg.name, !arg.optional) ?? undefined;
+                    case "bool":
+                        currArg =
+                            options.getBoolean(arg.name, !arg.optional) ??
+                            undefined;
                         break;
-                    case 'user':
-                        currArg = options.getUser(arg.name, !arg.optional) ?? undefined;
+                    case "user":
+                        currArg =
+                            options.getUser(arg.name, !arg.optional) ??
+                            undefined;
                         break;
-                    case 'channel':
-                        let channel = options.getChannel(arg.name, !arg.optional) ?? undefined;
-                        if (!(channel instanceof Channel) && channel !== undefined) {
-                            Logger.getLogger(this).warning("We got an APIChannel", channel);
+                    case "channel":
+                        let channel =
+                            options.getChannel(arg.name, !arg.optional) ??
+                            undefined;
+                        if (
+                            !(channel instanceof Channel) &&
+                            channel !== undefined
+                        ) {
+                            Logger.getLogger(this).warning(
+                                "We got an APIChannel",
+                                channel
+                            );
                             return undefined;
                         }
                         currArg = channel;
                         break;
-                    case 'role':
-                        currArg = options.getString(arg.name, !arg.optional) ?? undefined;
+                    case "role":
+                        currArg =
+                            options.getString(arg.name, !arg.optional) ??
+                            undefined;
                         break;
                     default:
                         currArg = undefined;
@@ -159,9 +238,11 @@ export class ArgumentParser {
                 }
                 parsedArgs.push(currArg);
             }
-        }
-        catch (e) {
-            Logger.getLogger(this).warning("A required arg was not found in a slash command", e);
+        } catch (e) {
+            Logger.getLogger(this).warning(
+                "A required arg was not found in a slash command",
+                e
+            );
         }
 
         return parsedArgs;

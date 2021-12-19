@@ -1,10 +1,10 @@
-import type { Bot } from 'Bot';
-import type { CommandContext } from 'CommandContext';
-import { MessageEmbed, TextBasedChannels } from 'discord.js';
-import { PermissionsHelper } from 'utils/PermissionsHelper';
-import { Module } from './Module';
-import { args, command, guild} from './ModuleDecorators';
-import { ButtonPaginator } from 'utils/ButtonPaginator';
+import type { Bot } from "Bot";
+import type { CommandContext } from "CommandContext";
+import { MessageEmbed, TextBasedChannels } from "discord.js";
+import { PermissionsHelper } from "utils/PermissionsHelper";
+import { Module } from "./Module";
+import { args, command, guild } from "./ModuleDecorators";
+import { ButtonPaginator } from "utils/ButtonPaginator";
 
 export class Help extends Module {
     public constructor(bot: Bot) {
@@ -14,7 +14,12 @@ export class Help extends Module {
     @command("help")
     @guild("472222827421106201")
     @args([
-        {name: 'name', type: 'string', description: 'specific command', optional: true}
+        {
+            name: "name",
+            type: "string",
+            description: "specific command",
+            optional: true,
+        },
     ])
     public async help(c: CommandContext) {
         let commands = c.bot.commandManager.getAllCommands();
@@ -27,7 +32,12 @@ export class Help extends Module {
             }
         }
         if (!args || args.length === 0) {
-            const paginator: ButtonPaginator = new ButtonPaginator(Array.from(map.keys()), c, 5, "Help");
+            const paginator: ButtonPaginator = new ButtonPaginator(
+                Array.from(map.keys()),
+                c,
+                5,
+                "Help"
+            );
             await paginator.postMessage();
         } else {
             let cmdName = args[0]?.toString();
@@ -35,11 +45,23 @@ export class Help extends Module {
             if (!map.get(cmdName)) {
                 await c.reply("Command not found!");
             }
-            await c.reply({embeds: [await this.generateEmbed(cmdName, map.get(cmdName), c.channel)]});
+            await c.reply({
+                embeds: [
+                    await this.generateEmbed(
+                        cmdName,
+                        map.get(cmdName),
+                        c.channel
+                    ),
+                ],
+            });
         }
     }
 
-    private async generateEmbed(title: string, desc: string, channel: TextBasedChannels): Promise<MessageEmbed> {
+    private async generateEmbed(
+        title: string,
+        desc: string,
+        channel: TextBasedChannels
+    ): Promise<MessageEmbed> {
         const embed: MessageEmbed = new MessageEmbed()
             .setColor(await this.bot.utils.getSelfColor(channel))
             .setDescription(desc)
