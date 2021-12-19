@@ -14,7 +14,7 @@ import {
 import { Module } from "./Module";
 import { args, command, guild } from "./ModuleDecorators";
 
-// TODO handle the command when it's not used as a slash command, and refactor 
+// TODO handle the command when it's not used as a slash command, and refactor
 export class Lockdown extends Module {
     private readonly PERMISSION = Permissions.FLAGS.SEND_MESSAGES;
     private readonly LOCK_MESSAGE = "🔒 Channel has been locked down.";
@@ -49,10 +49,14 @@ export class Lockdown extends Module {
         },
     ])
     public async unlock(c: CommandContext, channel?: GuildChannel) {
-        this.perform(c, false, channel)
+        this.perform(c, false, channel);
     }
 
-    private async perform(c: CommandContext, lock: boolean, channel?: GuildChannel) {
+    private async perform(
+        c: CommandContext,
+        lock: boolean,
+        channel?: GuildChannel
+    ) {
         if (!c.guild) return; // TODO temporary check, add a way to make commands guild only
         await c.defer();
         if (channel) {
