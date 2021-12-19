@@ -14,6 +14,7 @@ import {
 import { Module } from "./Module";
 import { args, command, guild } from "./ModuleDecorators";
 
+// TODO handle the command when it's not used as a slash command, and refactor 
 export class Lockdown extends Module {
     private readonly PERMISSION = Permissions.FLAGS.SEND_MESSAGES;
     private readonly LOCK_MESSAGE = "🔒 Channel has been locked down.";
@@ -34,25 +35,7 @@ export class Lockdown extends Module {
         },
     ])
     public async lock(c: CommandContext, channel?: GuildChannel) {
-        if (!c.guild) return; // TODO temporary check, add a way to make commands guild only
-        await c.defer();
-        if (channel) {
-            await this.updateChannelPerms(
-                channel,
-                [c.guild?.roles.everyone],
-                true,
-                false,
-                c
-            );
-        } else {
-            await this.updateChannelPerms(
-                c.channel as GuildChannel,
-                [c.guild?.roles.everyone],
-                true,
-                false,
-                c
-            );
-        }
+        this.perform(c, true, channel);
     }
 
     @command("unlocks a given channel")
@@ -66,13 +49,17 @@ export class Lockdown extends Module {
         },
     ])
     public async unlock(c: CommandContext, channel?: GuildChannel) {
-        if (!c.guild) return;
+        this.perform(c, false, channel)
+    }
+
+    private async perform(c: CommandContext, lock: boolean, channel?: GuildChannel) {
+        if (!c.guild) return; // TODO temporary check, add a way to make commands guild only
         await c.defer();
         if (channel) {
             await this.updateChannelPerms(
                 channel,
                 [c.guild?.roles.everyone],
-                false,
+                lock,
                 false,
                 c
             );
@@ -80,10 +67,13 @@ export class Lockdown extends Module {
             await this.updateChannelPerms(
                 c.channel as GuildChannel,
                 [c.guild?.roles.everyone],
-                false,
+                lock,
                 false,
                 c
             );
+        }
+        if (!c.interaction?.replied) {
+            await c.reply("Channel(s) locked!");
         }
     }
 

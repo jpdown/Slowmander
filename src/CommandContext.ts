@@ -13,6 +13,7 @@ import { Message } from "discord.js";
 import type { APIMessage } from "discord-api-types/v9";
 import type { CommandParsedType } from "commands/Command";
 
+// TODO add a wrapper for interaction.replied()
 export class CommandContext {
     public readonly bot: Bot;
 
