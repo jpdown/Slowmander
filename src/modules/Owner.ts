@@ -252,4 +252,13 @@ export class Owner extends Module {
         });
         await c.reply(`[Invite Link](${invite})`);
     }
+
+    @command(`shuts the bot down`, `shutdown`)
+    @guild("472222827421106201")
+    @isOwner()
+    public async shutdown(c: CommandContext) {
+        await c.reply("Shutting down!");
+        c.client.destroy();
+        process.exit();
+    }
 }
