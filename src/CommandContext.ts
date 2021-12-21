@@ -1,10 +1,11 @@
 import type { Bot } from "Bot";
-import type {
+import {
     Client,
     CommandInteraction,
     Guild,
     GuildMember,
     InteractionReplyOptions,
+    MessageEmbed,
     MessageOptions,
     TextBasedChannels,
     User,
@@ -73,7 +74,11 @@ export class CommandContext {
         let msg: Message | APIMessage | undefined = undefined;
 
         if (typeof message === "string") {
-            msgOptions = { content: message };
+            let embed = new MessageEmbed()
+                .setDescription(message)
+                .setColor(await this.bot.utils.getSelfColor(this.channel))
+                .setTimestamp(Date.now());
+            msgOptions = { embeds: [embed] };
         } else {
             msgOptions = message;
         }
@@ -90,11 +95,6 @@ export class CommandContext {
                 msg = await this.interaction.followUp(intOptions);
             }
         } else {
-            if (msgOptions.allowedMentions) {
-                msgOptions.allowedMentions.repliedUser = false;
-            } else {
-                msgOptions.allowedMentions = { repliedUser: false };
-            }
             if (!this._replyMessage) {
                 this._replyMessage = await this.message!.reply(msgOptions);
                 msg = this._replyMessage;
@@ -109,31 +109,6 @@ export class CommandContext {
         this._deferred = false;
 
         return msg;
-    }
-
-    public async replyPing(
-        message: string | MessageOptions | InteractionReplyOptions,
-        ephemeral = false
-    ) {
-        let msgOptions: MessageOptions | InteractionReplyOptions;
-
-        if (typeof message === "string") {
-            msgOptions = { content: message };
-        } else {
-            msgOptions = message;
-        }
-
-        if (this.interaction) {
-            (msgOptions as InteractionReplyOptions).ephemeral = ephemeral;
-            await this.interaction.reply(msgOptions);
-        } else {
-            if (msgOptions.allowedMentions) {
-                msgOptions.allowedMentions.repliedUser = true;
-            } else {
-                msgOptions.allowedMentions = { repliedUser: true };
-            }
-            this._replyMessage = await this.message!.reply(msgOptions);
-        }
     }
 
     public async defer() {
