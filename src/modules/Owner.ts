@@ -3,15 +3,28 @@ import type { CommandContext } from "CommandContext";
 import type { ActivityOptions, User, WebhookClient } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, guild, isOwner, noSlash } from "./ModuleDecorators";
+import {
+    args,
+    command,
+    group,
+    guild,
+    isOwner,
+    noSlash,
+    subcommand,
+} from "./ModuleDecorators";
 
 export class Owner extends Module {
     public constructor(bot: Bot) {
         super(bot);
     }
 
-    @command(`sets the bots username`, `setusername`)
-    @guild(`472222827421106201`)
+    @group("Various owner only commands")
+    @guild("472222827421106201")
+    @isOwner()
+    public async owner(c: CommandContext) {}
+
+    @subcommand("owner", "sets the bots username")
+    @guild("472222827421106201")
     @args([
         {
             name: "name",
@@ -20,7 +33,7 @@ export class Owner extends Module {
         },
     ])
     @isOwner()
-    public async setUsername(c: CommandContext, name: string) {
+    public async username(c: CommandContext, name: string) {
         if (name.length < 2) {
             await c.reply("Username must be more than 2 characters.");
             return;
@@ -34,11 +47,11 @@ export class Owner extends Module {
         }
     }
 
-    @command(`sets the bots avatar`, `setavatar`)
-    @guild(`472222827421106201`)
+    @subcommand("owner", "sets the bots avatar")
+    @guild("472222827421106201")
     @args([{ name: "url", type: "string", description: "url for new avatar" }])
     @isOwner()
-    public async setAvatar(c: CommandContext, url: string) {
+    public async avatar(c: CommandContext, url: string) {
         try {
             await c.bot.client.user.setAvatar(url);
             await c.reply("Avatar changed successfully!");
@@ -48,77 +61,43 @@ export class Owner extends Module {
         }
     }
 
-    @command(`adds a bot owner`, `addowner`)
-    @guild(`472222827421106201`)
+    @subcommand("owner", "adds a bot owner")
+    @guild("472222827421106201")
     @args([
-        {
-            name: "id",
-            type: "string",
-            description: "id to add",
-            optional: true,
-        },
         {
             name: "user",
             type: "user",
             description: "user to add",
-            optional: true,
         },
     ])
     @isOwner()
-    public async addOwner(c: CommandContext, id?: string, user?: User) {
-        if (user) {
-            if (await c.bot.addOwner(user.id)) {
-                await c.reply("Owner added successfully.");
-            } else {
-                await c.reply(`${user.toString()} is already an owner!`);
-            }
-        } else if (id) {
-            if (await c.bot.addOwner(id)) {
-                await c.reply("Owner added successfully.");
-            } else {
-                await c.reply(`That user is already an owner!`);
-            }
+    public async addowner(c: CommandContext, user: User) {
+        if (await c.bot.addOwner(user.id)) {
+            await c.reply("Owner added successfully.");
         } else {
-            await c.reply("Please provide a valid user or id.");
+            await c.reply(`${user.toString()} is already an owner!`);
         }
     }
 
-    @command(`removes a bot owner`, `removeowner`)
-    @guild(`472222827421106201`)
+    @subcommand("owner", "removes a bot owner")
+    @guild("472222827421106201")
     @args([
-        {
-            name: "id",
-            type: "string",
-            description: "id to remove",
-            optional: true,
-        },
         {
             name: "user",
             type: "user",
             description: "user to remove",
-            optional: true,
         },
     ])
     @isOwner()
-    public async removeOwner(c: CommandContext, id?: string, user?: User) {
-        if (user) {
-            if (await c.bot.removeOwner(user.id)) {
-                await c.reply("Owner removed successfully.");
-            } else {
-                await c.reply(`${user.toString()} is not an owner!`);
-            }
-        } else if (id) {
-            if (await c.bot.removeOwner(id)) {
-                await c.reply("Owner removed successfully.");
-            } else {
-                await c.reply(`That user is not an owner!`);
-            }
+    public async removeowner(c: CommandContext, user: User) {
+        if (await c.bot.removeOwner(user.id)) {
+            await c.reply("Owner removed successfully.");
         } else {
-            await c.reply("Please provide a valid user or id.");
+            await c.reply(`${user.toString()} is not an owner!`);
         }
     }
 
-    @command(`sets the status`, `setstatus`)
+    @subcommand("owner", "sets the status")
     @guild("472222827421106201")
     @args([
         {
@@ -134,7 +113,7 @@ export class Owner extends Module {
         },
     ])
     @isOwner()
-    public async setStatus(c: CommandContext, status: string) {
+    public async status(c: CommandContext, status: string) {
         switch (status) {
             case "online":
                 c.bot.client.user!.setStatus("online");
@@ -148,70 +127,88 @@ export class Owner extends Module {
             case "invisible":
                 c.bot.client.user!.setStatus("invisible");
                 break;
-            default:
         }
+
+        await c.reply("Status changed successfully.");
     }
 
-    @command(`sets the bots activity`, `setactivity`)
+    @subcommand("owner", "sets the bots activity")
     @guild("472222827421106201")
     @args([
         {
-            name: `activity`,
-            type: `string`,
-            description: `bots new activity`,
+            name: "type",
+            type: "string",
+            description: "bots new activity type",
+            choices: [
+                { name: "playing", value: "playing" },
+                { name: "streaming", value: "streaming" },
+                { name: "listening", value: "listening" },
+                { name: "watching", value: "watching" },
+                { name: "competing", value: "competing" },
+                { name: "clear", value: "clear" },
+            ],
+        },
+        {
+            name: "activity",
+            type: "string",
+            description: "bots new activity message",
+            optional: true,
         },
     ])
     @isOwner()
-    public async setActivity(c: CommandContext, activity: string) {
-        let i: string[] = activity.split(` `);
-        let type: string | undefined = i.shift();
-        let activityString = i.join(` `);
+    public async activity(c: CommandContext, type: string, activity?: string) {
         let activityOptions: ActivityOptions;
         let update = true;
-        let reply = `Changing status...`;
+        let reply = "Changing status...";
+        if (!activity) {
+            activity = "";
+        }
         switch (type) {
-            case `playing`:
-                activityOptions = { type: `PLAYING` };
+            case "playing":
+                activityOptions = { type: "PLAYING" };
                 break;
-            case `streaming`:
-                update = false;
-                activityString = "";
-                activityOptions = {};
-                reply = `unsupported option now i think`;
+            case "streaming":
+                activityOptions = {
+                    type: "STREAMING",
+                    url: "https://twitch.tv/SIowmander",
+                };
                 break;
-            case `listening`:
-                activityOptions = { type: `LISTENING` };
+            case "listening":
+                activityOptions = { type: "LISTENING" };
                 break;
-            case `watching`:
-                activityOptions = { type: `WATCHING` };
+            case "watching":
+                activityOptions = { type: "WATCHING" };
                 break;
-            case `clear`:
-                activityString = ``;
+            case "competing":
+                activityOptions = { type: "COMPETING" };
+                break;
+            case "clear":
+                activity = "";
                 activityOptions = {};
                 break;
             default:
                 update = false;
-                activityString = ``;
                 activityOptions = {};
-                reply = `Error parsing command, please try again.`;
+                reply = "Error parsing command, please try again.";
                 break;
         }
         if (update) {
-            c.bot.client.user!.setActivity(activityString, activityOptions);
+            c.bot.client.user!.setActivity(activity, activityOptions);
         }
         await c.reply(reply);
     }
 
-    @command(
-        `sets a new webhook for error logging for developers`,
-        `logwebhook`
+    @subcommand(
+        "owner",
+        "sets a new webhook for error logging for developers",
+        "logwebhook"
     )
-    @guild(`472222827421106201`)
+    @guild("472222827421106201")
     @args([
         {
-            name: `name`,
-            type: `string`,
-            description: `the new name for the bot`,
+            name: "url",
+            type: "string",
+            description: "the new error webhook",
         },
     ])
     @isOwner()
@@ -225,7 +222,11 @@ export class Owner extends Module {
         }
     }
 
-    @command("gives the link to invite the bot to a server", `getinvite`)
+    @subcommand(
+        "owner",
+        "gives the link to invite the bot to a server",
+        "getinvite"
+    )
     @guild("472222827421106201")
     @isOwner()
     public async getInviteLink(c: CommandContext) {
@@ -256,7 +257,7 @@ export class Owner extends Module {
         await c.reply(`[Invite Link](${invite})`);
     }
 
-    @command(`shuts the bot down`, `shutdown`)
+    @command("shuts the bot down", "shutdown")
     @guild("472222827421106201")
     @isOwner()
     public async shutdown(c: CommandContext) {
