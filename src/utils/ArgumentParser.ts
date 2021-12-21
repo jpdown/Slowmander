@@ -1,12 +1,7 @@
 import type { Bot } from "Bot";
 import type { Command, CommandParsedType } from "commands/Command";
 import { CommandGroup } from "commands/CommandGroup";
-import {
-    CacheType,
-    Channel,
-    CommandInteractionOptionResolver,
-    Guild,
-} from "discord.js";
+import { CacheType, Channel, CommandInteractionOptionResolver, Guild, Role } from "discord.js";
 import { Logger } from "Logger";
 
 export class ArgumentParser {
@@ -20,12 +15,7 @@ export class ArgumentParser {
         guild?: Guild
     ): Promise<{ command: Command; args: CommandParsedType[] | undefined }> {
         const splitArgs = [...content.matchAll(ArgumentParser.argsRegex)];
-        return await ArgumentParser.parseArgsRecurse(
-            splitArgs,
-            command,
-            bot,
-            guild
-        );
+        return await ArgumentParser.parseArgsRecurse(splitArgs, command, bot, guild);
     }
 
     private static async parseArgsRecurse(
@@ -35,21 +25,11 @@ export class ArgumentParser {
         guild?: Guild
     ): Promise<{ command: Command; args: CommandParsedType[] | undefined }> {
         if (command instanceof CommandGroup) {
-            return ArgumentParser.parseSubCommandArgs(
-                args,
-                command,
-                bot,
-                guild
-            );
+            return ArgumentParser.parseSubCommandArgs(args, command, bot, guild);
         }
         return {
             command: command,
-            args: await ArgumentParser.parseCommandArgs(
-                args,
-                command,
-                bot,
-                guild
-            ),
+            args: await ArgumentParser.parseCommandArgs(args, command, bot, guild),
         };
     }
 
@@ -74,12 +54,7 @@ export class ArgumentParser {
             return { command: subcommand, args: [] };
         }
 
-        return ArgumentParser.parseArgsRecurse(
-            args.slice(1),
-            subcommand,
-            bot,
-            guild
-        );
+        return ArgumentParser.parseArgsRecurse(args.slice(1), subcommand, bot, guild);
     }
 
     private static async parseCommandArgs(
@@ -125,8 +100,7 @@ export class ArgumentParser {
                     break;
                 case "bool":
                     if (currStr.toLowerCase() === "true") currParsedArg = true;
-                    else if (currStr.toLowerCase() === "false")
-                        currParsedArg = false;
+                    else if (currStr.toLowerCase() === "false") currParsedArg = false;
                     else currParsedArg = undefined;
                     break;
                 case "user":
@@ -140,11 +114,7 @@ export class ArgumentParser {
                     break;
                 case "role":
                     // eslint-disable-next-line no-await-in-loop
-                    if (guild)
-                        currParsedArg = await bot.utils.parseRole(
-                            currStr,
-                            guild
-                        );
+                    if (guild) currParsedArg = await bot.utils.parseRole(currStr, guild);
                     if (currParsedArg === null) currParsedArg = undefined;
                     break;
                 default:
@@ -168,10 +138,7 @@ export class ArgumentParser {
     }
 
     public static async parseSlashArgs(
-        options: Omit<
-            CommandInteractionOptionResolver<CacheType>,
-            "getMessage" | "getFocused"
-        >,
+        options: Omit<CommandInteractionOptionResolver<CacheType>, "getMessage" | "getFocused">,
         cmd: Command
     ): Promise<CommandParsedType[] | undefined> {
         if (!cmd.args) {
@@ -185,50 +152,30 @@ export class ArgumentParser {
             for (let arg of cmd.args) {
                 switch (arg.type) {
                     case "string":
-                        currArg =
-                            options.getString(arg.name, !arg.optional) ??
-                            undefined;
+                        currArg = options.getString(arg.name, !arg.optional) ?? undefined;
                         break;
                     case "int":
-                        currArg =
-                            options.getInteger(arg.name, !arg.optional) ??
-                            undefined;
+                        currArg = options.getInteger(arg.name, !arg.optional) ?? undefined;
                         break;
                     case "number":
-                        currArg =
-                            options.getNumber(arg.name, !arg.optional) ??
-                            undefined;
+                        currArg = options.getNumber(arg.name, !arg.optional) ?? undefined;
                         break;
                     case "bool":
-                        currArg =
-                            options.getBoolean(arg.name, !arg.optional) ??
-                            undefined;
+                        currArg = options.getBoolean(arg.name, !arg.optional) ?? undefined;
                         break;
                     case "user":
-                        currArg =
-                            options.getUser(arg.name, !arg.optional) ??
-                            undefined;
+                        currArg = options.getUser(arg.name, !arg.optional) ?? undefined;
                         break;
                     case "channel":
-                        let channel =
-                            options.getChannel(arg.name, !arg.optional) ??
-                            undefined;
-                        if (
-                            !(channel instanceof Channel) &&
-                            channel !== undefined
-                        ) {
-                            Logger.getLogger(this).warning(
-                                "We got an APIChannel",
-                                channel
-                            );
+                        let channel = options.getChannel(arg.name, !arg.optional) ?? undefined;
+                        if (!(channel instanceof Channel) && channel !== undefined) {
+                            Logger.getLogger(this).warning("We got an APIChannel", channel);
                             return undefined;
                         }
                         currArg = channel;
                         break;
                     case "role":
-                        currArg =
-                            options.getString(arg.name, !arg.optional) ??
-                            undefined;
+                        currArg = (options.getRole(arg.name, !arg.optional) as Role) ?? undefined;
                         break;
                     default:
                         currArg = undefined;
@@ -240,10 +187,7 @@ export class ArgumentParser {
                 parsedArgs.push(currArg);
             }
         } catch (e) {
-            Logger.getLogger(this).warning(
-                "A required arg was not found in a slash command",
-                e
-            );
+            Logger.getLogger(this).warning("A required arg was not found in a slash command", e);
         }
 
         return parsedArgs;

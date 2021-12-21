@@ -9,7 +9,6 @@ import {
     group,
     guild,
     isOwner,
-    noSlash,
     subcommand,
 } from "./ModuleDecorators";
 
@@ -49,7 +48,13 @@ export class Owner extends Module {
 
     @subcommand("owner", "sets the bots avatar")
     @guild("472222827421106201")
-    @args([{ name: "url", type: "string", description: "url for new avatar" }])
+    @args([
+        {
+            name: "url",
+            type: "string",
+            description: "url for new avatar",
+        },
+    ])
     @isOwner()
     public async avatar(c: CommandContext, url: string) {
         try {
