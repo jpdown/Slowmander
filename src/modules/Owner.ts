@@ -125,6 +125,12 @@ export class Owner extends Module {
             name: "status",
             type: "string",
             description: "bots new status",
+            choices: [
+                { name: "online", value: "online" },
+                { name: "idle", value: "idle" },
+                { name: "dnd", value: "dnd" },
+                { name: "invisible", value: "invisible" },
+            ],
         },
     ])
     @isOwner()
@@ -133,16 +139,13 @@ export class Owner extends Module {
             case "online":
                 c.bot.client.user!.setStatus("online");
                 break;
-            case "away":
             case "idle":
                 c.bot.client.user!.setStatus("idle");
                 break;
             case "dnd":
                 c.bot.client.user!.setStatus("dnd");
                 break;
-            case "invis":
             case "invisible":
-            case "offline":
                 c.bot.client.user!.setStatus("invisible");
                 break;
             default:

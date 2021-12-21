@@ -98,6 +98,7 @@ export class ArgumentParser {
         }
 
         // Use every to short circuit on first fail
+        // TODO: Restrict to choices if choices defined
         for (let i = 0; i < command.args.length; i += 1) {
             if (args.length <= i) {
                 if (!command.args[i].optional) {
