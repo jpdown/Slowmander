@@ -99,13 +99,14 @@ export class ButtonPaginator {
                 this.page -= 1;
             }
         }
+        // Assume enabled, disable if necessary
+        com[0].components[0].disabled = false;
+        com[0].components[1].disabled = false;
         if (this.page === 0) {
             com[0].components[0].disabled = true;
-        } else if (this.page === this.pages - 1) {
+        }
+        if (this.page === this.pages - 1) {
             com[0].components[1].disabled = true;
-        } else {
-            com[0].components[0].disabled = false;
-            com[0].components[1].disabled = false;
         }
         await inter.update({
             embeds: [await this.generateEmbed()],
