@@ -60,7 +60,7 @@ export class Info extends Module {
         if (rolesList.size > 0) {
             let rolesStr = "";
             rolesList.forEach((role) => {
-                rolesStr += `${role.name}, `;
+                rolesStr += `${role.toString()}, `;
             });
             embed.addField(`Roles (${rolesList.size})`, rolesStr.slice(0, -2), false);
         }
