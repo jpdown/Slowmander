@@ -1,7 +1,7 @@
 import type { Bot } from "Bot";
 import type { Command, CommandParsedType } from "commands/Command";
 import { CommandGroup } from "commands/CommandGroup";
-import { CacheType, Channel, CommandInteractionOptionResolver, Guild, Role } from "discord.js";
+import { CacheType, Channel, CommandInteractionOptionResolver, Guild, GuildManager, GuildMember, Role } from "discord.js";
 import { Logger } from "Logger";
 
 export class ArgumentParser {
@@ -117,6 +117,10 @@ export class ArgumentParser {
                     if (guild) currParsedArg = await bot.utils.parseRole(currStr, guild);
                     if (currParsedArg === null) currParsedArg = undefined;
                     break;
+                case "member":
+                    if (guild) currParsedArg = await bot.utils.parseMember(currStr, guild);
+                    if (currParsedArg === null) currParsedArg = undefined;
+                    break;
                 default:
                     currParsedArg = undefined;
                     break;
@@ -175,7 +179,20 @@ export class ArgumentParser {
                         currArg = channel;
                         break;
                     case "role":
-                        currArg = (options.getRole(arg.name, !arg.optional) as Role) ?? undefined;
+                        let role = options.getRole(arg.name, !arg.optional) ?? undefined;
+                        if (!(role instanceof Role) && role !== undefined) {
+                            Logger.getLogger(this).warning("We got an APIRole", role)
+                            return undefined;
+                        }
+                        currArg = role;
+                        break;
+                    case "member":
+                        let member = options.getMember(arg.name, !arg.optional) ?? undefined;
+                        if (!(member instanceof GuildMember) && member !== undefined) {
+                            Logger.getLogger(this).warning("We got an APIGuildMember", member)
+                            return undefined;
+                        }
+                        currArg = member;
                         break;
                     default:
                         currArg = undefined;

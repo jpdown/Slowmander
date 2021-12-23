@@ -8,6 +8,7 @@ import type {
     ApplicationCommandOptionType,
     Channel,
     ExcludeEnum,
+    GuildMember,
     Role,
     Snowflake,
     User,
@@ -167,6 +168,7 @@ export type CommandArgumentType =
     | "bool"
     | "user"
     | "channel"
+    | "member"
     | "role";
 export type CommandParsedType =
     | string
@@ -175,4 +177,5 @@ export type CommandParsedType =
     | User
     | Channel
     | Role
+    | GuildMember
     | undefined;
