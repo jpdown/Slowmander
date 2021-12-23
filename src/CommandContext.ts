@@ -14,7 +14,6 @@ import { Message } from "discord.js";
 import type { APIMessage } from "discord-api-types/v9";
 import type { CommandParsedType } from "commands/Command";
 
-// TODO add a wrapper for interaction.replied()
 export class CommandContext {
     public readonly bot: Bot;
 
@@ -36,9 +35,9 @@ export class CommandContext {
 
     private _replyMessage?: Message;
 
-    private _interactionReplied = false;
-
     private _deferred = false;
+
+    private _replied = false;
 
     constructor(
         bot: Bot,
@@ -74,11 +73,7 @@ export class CommandContext {
         let msg: Message | APIMessage | undefined = undefined;
 
         if (typeof message === "string") {
-            let embed = new MessageEmbed()
-                .setDescription(message)
-                .setColor(await this.bot.utils.getSelfColor(this.channel))
-                .setTimestamp(Date.now());
-            msgOptions = { embeds: [embed] };
+            msgOptions = { embeds: [await this.generateEmbed(message)] };
         } else {
             msgOptions = message;
         }
@@ -87,10 +82,9 @@ export class CommandContext {
             let intOptions = msgOptions as InteractionReplyOptions;
             intOptions.ephemeral = ephemeral;
             intOptions.fetchReply = true;
-            if (!this._interactionReplied) {
+            if (!this.interaction.replied && !this.interaction.deferred) {
                 await this.interaction.reply(intOptions);
                 msg = await this.interaction.fetchReply();
-                this._interactionReplied = true;
             } else {
                 msg = await this.interaction.followUp(intOptions);
             }
@@ -107,6 +101,7 @@ export class CommandContext {
         }
 
         this._deferred = false;
+        this._replied = true;
 
         return msg;
     }
@@ -114,10 +109,9 @@ export class CommandContext {
     public async defer() {
         if (this.interaction) {
             await this.interaction.deferReply();
-            this._interactionReplied = true;
         } else {
             this._replyMessage = await this.message!.reply(
-                "Slowmander is thinking..."
+                {embeds: [await this.generateEmbed("Slowmander is thinking...")]}
             );
         }
         this._deferred = true;
@@ -126,10 +120,21 @@ export class CommandContext {
     public async edit(
         message: string | MessageOptions | InteractionReplyOptions
     ) {
-        if (this.interaction && this._interactionReplied) {
+        if (this.interaction && this.interaction.replied) {
             await this.interaction.editReply(message);
         } else if (this._replyMessage) {
             await this._replyMessage.edit(message);
         }
+    }
+
+    public get replied(): boolean {
+        return (this.interaction && this.interaction.replied) || this._replied;
+    }
+
+    private async generateEmbed(message: string): Promise<MessageEmbed> {
+        return new MessageEmbed()
+            .setDescription(message)
+            .setColor(await this.bot.utils.getSelfColor(this.channel))
+            .setTimestamp(Date.now());
     }
 }
