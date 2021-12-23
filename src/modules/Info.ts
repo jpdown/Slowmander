@@ -20,6 +20,7 @@ export class Info extends Module {
     @args([
         { name: `user`, type: `member`, description: `The user to grab info on`, optional: true },
     ])
+    @guild("472222827421106201")
     public async whois(c: CommandContext, user?: GuildMember) {
         let member: GuildMember | undefined = user ? user : c.member;
         if (!member) {

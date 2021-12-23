@@ -484,6 +484,7 @@ export class CommandUtils {
             case "bool":
                 return "BOOLEAN";
             case "user":
+            case "member":
                 return "USER";
             case "channel":
                 return "CHANNEL";
