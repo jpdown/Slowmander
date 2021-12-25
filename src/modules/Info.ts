@@ -20,6 +20,7 @@ export class Info extends Module {
     @args([
         { name: `user`, type: `member`, description: `The user to grab info on`, optional: true },
     ])
+    @guild("472222827421106201")
     public async whois(c: CommandContext, user?: GuildMember) {
         let member: GuildMember | undefined = user ? user : c.member;
         if (!member) {
@@ -45,12 +46,12 @@ export class Info extends Module {
         if (member.nickname) {
             embed.addField("Nickname", member.nickname, false);
         }
-        embed.addField("Registered", member.user.createdAt.toUTCString(), true);
-        if (member.joinedAt) {
-            embed.addField("Joined", member.joinedAt.toUTCString(), true);
+        embed.addField("Registered", `<t:${Math.floor(member.user.createdTimestamp / 1000)}>`, true);
+        if (member.joinedTimestamp) {
+            embed.addField("Joined", `<t:${Math.floor(member.joinedTimestamp / 1000)}>`, true);
         }
-        if (member.premiumSince) {
-            embed.addField("Boosted", member.premiumSince.toUTCString(), true);
+        if (member.premiumSinceTimestamp) {
+            embed.addField("Boosted", `<t:${Math.floor(member.premiumSinceTimestamp / 1000)}>`, true);
         }
         embed.addField("Join Position", (await Info.getJoinPos(member)).toString(), false);
         const rolesList: Collection<Snowflake, Role> = member.roles.cache.clone();
@@ -59,7 +60,7 @@ export class Info extends Module {
         if (rolesList.size > 0) {
             let rolesStr = "";
             rolesList.forEach((role) => {
-                rolesStr += `${role.name}, `;
+                rolesStr += `${role.toString()}, `;
             });
             embed.addField(`Roles (${rolesList.size})`, rolesStr.slice(0, -2), false);
         }

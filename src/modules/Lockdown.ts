@@ -76,7 +76,7 @@ export class Lockdown extends Module {
                 c
             );
         }
-        if (!c.interaction?.replied) {
+        if (!c.replied) {
             await c.reply("Channel(s) locked!");
         }
     }
