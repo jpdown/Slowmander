@@ -3,7 +3,7 @@ import {
     MessageActionRow,
     Message,
     MessageEmbed,
-    TextBasedChannels,
+    TextBasedChannel,
     MessageButton,
     Interaction,
     ButtonInteraction,
@@ -18,7 +18,7 @@ export class ButtonPaginator {
     private page: number;
     private title: string;
     private msg: Message | undefined;
-    private channel: TextBasedChannels;
+    private channel: TextBasedChannel;
     private bot: Bot;
     // private command: Command;
     private pages;

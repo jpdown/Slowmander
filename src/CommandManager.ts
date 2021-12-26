@@ -157,7 +157,7 @@ export class CommandManager {
         let subGroup = interaction.options.getSubcommandGroup(false);
         let subCmd = interaction.options.getSubcommand(false);
 
-        let cmd = this.getCommand(interaction.guildId, interaction.commandName);
+        let cmd = this.getCommand(interaction.guildId ?? undefined, interaction.commandName);
         if (subGroup && cmd instanceof CommandGroup) {
             cmd = cmd.getSubCommand(subGroup);
         }
@@ -376,25 +376,12 @@ export class CommandManager {
         return subs;
     }
 
-    private getSlashArgs(
-        cmd: Command
-    ):
-        | Exclude<
-              ApplicationCommandOptionData,
-              ApplicationCommandSubGroupData | ApplicationCommandSubCommandData
-          >[]
-        | undefined {
-        let args: Exclude<
-            ApplicationCommandOptionData,
-            ApplicationCommandSubGroupData | ApplicationCommandSubCommandData
-        >[] = [];
+    // prettier-ignore
+    private getSlashArgs(cmd: Command): | Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] | undefined {
+        let args: Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] = [];
         cmd.args?.forEach((arg) => {
             // Will change type later
-            let currArg: Exclude<
-                ApplicationCommandOptionData,
-                | ApplicationCommandSubGroupData
-                | ApplicationCommandSubCommandData
-            > = {
+            let currArg: Exclude<ApplicationCommandOptionData, | ApplicationCommandSubGroupData | ApplicationCommandSubCommandData> = { // todo fix typing on this
                 name: arg.name,
                 description: arg.description ?? "",
                 type: this.bot.utils.getSlashArgType(arg.type),
@@ -402,14 +389,7 @@ export class CommandManager {
                 autocomplete: arg.autocomplete,
             };
 
-            if (
-                arg.choices &&
-                (currArg.type === "STRING" ||
-                    currArg.type === "INTEGER" ||
-                    currArg.type === "NUMBER")
-            ) {
-                currArg.choices = arg.choices;
-            }
+            if (arg.choices && (currArg.type === "STRING" || currArg.type === "INTEGER" ||currArg.type === "NUMBER")) {currArg.choices = arg.choices; }
 
             if (arg.channelTypes && currArg.type === "CHANNEL") {
                 currArg.channelTypes = arg.channelTypes;

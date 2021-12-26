@@ -1,6 +1,6 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
-import { MessageEmbed, TextBasedChannels } from "discord.js";
+import { MessageEmbed, TextBasedChannel } from "discord.js";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { Module } from "./Module";
 import { args, command, guild } from "./ModuleDecorators";
@@ -60,7 +60,7 @@ export class Help extends Module {
     private async generateEmbed(
         title: string,
         desc: string,
-        channel: TextBasedChannels
+        channel: TextBasedChannel
     ): Promise<MessageEmbed> {
         const embed: MessageEmbed = new MessageEmbed()
             .setColor(await this.bot.utils.getSelfColor(channel))

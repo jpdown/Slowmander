@@ -7,7 +7,7 @@ import {
     InteractionReplyOptions,
     MessageEmbed,
     MessageOptions,
-    TextBasedChannels,
+    TextBasedChannel,
     User,
 } from "discord.js";
 import { Message } from "discord.js";
@@ -23,7 +23,7 @@ export class CommandContext {
 
     public readonly interaction?: CommandInteraction;
 
-    public readonly channel: TextBasedChannels;
+    public readonly channel: TextBasedChannel;
 
     public readonly user: User;
 
@@ -44,7 +44,7 @@ export class CommandContext {
         client: Client<true>,
         msgOrInteraction: Message | CommandInteraction,
         user: User,
-        channel: TextBasedChannels,
+        channel: TextBasedChannel,
         guild?: Guild,
         member?: GuildMember,
         args?: CommandParsedType[]

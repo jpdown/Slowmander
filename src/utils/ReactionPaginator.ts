@@ -8,7 +8,7 @@ import {
     MessageEmbed,
     User,
     ReactionCollector,
-    TextBasedChannels,
+    TextBasedChannel,
     GuildMember,
 } from "discord.js";
 
@@ -27,7 +27,7 @@ export class ReactionPaginator {
 
     private message: Message | undefined;
 
-    private channel: TextBasedChannels;
+    private channel: TextBasedChannel;
 
     private bot: Bot;
 
@@ -39,7 +39,7 @@ export class ReactionPaginator {
         elements: string[],
         numPerPage: number,
         title: string,
-        channel: TextBasedChannels,
+        channel: TextBasedChannel,
         bot: Bot,
         command: Command
     ) {

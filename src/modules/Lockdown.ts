@@ -8,7 +8,7 @@ import {
     NewsChannel,
     Permissions,
     Role,
-    TextBasedChannels,
+    TextBasedChannel,
     TextChannel,
 } from "discord.js";
 import { Module } from "./Module";
@@ -192,7 +192,7 @@ export class Lockdown extends Module {
             await ctx.reply({ embeds: [embed] });
             return true;
         }
-        await (<TextBasedChannels>channel).send({ embeds: [embed] });
+        await (<TextBasedChannel>channel).send({ embeds: [embed] });
         return true;
     }
 }

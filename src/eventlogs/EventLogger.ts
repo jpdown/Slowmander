@@ -9,7 +9,7 @@ import {
     GuildBan,
     PartialGuildMember,
     PartialMessage,
-    TextBasedChannels,
+    TextBasedChannel,
     MessageEmbed,
 } from "discord.js";
 
@@ -325,18 +325,18 @@ export class EventLogger {
 
     private async getLogChannel(
         guildId: string
-    ): Promise<TextBasedChannels | undefined> {
+    ): Promise<TextBasedChannel | undefined> {
         const channelId = this.bot.db.eventLogs.getChannel(guildId);
 
         if (!channelId) {
             return undefined;
         }
 
-        let channel: TextBasedChannels | undefined;
+        let channel: TextBasedChannel | undefined;
 
         try {
             if (channelId) {
-                channel = <TextBasedChannels>(
+                channel = <TextBasedChannel>(
                     await this.bot.client.channels.fetch(channelId)
                 );
             }

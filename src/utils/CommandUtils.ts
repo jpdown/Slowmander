@@ -21,9 +21,10 @@ import {
     MessageReaction,
     ReactionEmoji,
     MessageEmbed,
-    TextBasedChannels,
+    TextBasedChannel,
     MessageOptions,
     ApplicationCommandOptionType,
+    AnyChannel,
 } from "discord.js";
 import { Logger } from "Logger";
 
@@ -36,7 +37,7 @@ export class CommandUtils {
         this.logger = Logger.getLogger(this);
     }
 
-    async getSelfColor(channel: TextBasedChannels): Promise<ColorResolvable> {
+    async getSelfColor(channel: TextBasedChannel): Promise<ColorResolvable> {
         let color: ColorResolvable | undefined;
 
         if (channel.type !== "DM") {
@@ -210,18 +211,18 @@ export class CommandUtils {
 
     async parseTextChannel(
         potentialChannel: string
-    ): Promise<TextBasedChannels | null> {
+    ): Promise<TextBasedChannel | null> {
         const channel: Channel | null = await this.parseChannel(
             potentialChannel
         );
-        let parsedTextChannel: TextBasedChannels | null = null;
+        let parsedTextChannel: TextBasedChannel | null = null;
 
         if (!channel) {
             return null;
         }
 
         if (channel.isText()) {
-            parsedTextChannel = <TextBasedChannels>channel;
+            parsedTextChannel = <TextBasedChannel>channel;
         }
 
         return parsedTextChannel;
@@ -233,7 +234,7 @@ export class CommandUtils {
         try {
             const snowflake = await this.parseChannelID(potentialChannel);
             if (snowflake) {
-                parsedChannel = await this.bot.client.channels.fetch(snowflake);
+                parsedChannel = <Channel>await this.bot.client.channels.fetch(snowflake); // todo more typing
             }
         } catch (err) {
             parsedChannel = null;
@@ -432,7 +433,7 @@ export class CommandUtils {
 
     async sendMessage(
         message: string,
-        channel: TextBasedChannels,
+        channel: TextBasedChannel,
         repliedMessage?: Message
     ): Promise<Message> {
         const embed: MessageEmbed = new MessageEmbed()
