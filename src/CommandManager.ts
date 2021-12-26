@@ -11,18 +11,19 @@ import { CommandGroup } from "commands/CommandGroup";
 import { Logger } from "Logger";
 
 import {
-    ApplicationCommandChoicesOption,
+    ApplicationCommandSubCommand,
     ApplicationCommandData,
-    ApplicationCommandOptionChoice,
-    ApplicationCommandOptionData,
-    ApplicationCommandSubCommandData,
-    ApplicationCommandSubGroupData,
     GuildMember,
     Interaction,
     Message,
     MessageEmbed,
     PartialMessage,
     Snowflake,
+    ApplicationCommandSubCommandData,
+    ApplicationCommandSubGroupData,
+    ApplicationCommandOptionData,
+    ApplicationCommandNumericOptionData,
+    ApplicationCommandAutocompleteOption,
 } from "discord.js";
 // import { HelpManager } from 'HelpManager';
 import { CommandContext } from "CommandContext";
@@ -359,9 +360,7 @@ export class CommandManager {
                     description: sub.desc,
                 };
                 // We can do this because subgroups cannot contain subgroups
-                currSub.options = this.getSlashSubs(
-                    sub
-                ) as ApplicationCommandSubCommandData[];
+                currSub.options = this.getSlashSubs(sub) as ApplicationCommandSubCommandData[];
             } else {
                 currSub = {
                     type: "SUB_COMMAND",
@@ -380,16 +379,19 @@ export class CommandManager {
     private getSlashArgs(cmd: Command): | Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] | undefined {
         let args: Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] = [];
         cmd.args?.forEach((arg) => {
+            let type = this.bot.utils.getSlashArgType(arg.type);
             // Will change type later
-            let currArg: Exclude<ApplicationCommandOptionData, | ApplicationCommandSubGroupData | ApplicationCommandSubCommandData> = { // todo fix typing on this
+            // TODO: Handle autocomplete and numeric options
+            let currArg: Exclude<ApplicationCommandOptionData, | ApplicationCommandSubGroupData | ApplicationCommandSubCommandData | ApplicationCommandNumericOptionData | ApplicationCommandAutocompleteOption> = { // todo fix typing on this
                 name: arg.name,
                 description: arg.description ?? "",
-                type: this.bot.utils.getSlashArgType(arg.type),
+                type: type,
                 required: !arg.optional,
-                autocomplete: arg.autocomplete,
             };
 
-            if (arg.choices && (currArg.type === "STRING" || currArg.type === "INTEGER" ||currArg.type === "NUMBER")) {currArg.choices = arg.choices; }
+            if (arg.choices && (currArg.type === "STRING" || currArg.type === "INTEGER" || currArg.type === "NUMBER") && !currArg.autocomplete) {
+                currArg.choices = arg.choices;
+            }
 
             if (arg.channelTypes && currArg.type === "CHANNEL") {
                 currArg.channelTypes = arg.channelTypes;
