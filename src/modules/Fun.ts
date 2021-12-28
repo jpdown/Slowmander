@@ -53,7 +53,7 @@ export class Fun extends Module {
         await ctx.reply(`hi`);
     }
 
-    @subcommand("testargs2", "another sub of testartgs2")
+    @subcommand("dadjoke,testargs2", "another sub of testartgs2")
     @guild("472222827421106201")
     @args([
         { name: "user", type: "user", description: "the user" },
@@ -116,7 +116,7 @@ export class Fun extends Module {
         await ctx.reply("subgroup");
     }
 
-    @subcommand("subgroup", "subcommand1")
+    @subcommand("group,subgroup", "subcommand1")
     @guild("472222827421106201")
     public async subcommand(ctx: CommandContext) {
         await ctx.reply("subcommand1");

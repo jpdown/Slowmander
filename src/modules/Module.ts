@@ -4,7 +4,7 @@ import { CommandGroup } from "commands/CommandGroup";
 
 import "reflect-metadata";
 
-export abstract class Module { // TODO fix subcommands with the same name
+export abstract class Module {
     public readonly commands: Command[];
 
     protected readonly bot: Bot;
@@ -45,11 +45,23 @@ export abstract class Module { // TODO fix subcommands with the same name
                         Reflect.getMetadata("command:parent", this, key);
                     let foundGroup: CommandGroup | undefined;
                     if (commandParent) {
+                        // Split by comma to split group and subgroup
+                        let splitParent = commandParent.split(",");
                         foundGroup = this.commands.find(
                             (foundCommand) =>
-                                foundCommand.name === commandParent &&
+                                foundCommand.name === splitParent[0] &&
                                 foundCommand instanceof CommandGroup
                         ) as CommandGroup | undefined;
+
+                        if (splitParent.length > 1) {
+                            let foundSubGroup = foundGroup?.getSubCommand(splitParent[1]);
+                            if (!foundSubGroup || !(foundSubGroup instanceof CommandGroup)) {
+                                foundGroup = undefined;
+                            }
+                            else {
+                                foundGroup = foundSubGroup;
+                            }
+                        }
 
                         if (!foundGroup) {
                             throw new Error(
@@ -131,9 +143,12 @@ export abstract class Module { // TODO fix subcommands with the same name
                         throw new Error("Unknown command type");
                     }
 
-                    this.commands.push(addedCommand);
-                    // Register subcommand if needed
-                    commandOptions.parent?.registerSubCommand(addedCommand);
+                    if (commandOptions.parent) {
+                        commandOptions.parent.registerSubCommand(addedCommand);
+                    }
+                    else {
+                        this.commands.push(addedCommand);
+                    }
                 }
             });
         } else {
