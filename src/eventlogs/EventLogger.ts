@@ -51,7 +51,7 @@ export class EventLogger {
 
         // Build embed
         const embed: MessageEmbed = new MessageEmbed()
-            .setAuthor("Member Joined", avatarUrl)
+            .setAuthor({name: "Member Joined", iconURL: avatarUrl})
             .setThumbnail(avatarUrl)
             .setDescription(
                 `${member.user.toString()} ${member.user.username}#${
@@ -93,7 +93,7 @@ export class EventLogger {
 
         // Build embed
         const embed: MessageEmbed = new MessageEmbed()
-            .setAuthor("Member Left", avatarUrl)
+            .setAuthor({name: "Member Left", iconURL: avatarUrl})
             .setThumbnail(avatarUrl)
             .setDescription(
                 `${fullMember.user.toString()} ${fullMember.user.username}#${
@@ -135,7 +135,7 @@ export class EventLogger {
 
         // Build embed
         const embed: MessageEmbed = new MessageEmbed()
-            .setAuthor("Member Banned", avatarUrl)
+            .setAuthor({name: "Member Banned", iconURL: avatarUrl})
             .setThumbnail(avatarUrl)
             .setDescription(
                 `${fullBan.user.toString()} ${fullBan.user.username}#${
@@ -169,7 +169,7 @@ export class EventLogger {
 
         // Build embed
         const embed: MessageEmbed = new MessageEmbed()
-            .setAuthor("Member Unbanned", avatarUrl)
+            .setAuthor({name: "Member Unbanned", iconURL: avatarUrl})
             .setThumbnail(avatarUrl)
             .setDescription(
                 `${ban.user.toString()} ${ban.user.username}#${
@@ -203,10 +203,10 @@ export class EventLogger {
 
         // Build embed
         const embed: MessageEmbed = new MessageEmbed()
-            .setAuthor(
-                `${message.author.username}#${message.author.discriminator}`,
-                avatarUrl
-            )
+            .setAuthor({
+                name: `${message.author.username}#${message.author.discriminator}`,
+                iconURL: avatarUrl
+            })
             .setThumbnail(avatarUrl)
             .setDescription(
                 `**Message sent by ${message.author.toString()} deleted in ${message.channel.toString()}**\n${
@@ -238,14 +238,14 @@ export class EventLogger {
 
         // Build embed
         const embed: MessageEmbed = new MessageEmbed()
-            .setAuthor(
-                firstMessage.guild.name,
-                firstMessage.guild.iconURL({
+            .setAuthor({
+                name: firstMessage.guild.name,
+                iconURL: firstMessage.guild.iconURL({
                     size: 4096,
                     format: "png",
                     dynamic: true,
                 }) ?? undefined
-            )
+            })
             .setDescription(
                 `**Bulk delete in ${firstMessage.channel.toString()}, ${
                     messages.size
@@ -297,10 +297,10 @@ export class EventLogger {
 
         // Build embed
         const embed: MessageEmbed = new MessageEmbed()
-            .setAuthor(
-                `${fullMessage.author.username}#${fullMessage.author.discriminator}`,
-                avatarUrl
-            )
+            .setAuthor({
+                name: `${fullMessage.author.username}#${fullMessage.author.discriminator}`,
+                iconURL: avatarUrl
+            })
             .setThumbnail(avatarUrl)
             .setDescription(
                 `**Message edited by ${fullMessage.author.toString()} in ${fullMessage.channel.toString()}** [Jump](${

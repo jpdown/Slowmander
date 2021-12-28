@@ -37,7 +37,7 @@ export class Info extends Module {
             size: 4096,
         });
         const embed: MessageEmbed = new MessageEmbed()
-            .setAuthor(`${member.user.username}#${member.user.discriminator}`, avatar, avatar)
+            .setAuthor({name: `${member.user.username}#${member.user.discriminator}`, url: avatar, iconURL: avatar})
             .setThumbnail(avatar)
             .setColor(member.displayColor)
             .setDescription(member.toString())
@@ -121,7 +121,7 @@ export class Info extends Module {
         const embed: MessageEmbed = new MessageEmbed()
             .setColor(await CommandUtils.getSelfColor(c.channel))
             .setImage(avatarUrl)
-            .setAuthor(`${u.username}#${u.discriminator}`, avatarUrl, avatarUrl);
+            .setAuthor({name: `${u.username}#${u.discriminator}`, url: avatarUrl, iconURL: avatarUrl});
         await c.reply({ embeds: [embed] });
     }
 
