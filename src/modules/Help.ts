@@ -5,6 +5,7 @@ import { PermissionsHelper } from "utils/PermissionsHelper";
 import { Module } from "./Module";
 import { args, command, guild } from "./ModuleDecorators";
 import { ButtonPaginator } from "utils/ButtonPaginator";
+import { CommandUtils } from "utils/CommandUtils";
 
 export class Help extends Module {
     public constructor(bot: Bot) {
@@ -63,7 +64,7 @@ export class Help extends Module {
         channel: TextBasedChannel
     ): Promise<MessageEmbed> {
         const embed: MessageEmbed = new MessageEmbed()
-            .setColor(await this.bot.utils.getSelfColor(channel))
+            .setColor(await CommandUtils.getSelfColor(channel))
             .setDescription(desc)
             .setTitle(title)
             .setTimestamp();

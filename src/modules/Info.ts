@@ -8,8 +8,8 @@ import { Module } from "./Module";
 import { args, command, guild } from "./ModuleDecorators";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { ButtonPaginator } from "utils/ButtonPaginator";
-import { memoryUsage, uptime as process_uptime } from 'process';
-import { loadavg } from 'os';
+import { memoryUsage, uptime as process_uptime } from "process";
+import { loadavg } from "os";
 
 export class Info extends Module {
     constructor(bot: Bot) {
@@ -46,12 +46,20 @@ export class Info extends Module {
         if (member.nickname) {
             embed.addField("Nickname", member.nickname, false);
         }
-        embed.addField("Registered", `<t:${Math.floor(member.user.createdTimestamp / 1000)}>`, true);
+        embed.addField(
+            "Registered",
+            `<t:${Math.floor(member.user.createdTimestamp / 1000)}>`,
+            true
+        );
         if (member.joinedTimestamp) {
             embed.addField("Joined", `<t:${Math.floor(member.joinedTimestamp / 1000)}>`, true);
         }
         if (member.premiumSinceTimestamp) {
-            embed.addField("Boosted", `<t:${Math.floor(member.premiumSinceTimestamp / 1000)}>`, true);
+            embed.addField(
+                "Boosted",
+                `<t:${Math.floor(member.premiumSinceTimestamp / 1000)}>`,
+                true
+            );
         }
         embed.addField("Join Position", (await Info.getJoinPos(member)).toString(), false);
         const rolesList: Collection<Snowflake, Role> = member.roles.cache.clone();
@@ -111,7 +119,7 @@ export class Info extends Module {
         }
         const avatarUrl: string = u.displayAvatarURL({ size: 4096, format: "png", dynamic: true });
         const embed: MessageEmbed = new MessageEmbed()
-            .setColor(await new CommandUtils(c.bot).getSelfColor(c.channel))
+            .setColor(await CommandUtils.getSelfColor(c.channel))
             .setImage(avatarUrl)
             .setAuthor(`${u.username}#${u.discriminator}`, avatarUrl, avatarUrl);
         await c.reply({ embeds: [embed] });
@@ -120,14 +128,14 @@ export class Info extends Module {
     @command(`Gets bot information`)
     public async stats(c: CommandContext) {
         const embed: MessageEmbed = new MessageEmbed()
-            .setColor(await new CommandUtils(c.bot).getSelfColor(c.channel))
+            .setColor(await CommandUtils.getSelfColor(c.channel))
             .addField("RAM Usage", `${Math.floor(memoryUsage().rss / 1048576)} MB`, true)
             .addField("Load", Info.getLoadString(), true)
             .addField("Uptime", Info.getFormattedUptime(), true)
             .addField("User Count", Info.getUserCount(c.client).toString(), true)
             .addField("Guild Count", c.client.guilds.cache.size.toString(), true)
             .addField("Channel Count", c.client.channels.cache.size.toString(), true);
-        await c.reply({ embeds: [embed]})
+        await c.reply({ embeds: [embed] });
     }
 
     private static getFormattedUptime(): string {
@@ -140,26 +148,30 @@ export class Info extends Module {
         uptime -= minutes * 60;
         const seconds: number = Math.floor(uptime);
         return `${days}d ${hours}h ${minutes}m ${seconds}s`;
-      }
-    
-      private static getUserCount(client: Client): number {
+    }
+
+    private static getUserCount(client: Client): number {
         return client.users.cache.size;
-      }
-    
-      private static getLoadString(): string {
+    }
+
+    private static getLoadString(): string {
         const load: number[] = loadavg();
-        let loadString = '';
+        let loadString = "";
         load.forEach((num) => {
-          loadString += `${num.toFixed(2)} `;
+            loadString += `${num.toFixed(2)} `;
         });
         return loadString.slice(0, loadString.length - 1);
-      }
+    }
 
     private static async getJoinPos(member: GuildMember): Promise<number> {
         const allMembers: Collection<Snowflake, GuildMember> = await member.guild.members.fetch();
         let joinPos = 1;
         allMembers.forEach((currMember) => {
-            if (currMember.joinedTimestamp && member.joinedTimestamp && currMember.joinedTimestamp < member.joinedTimestamp) {
+            if (
+                currMember.joinedTimestamp &&
+                member.joinedTimestamp &&
+                currMember.joinedTimestamp < member.joinedTimestamp
+            ) {
                 joinPos += 1;
             }
         });

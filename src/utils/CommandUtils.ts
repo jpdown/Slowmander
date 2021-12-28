@@ -29,15 +29,10 @@ import {
 import { Logger } from "Logger";
 
 export class CommandUtils {
-    private bot: Bot;
-    private logger: Logger;
+    public static bot: Bot;
+    private static logger: Logger = Logger.getLogger("Command Utils");
 
-    constructor(bot: Bot) {
-        this.bot = bot;
-        this.logger = Logger.getLogger(this);
-    }
-
-    async getSelfColor(channel: TextBasedChannel): Promise<ColorResolvable> {
+    public static async getSelfColor(channel: TextBasedChannel): Promise<ColorResolvable> {
         let color: ColorResolvable | undefined;
 
         if (channel.type !== "DM") {
@@ -52,7 +47,7 @@ export class CommandUtils {
         return color;
     }
 
-    async parseMember(
+    public static async parseMember(
         potentialMember: string,
         guild: Guild
     ): Promise<GuildMember | undefined> {
@@ -74,7 +69,7 @@ export class CommandUtils {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    async parseMemberNickname(
+    public static async parseMemberNickname(
         potentialMember: string,
         guild: Guild
     ): Promise<GuildMember | undefined> {
@@ -87,7 +82,7 @@ export class CommandUtils {
         return parsedMember;
     }
 
-    async parseMemberPingOnly(
+    public static async parseMemberPingOnly(
         potentialMember: string,
         guild: Guild
     ): Promise<GuildMember | undefined> {
@@ -102,7 +97,7 @@ export class CommandUtils {
         return guild.members.cache.get(parsedUser.id);
     }
 
-    async parseUser(potentialUser: string): Promise<User | undefined> {
+    public static async parseUser(potentialUser: string): Promise<User | undefined> {
         let parsedUser: User | undefined;
 
         parsedUser = await this.parseUserPingOnly(potentialUser);
@@ -114,7 +109,7 @@ export class CommandUtils {
         return parsedUser;
     }
 
-    async parseUserPingOnly(potentialUser: string): Promise<User | undefined> {
+    public static async parseUserPingOnly(potentialUser: string): Promise<User | undefined> {
         let parsedUser: User | undefined;
 
         try {
@@ -132,7 +127,7 @@ export class CommandUtils {
         return parsedUser;
     }
 
-    async parseUserByName(potentialUser: string): Promise<User | undefined> {
+    public static async parseUserByName(potentialUser: string): Promise<User | undefined> {
         const lowerUser: string = potentialUser.toLowerCase();
 
         const parsedUser = this.bot.client.users.cache.find(
@@ -144,7 +139,7 @@ export class CommandUtils {
         return parsedUser;
     }
 
-    async parseUserID(potentialUser: string): Promise<Snowflake | undefined> {
+    public static async parseUserID(potentialUser: string): Promise<Snowflake | undefined> {
         let snowflake: string | undefined = potentialUser;
 
         if (snowflake.startsWith("<@") && snowflake.endsWith(">")) {
@@ -161,7 +156,7 @@ export class CommandUtils {
         return snowflake;
     }
 
-    async parseRole(potentialRole: string, guild: Guild): Promise<Role | null> {
+    public static async parseRole(potentialRole: string, guild: Guild): Promise<Role | null> {
         let parsedRole: Role | null = null;
         const snowflake: Snowflake | null = await this.parseRoleID(
             potentialRole
@@ -179,7 +174,7 @@ export class CommandUtils {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    async parseRoleByName(
+    public static async parseRoleByName(
         potentialRole: string,
         guild: Guild
     ): Promise<Role | null> {
@@ -196,7 +191,7 @@ export class CommandUtils {
         return parsedRole;
     }
 
-    async parseRoleID(potentialRole: string): Promise<Snowflake | null> {
+    public static async parseRoleID(potentialRole: string): Promise<Snowflake | null> {
         let snowflake: Snowflake | null = potentialRole;
         if (snowflake.startsWith("<@&") && snowflake.endsWith(">")) {
             snowflake = snowflake.substring(3, snowflake.length - 1);
@@ -209,7 +204,7 @@ export class CommandUtils {
         return snowflake;
     }
 
-    async parseTextChannel(
+    public static async parseTextChannel(
         potentialChannel: string
     ): Promise<TextBasedChannel | null> {
         const channel: Channel | null = await this.parseChannel(
@@ -228,7 +223,7 @@ export class CommandUtils {
         return parsedTextChannel;
     }
 
-    async parseChannel(potentialChannel: string): Promise<Channel | null> {
+    public static async parseChannel(potentialChannel: string): Promise<Channel | null> {
         let parsedChannel: Channel | null = null;
 
         try {
@@ -251,7 +246,7 @@ export class CommandUtils {
         return parsedChannel;
     }
 
-    async parseChannelID(
+    public static async parseChannelID(
         potentialChannel: string
     ): Promise<Snowflake | undefined> {
         let snowflake: Snowflake | undefined = potentialChannel;
@@ -266,7 +261,7 @@ export class CommandUtils {
         return snowflake;
     }
 
-    async parseEmote(potentialEmote: string): Promise<GuildEmoji | null> {
+    public static async parseEmote(potentialEmote: string): Promise<GuildEmoji | null> {
         let parsedEmote: GuildEmoji | null = null;
 
         try {
@@ -286,7 +281,7 @@ export class CommandUtils {
         return parsedEmote;
     }
 
-    async parseEmoteByName(
+    public static async parseEmoteByName(
         potentialEmote: string
     ): Promise<GuildEmoji | undefined> {
         const emoteName = potentialEmote.toLowerCase();
@@ -298,7 +293,7 @@ export class CommandUtils {
         return currEmote;
     }
 
-    async parseEmoteID(potentialEmote: string): Promise<Snowflake | undefined> {
+    public static async parseEmoteID(potentialEmote: string): Promise<Snowflake | undefined> {
         let snowflake: Snowflake | undefined = potentialEmote;
         if (snowflake.startsWith("<:") && snowflake.endsWith(">")) {
             snowflake = snowflake.substring(
@@ -315,7 +310,7 @@ export class CommandUtils {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    async parseWebhookUrl(potentialWebhook: string): Promise<WebhookClient> {
+    public static async parseWebhookUrl(potentialWebhook: string): Promise<WebhookClient> {
         const webhook: WebhookClient = new WebhookClient({
             url: potentialWebhook,
         });
@@ -324,7 +319,7 @@ export class CommandUtils {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    async verifySnowflake(potentialSnowflake: string): Promise<boolean> {
+    public static async verifySnowflake(potentialSnowflake: string): Promise<boolean> {
         // Deconstruct snowflake
         const deconstructedSnowflake: DeconstructedSnowflake =
             SnowflakeUtil.deconstruct(potentialSnowflake);
@@ -337,7 +332,7 @@ export class CommandUtils {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    async updateChannelPerms(
+    public static async updateChannelPerms(
         channel: GuildChannel,
         roles: Role[],
         users: User[],
@@ -394,7 +389,7 @@ export class CommandUtils {
         return true;
     }
 
-    async getEmote(
+    public static async getEmote(
         message: Message
     ): Promise<ReactionEmoji | GuildEmoji | undefined> {
         // Ask for emote
@@ -431,7 +426,7 @@ export class CommandUtils {
         return emote;
     }
 
-    async sendMessage(
+    public static async sendMessage(
         message: string,
         channel: TextBasedChannel,
         repliedMessage?: Message
@@ -449,7 +444,7 @@ export class CommandUtils {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    public async makeEmoteFromId(emoteId: string): Promise<string | undefined> {
+    public static async makeEmoteFromId(emoteId: string): Promise<string | undefined> {
         let emote: string | undefined;
         let newEmoteId: string;
 
@@ -469,7 +464,7 @@ export class CommandUtils {
         return emote;
     }
 
-    public getSlashArgType(
+    public static getSlashArgType(
         type: CommandArgumentType
     ): Exclude<
         ApplicationCommandOptionType,

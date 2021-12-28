@@ -11,6 +11,7 @@ import {
     TextBasedChannel,
     GuildMember,
 } from "discord.js";
+import { CommandUtils } from "./CommandUtils";
 
 export class ReactionPaginator {
     public static readonly NEXT_PAGE: string = "➡️";
@@ -62,13 +63,11 @@ export class ReactionPaginator {
             await this.message.react(ReactionPaginator.NEXT_PAGE);
 
             // Handle reactions
-            const reactionCollector: ReactionCollector =
-                this.message.createReactionCollector({
-                    filter: (reaction: MessageReaction, user: User) =>
-                        !user.bot,
-                    time: 60000,
-                    dispose: true,
-                });
+            const reactionCollector: ReactionCollector = this.message.createReactionCollector({
+                filter: (reaction: MessageReaction, user: User) => !user.bot,
+                time: 60000,
+                dispose: true,
+            });
 
             reactionCollector.on("collect", this.onReaction.bind(this));
             reactionCollector.on("end", async () => {
@@ -116,14 +115,11 @@ export class ReactionPaginator {
 
     private async generateEmbed(): Promise<MessageEmbed> {
         const embed: MessageEmbed = new MessageEmbed()
-            .setColor(await this.bot.utils.getSelfColor(this.channel))
+            .setColor(await CommandUtils.getSelfColor(this.channel))
             .setFooter(`Page ${this.currPage + 1} of ${this.numPages}`)
             .setDescription(
                 this.elements
-                    .slice(
-                        this.currPage * this.numPerPage,
-                        (this.currPage + 1) * this.numPerPage
-                    )
+                    .slice(this.currPage * this.numPerPage, (this.currPage + 1) * this.numPerPage)
                     .join("\n")
             )
             .setTitle(this.title);
@@ -132,15 +128,13 @@ export class ReactionPaginator {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    private async checkPerms(
-        reaction: MessageReaction,
-        user: User
-    ): Promise<boolean> {
+    private async checkPerms(reaction: MessageReaction, user: User): Promise<boolean> {
         let hasPerms = false;
 
         if (reaction.message.guild) {
-            const member: GuildMember | undefined =
-                reaction.message.guild.members.cache.get(user.id);
+            const member: GuildMember | undefined = reaction.message.guild.members.cache.get(
+                user.id
+            );
             if (member) {
                 // hasPerms = await PermissionsHelper.checkPermsAndDM(member, this.command, this.bot);
             }

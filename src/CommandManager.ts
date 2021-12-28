@@ -1,8 +1,4 @@
-import type {
-    Command,
-    CommandArgument,
-    CommandParsedType,
-} from "commands/Command";
+import type { Command, CommandArgument, CommandParsedType } from "commands/Command";
 // import * as commands from 'commands';
 import * as modules from "modules";
 import type { Bot } from "Bot";
@@ -31,8 +27,9 @@ import type { Module } from "modules/Module";
 import { ArgumentParser } from "utils/ArgumentParser";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import type { APIInteractionGuildMember } from "discord-api-types";
+import { CommandUtils } from "utils/CommandUtils";
 
-export class CommandManager {
+export class CommandManager { // TODO fix subcommands with the same name
     // Map guild id and command name to command, just command name for global
     private commandMap: Map<string, Command>;
 
@@ -50,9 +47,7 @@ export class CommandManager {
         this.registerAll();
     }
 
-    public async parseCommand(
-        message: Message | PartialMessage
-    ): Promise<void> {
+    public async parseCommand(message: Message | PartialMessage): Promise<void> {
         let fullMessage: Message;
         // Handle partial events
         try {
@@ -134,10 +129,7 @@ export class CommandManager {
         try {
             await commandToRun.invoke(ctx, args);
         } catch (err) {
-            await this.logger.error(
-                `Error running command "${commandToRun?.name}".`,
-                err
-            );
+            await this.logger.error(`Error running command "${commandToRun?.name}".`, err);
             await ctx.reply({
                 embeds: [
                     new MessageEmbed()
@@ -186,10 +178,7 @@ export class CommandManager {
         }
 
         // Parse arguments
-        const args = await ArgumentParser.parseSlashArgs(
-            interaction.options,
-            cmd
-        );
+        const args = await ArgumentParser.parseSlashArgs(interaction.options, cmd);
         if (!args) {
             return;
         }
@@ -215,10 +204,7 @@ export class CommandManager {
         try {
             await cmd.invoke(ctx, args);
         } catch (err) {
-            await this.logger.error(
-                `Error running command "${cmd?.name}".`,
-                err
-            );
+            await this.logger.error(`Error running command "${cmd?.name}".`, err);
             await ctx.reply({
                 embeds: [
                     new MessageEmbed()
@@ -230,10 +216,7 @@ export class CommandManager {
         }
     }
 
-    public getCommand(
-        guildId: Snowflake | undefined,
-        commandToGet: string
-    ): Command | undefined {
+    public getCommand(guildId: Snowflake | undefined, commandToGet: string): Command | undefined {
         console.log(this.commandMap);
         return (
             this.commandMap.get(guildId + "," + commandToGet) ??
@@ -282,10 +265,7 @@ export class CommandManager {
     }
 
     private registerCommand(command: Command) {
-        this.commandMap.set(
-            (command.guild ?? "GLOBAL") + "," + command.name,
-            command
-        );
+        this.commandMap.set((command.guild ?? "GLOBAL") + "," + command.name, command);
         // command.aliases.forEach((alias) => {
         //   this.commandMap.set(alias, command);
         // });
@@ -344,13 +324,8 @@ export class CommandManager {
     private getSlashSubs(
         group: CommandGroup
     ): (ApplicationCommandSubCommandData | ApplicationCommandSubGroupData)[] {
-        const subs: (
-            | ApplicationCommandSubCommandData
-            | ApplicationCommandSubGroupData
-        )[] = [];
-        let currSub:
-            | ApplicationCommandSubCommandData
-            | ApplicationCommandSubGroupData;
+        const subs: (ApplicationCommandSubCommandData | ApplicationCommandSubGroupData)[] = [];
+        let currSub: ApplicationCommandSubCommandData | ApplicationCommandSubGroupData;
 
         group.subCommands.forEach((sub) => {
             if (sub instanceof CommandGroup) {
@@ -379,7 +354,7 @@ export class CommandManager {
     private getSlashArgs(cmd: Command): | Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] | undefined {
         let args: Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] = [];
         cmd.args?.forEach((arg) => {
-            let type = this.bot.utils.getSlashArgType(arg.type);
+            let type = CommandUtils.getSlashArgType(arg.type);
             // Will change type later
             // TODO: Handle autocomplete and numeric options
             let currArg: Exclude<ApplicationCommandOptionData, | ApplicationCommandSubGroupData | ApplicationCommandSubCommandData | ApplicationCommandNumericOptionData | ApplicationCommandAutocompleteOption> = { // todo fix typing on this

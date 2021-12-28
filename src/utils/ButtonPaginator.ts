@@ -10,6 +10,7 @@ import {
 } from "discord.js";
 import type { CommandContext } from "CommandContext";
 import { Logger } from "Logger";
+import { CommandUtils } from "./CommandUtils";
 
 export class ButtonPaginator {
     private cont: CommandContext;
@@ -24,12 +25,7 @@ export class ButtonPaginator {
     private pages;
     private logger: Logger;
 
-    constructor(
-        elements: string[],
-        cont: CommandContext,
-        numPerPage: number,
-        title: string
-    ) {
+    constructor(elements: string[], cont: CommandContext, numPerPage: number, title: string) {
         this.elements = elements;
         this.cont = cont;
         this.numPerPage = numPerPage;
@@ -56,18 +52,11 @@ export class ButtonPaginator {
         let buttons;
         if (this.pages > 1) {
             buttons = new MessageActionRow().addComponents(
-                new MessageButton()
-                    .setCustomId("prev")
-                    .setLabel("Previous")
-                    .setStyle("PRIMARY"),
-                new MessageButton()
-                    .setCustomId("next")
-                    .setLabel("Next")
-                    .setStyle("PRIMARY")
+                new MessageButton().setCustomId("prev").setLabel("Previous").setStyle("PRIMARY"),
+                new MessageButton().setCustomId("next").setLabel("Next").setStyle("PRIMARY")
             );
             const intCollector = this.msg.createMessageComponentCollector({
-                filter: (interaction: ButtonInteraction) =>
-                    interaction.message.id === this.msg?.id,
+                filter: (interaction: ButtonInteraction) => interaction.message.id === this.msg?.id,
                 componentType: "BUTTON",
                 time: 60000,
             });
@@ -87,8 +76,7 @@ export class ButtonPaginator {
         if (!(inter instanceof ButtonInteraction)) return;
         let com = inter.message?.components;
         if (!com) return;
-        if (!(com.length === 0) && !(com[0] instanceof MessageActionRow))
-            return;
+        if (!(com.length === 0) && !(com[0] instanceof MessageActionRow)) return;
         let button = inter.customId;
         if (button === "next") {
             if (this.page + 1 < this.pages) {
@@ -116,14 +104,11 @@ export class ButtonPaginator {
 
     private async generateEmbed(): Promise<MessageEmbed> {
         const embed: MessageEmbed = new MessageEmbed()
-            .setColor(await this.bot.utils.getSelfColor(this.channel))
+            .setColor(await CommandUtils.getSelfColor(this.channel))
             .setFooter(`Page ${this.page + 1} of ${this.pages}`)
             .setDescription(
                 this.elements
-                    .slice(
-                        this.page * this.numPerPage,
-                        (this.page + 1) * this.numPerPage
-                    )
+                    .slice(this.page * this.numPerPage, (this.page + 1) * this.numPerPage)
                     .join("\n")
             )
             .setTitle(this.title)

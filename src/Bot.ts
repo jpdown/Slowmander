@@ -34,8 +34,6 @@ export class Bot {
 
     public readonly twitch: TwitchAPIManager;
 
-    public readonly utils: CommandUtils;
-
     constructor() {
         this.client = new Client({
             intents: [
@@ -65,7 +63,7 @@ export class Bot {
         );
         this.twitchClipModManager = new TwitchClipModManager(this);
         this.reactionRoleManager = new ReactionRoleManager(this);
-        this.utils = new CommandUtils(this);
+        CommandUtils.bot = this;
 
         this.client.on("ready", async () => {
             await this.logger.info(

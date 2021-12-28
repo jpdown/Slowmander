@@ -16,6 +16,7 @@ import {
     Message,
     ThreadChannel,
 } from "discord.js";
+import { CommandUtils } from "utils/CommandUtils";
 
 export class ReactionRoleManager {
     private bot: Bot;
@@ -177,7 +178,7 @@ export class ReactionRoleManager {
                     reactionRole.emoteId
                 );
                 // Get emote
-                const emote = await this.bot.utils.makeEmoteFromId(
+                const emote = await CommandUtils.makeEmoteFromId(
                     reactionRole.emoteId
                 );
                 await ModErrorLog.log(
@@ -220,7 +221,7 @@ export class ReactionRoleManager {
                     reactionRole.emoteId
                 );
                 // Get emote
-                const emote = await this.bot.utils.makeEmoteFromId(
+                const emote = await CommandUtils.makeEmoteFromId(
                     reactionRole.emoteId
                 );
                 await ModErrorLog.log(

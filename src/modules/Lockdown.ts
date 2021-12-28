@@ -11,6 +11,7 @@ import {
     TextBasedChannel,
     TextChannel,
 } from "discord.js";
+import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
 import { args, command, guild } from "./ModuleDecorators";
 
@@ -127,7 +128,7 @@ export class Lockdown extends Module {
         }
 
         if (
-            await bot.utils.updateChannelPerms(
+            await CommandUtils.updateChannelPerms(
                 channel,
                 roles,
                 [],
@@ -137,7 +138,7 @@ export class Lockdown extends Module {
                 reason
             )
         ) {
-            await bot.utils.updateChannelPerms(
+            await CommandUtils.updateChannelPerms(
                 channel,
                 modAndAdminRoles,
                 [bot.client.user],
@@ -184,7 +185,7 @@ export class Lockdown extends Module {
         }
         const embed = new MessageEmbed()
             .setColor(
-                await bot.utils.getSelfColor(<TextChannel | NewsChannel>channel)
+                await CommandUtils.getSelfColor(<TextChannel | NewsChannel>channel)
             )
             .setDescription(lock ? this.LOCK_MESSAGE : this.UNLOCK_MESSAGE);
 

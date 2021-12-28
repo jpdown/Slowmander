@@ -3,14 +3,7 @@ import type { CommandContext } from "CommandContext";
 import type { ActivityOptions, User, WebhookClient } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import {
-    args,
-    command,
-    group,
-    guild,
-    isOwner,
-    subcommand,
-} from "./ModuleDecorators";
+import { args, command, group, guild, isOwner, subcommand } from "./ModuleDecorators";
 
 export class Owner extends Module {
     public constructor(bot: Bot) {
@@ -203,11 +196,7 @@ export class Owner extends Module {
         await c.reply(reply);
     }
 
-    @subcommand(
-        "owner",
-        "sets a new webhook for error logging for developers",
-        "logwebhook"
-    )
+    @subcommand("owner", "sets a new webhook for error logging for developers", "logwebhook")
     @guild("472222827421106201")
     @args([
         {
@@ -218,8 +207,7 @@ export class Owner extends Module {
     ])
     @isOwner()
     public async setErrorLogWebhook(c: CommandContext, name: string) {
-        const utils = new CommandUtils(c.bot);
-        const webhook: WebhookClient = await utils.parseWebhookUrl(name);
+        const webhook: WebhookClient = await CommandUtils.parseWebhookUrl(name);
         if (await c.bot.config.setErrorWebhook(webhook)) {
             c.reply("Log webhook set successfully.");
         } else {
@@ -227,11 +215,7 @@ export class Owner extends Module {
         }
     }
 
-    @subcommand(
-        "owner",
-        "gives the link to invite the bot to a server",
-        "getinvite"
-    )
+    @subcommand("owner", "gives the link to invite the bot to a server", "getinvite")
     @guild("472222827421106201")
     @isOwner()
     public async getInviteLink(c: CommandContext) {

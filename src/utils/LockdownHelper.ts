@@ -13,6 +13,7 @@ import {
     TextChannel,
     User,
 } from "discord.js";
+import { CommandUtils } from "./CommandUtils";
 
 export class LockdownHelper {
     static readonly PERMISSION = Permissions.FLAGS.SEND_MESSAGES;
@@ -34,12 +35,9 @@ export class LockdownHelper {
         }
 
         // Try to get config
-        const lockdownConfig = bot.db.lockdownPresets.getPreset(
-            message.guild!.id,
-            preset
-        );
+        const lockdownConfig = bot.db.lockdownPresets.getPreset(message.guild!.id, preset);
         if (lockdownConfig === undefined) {
-            await bot.utils.sendMessage(
+            await CommandUtils.sendMessage(
                 // eslint-disable-next-line max-len
                 `No lockdown config found, please make one with \`${await bot.commandManager.getPrefix(
                     message.guild?.id
@@ -53,13 +51,10 @@ export class LockdownHelper {
             message.guild!.id,
             preset
         );
-        const lockdownRoles = bot.db.lockdownPresets.getPresetRoles(
-            message.guild!.id,
-            preset
-        );
+        const lockdownRoles = bot.db.lockdownPresets.getPresetRoles(message.guild!.id, preset);
 
         if (!lockdownConfig || !lockdownChannels || !lockdownRoles) {
-            await bot.utils.sendMessage(
+            await CommandUtils.sendMessage(
                 "There was an error with the database, please try again later.",
                 message.channel
             );
@@ -78,8 +73,7 @@ export class LockdownHelper {
 
         const roles: Role[] = [];
         lockdownRoles.forEach((roleId) => {
-            const parsedRole: Role | null =
-                message.guild!.roles.resolve(roleId);
+            const parsedRole: Role | null = message.guild!.roles.resolve(roleId);
             if (parsedRole) {
                 roles.push(parsedRole);
             }
@@ -96,12 +90,12 @@ export class LockdownHelper {
             bot
         );
         if (!result) {
-            await bot.utils.sendMessage(
+            await CommandUtils.sendMessage(
                 `Missing permissions to ${lock ? "lock" : "unlock"} server.`,
                 message.channel
             );
         } else {
-            await bot.utils.sendMessage(
+            await CommandUtils.sendMessage(
                 `Server ${lock ? "locked" : "unlocked"} successfully.`,
                 message.channel
             );
@@ -158,7 +152,7 @@ export class LockdownHelper {
 
         return channels.every(async (channel) => {
             if (
-                await bot.utils.updateChannelPerms(
+                await CommandUtils.updateChannelPerms(
                     channel,
                     roles,
                     [],
@@ -168,7 +162,7 @@ export class LockdownHelper {
                     reason
                 )
             ) {
-                await bot.utils.updateChannelPerms(
+                await CommandUtils.updateChannelPerms(
                     channel,
                     modAndAdminRoles,
                     [bot.client.user],
@@ -184,39 +178,27 @@ export class LockdownHelper {
         });
     }
 
-    static async trySendMessage(
-        channel: GuildChannel,
-        lock: boolean,
-        bot: Bot
-    ): Promise<boolean> {
+    static async trySendMessage(channel: GuildChannel, lock: boolean, bot: Bot): Promise<boolean> {
         // if not a channel we can send messages in
         if (!channel.isText() && channel.type !== "GUILD_CATEGORY") {
             return false;
         }
         // If category, send in all children recursively
         if (channel.type === "GUILD_CATEGORY") {
-            (channel as CategoryChannel).children.forEach(
-                async (childChannel) => {
-                    if (childChannel.permissionsLocked) {
-                        await this.trySendMessage(childChannel, lock, bot);
-                    }
+            (channel as CategoryChannel).children.forEach(async (childChannel) => {
+                if (childChannel.permissionsLocked) {
+                    await this.trySendMessage(childChannel, lock, bot);
                 }
-            );
+            });
             return true;
         }
         // Check perms
-        const member: GuildMember = channel.guild.members.cache.get(
-            bot.client.user!.id
-        )!;
-        if (
-            !channel.permissionsFor(member).has(Permissions.FLAGS.SEND_MESSAGES)
-        ) {
+        const member: GuildMember = channel.guild.members.cache.get(bot.client.user!.id)!;
+        if (!channel.permissionsFor(member).has(Permissions.FLAGS.SEND_MESSAGES)) {
             return false;
         }
         const embed = new MessageEmbed()
-            .setColor(
-                await bot.utils.getSelfColor(<TextChannel | NewsChannel>channel)
-            )
+            .setColor(await CommandUtils.getSelfColor(<TextChannel | NewsChannel>channel))
             .setDescription(lock ? this.LOCK_MESSAGE : this.UNLOCK_MESSAGE);
 
         await (<TextChannel | NewsChannel>channel).send({ embeds: [embed] });

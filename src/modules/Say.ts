@@ -28,14 +28,13 @@ export class Say extends Module {
         },
     ])
     public async say(c: CommandContext, m: string, chan?: TextBasedChannel) {
-        let util = new CommandUtils(c.bot);
         let channel;
         if (!chan) {
             channel = c.channel;
         } else {
             channel = chan;
         }
-        await util.sendMessage(m, channel);
+        await CommandUtils.sendMessage(m, channel);
         await c.reply("Sent!", true);
     }
 }

@@ -1,8 +1,17 @@
 import type { Bot } from "Bot";
 import type { Command, CommandParsedType } from "commands/Command";
 import { CommandGroup } from "commands/CommandGroup";
-import { CacheType, Channel, CommandInteractionOptionResolver, Guild, GuildManager, GuildMember, Role } from "discord.js";
+import {
+    CacheType,
+    Channel,
+    CommandInteractionOptionResolver,
+    Guild,
+    GuildManager,
+    GuildMember,
+    Role,
+} from "discord.js";
 import { Logger } from "Logger";
+import { CommandUtils } from "./CommandUtils";
 
 export class ArgumentParser {
     // Splits on space but keeps quoted strings together
@@ -105,20 +114,20 @@ export class ArgumentParser {
                     break;
                 case "user":
                     // eslint-disable-next-line no-await-in-loop
-                    currParsedArg = await bot.utils.parseUser(currStr);
+                    currParsedArg = await CommandUtils.parseUser(currStr);
                     break;
                 case "channel":
                     // eslint-disable-next-line no-await-in-loop
-                    currParsedArg = await bot.utils.parseChannel(currStr);
+                    currParsedArg = await CommandUtils.parseChannel(currStr);
                     if (currParsedArg === null) currParsedArg = undefined;
                     break;
                 case "role":
                     // eslint-disable-next-line no-await-in-loop
-                    if (guild) currParsedArg = await bot.utils.parseRole(currStr, guild);
+                    if (guild) currParsedArg = await CommandUtils.parseRole(currStr, guild);
                     if (currParsedArg === null) currParsedArg = undefined;
                     break;
                 case "member":
-                    if (guild) currParsedArg = await bot.utils.parseMember(currStr, guild);
+                    if (guild) currParsedArg = await CommandUtils.parseMember(currStr, guild);
                     if (currParsedArg === null) currParsedArg = undefined;
                     break;
                 default:
@@ -181,7 +190,7 @@ export class ArgumentParser {
                     case "role":
                         let role = options.getRole(arg.name, !arg.optional) ?? undefined;
                         if (!(role instanceof Role) && role !== undefined) {
-                            Logger.getLogger(this).warning("We got an APIRole", role)
+                            Logger.getLogger(this).warning("We got an APIRole", role);
                             return undefined;
                         }
                         currArg = role;
@@ -189,7 +198,7 @@ export class ArgumentParser {
                     case "member":
                         let member = options.getMember(arg.name, !arg.optional) ?? undefined;
                         if (!(member instanceof GuildMember) && member !== undefined) {
-                            Logger.getLogger(this).warning("We got an APIGuildMember", member)
+                            Logger.getLogger(this).warning("We got an APIGuildMember", member);
                             return undefined;
                         }
                         currArg = member;

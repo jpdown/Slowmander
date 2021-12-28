@@ -4,7 +4,7 @@ import { CommandGroup } from "commands/CommandGroup";
 
 import "reflect-metadata";
 
-export abstract class Module {
+export abstract class Module { // TODO fix subcommands with the same name
     public readonly commands: Command[];
 
     protected readonly bot: Bot;

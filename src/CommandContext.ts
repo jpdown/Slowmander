@@ -13,6 +13,7 @@ import {
 import { Message } from "discord.js";
 import type { APIMessage } from "discord-api-types/v9";
 import type { CommandParsedType } from "commands/Command";
+import { CommandUtils } from "utils/CommandUtils";
 
 export class CommandContext {
     public readonly bot: Bot;
@@ -110,16 +111,14 @@ export class CommandContext {
         if (this.interaction) {
             await this.interaction.deferReply();
         } else {
-            this._replyMessage = await this.message!.reply(
-                {embeds: [await this.generateEmbed("Slowmander is thinking...")]}
-            );
+            this._replyMessage = await this.message!.reply({
+                embeds: [await this.generateEmbed("Slowmander is thinking...")],
+            });
         }
         this._deferred = true;
     }
 
-    public async edit(
-        message: string | MessageOptions | InteractionReplyOptions
-    ) {
+    public async edit(message: string | MessageOptions | InteractionReplyOptions) {
         if (this.interaction && this.interaction.replied) {
             await this.interaction.editReply(message);
         } else if (this._replyMessage) {
@@ -134,7 +133,7 @@ export class CommandContext {
     private async generateEmbed(message: string): Promise<MessageEmbed> {
         return new MessageEmbed()
             .setDescription(message)
-            .setColor(await this.bot.utils.getSelfColor(this.channel))
+            .setColor(await CommandUtils.getSelfColor(this.channel))
             .setTimestamp(Date.now());
     }
 }
