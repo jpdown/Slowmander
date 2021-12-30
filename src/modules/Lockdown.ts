@@ -2,7 +2,6 @@ import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
 import {
     CategoryChannel,
-    Channel,
     Guild,
     GuildChannel,
     GuildMember,
@@ -16,7 +15,7 @@ import {
 } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, guild, guildOnly } from "./ModuleDecorators";
+import { args, command, guild } from "./ModuleDecorators";
 
 // TODO handle the command when it's not used as a slash command, and refactor
 export class Lockdown extends Module {
