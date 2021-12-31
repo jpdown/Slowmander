@@ -96,7 +96,8 @@ export class CommandManager {
         if (command === undefined) {
             return;
         }
-
+        
+        
         // Parse arguments
         const { command: commandToRun, args } = await ArgumentParser.parseArgs(
             fullMessage.content.slice(prefix.length + split[0].length),
@@ -104,6 +105,11 @@ export class CommandManager {
             this.bot,
             fullMessage.guild ?? undefined
         );
+            
+        // If guild only and not in guild
+        if (commandToRun.guildOnly && !fullMessage.guild) {
+            return;
+        }
 
         // Build ctx
         const ctx = new CommandContext(
@@ -115,23 +121,19 @@ export class CommandManager {
             fullMessage.guild ?? undefined,
             fullMessage.member ?? undefined,
             args
-        );
-
+            );
+            
+        // Check perms
+        if (!(await PermissionsHelper.checkPerms(ctx, commandToRun))) {
+            return;
+        }
+        
         if (!args) {
             // TODO: Send help
             await ctx.reply("help sent haha");
             return;
         }
 
-        // If guild only and not in guild
-        if (commandToRun.guildOnly && !fullMessage.guild) {
-            return;
-        }
-
-        // Check perms
-        if (!(await PermissionsHelper.checkPerms(ctx, commandToRun))) {
-            return;
-        }
 
         // Run command
         try {
