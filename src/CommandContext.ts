@@ -15,7 +15,7 @@ import type { APIMessage } from "discord-api-types/v9";
 import type { CommandParsedType } from "commands/Command";
 import { CommandUtils } from "utils/CommandUtils";
 
-export class CommandContext {
+export class CommandContext<InGuild extends boolean = boolean> {
     public readonly bot: Bot;
 
     public readonly client: Client<true>;
@@ -28,9 +28,9 @@ export class CommandContext {
 
     public readonly user: User;
 
-    public readonly guild?: Guild;
+    public readonly guild: InGuild extends true ? Guild : Guild | undefined;
 
-    public readonly member?: GuildMember;
+    public readonly member: InGuild extends true ? GuildMember : GuildMember | undefined;
 
     public readonly args?: CommandParsedType[];
 
@@ -46,8 +46,8 @@ export class CommandContext {
         msgOrInteraction: Message | CommandInteraction,
         user: User,
         channel: TextBasedChannel,
-        guild?: Guild,
-        member?: GuildMember,
+        guild: InGuild extends true ? Guild : Guild | undefined,
+        member: InGuild extends true ? GuildMember : GuildMember | undefined,
         args?: CommandParsedType[]
     ) {
         this.bot = bot;

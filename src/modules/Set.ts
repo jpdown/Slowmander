@@ -2,7 +2,7 @@ import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
 import type { Channel, GuildChannel, Role } from "discord.js";
 import { Module } from "./Module";
-import { args, group, isAdmin, subcommand } from "./ModuleDecorators";
+import { args, group, guildOnly, isAdmin, subcommand } from "./ModuleDecorators";
 
 export class Set extends Module {
     public constructor(bot: Bot) {
@@ -21,9 +21,10 @@ export class Set extends Module {
         },
     ])
     @isAdmin()
-    public async prefix(c: CommandContext, prefix: string) {
-        if (c.bot.db.guildConfigs.setPrefix(c.guild!.id, prefix)) {
-            await c.reply(`Prefix for ${c.guild!.name} set to ${prefix} successfully.`);
+    @guildOnly()
+    public async prefix(c: CommandContext<true>, prefix: string) {
+        if (c.bot.db.guildConfigs.setPrefix(c.guild.id, prefix)) {
+            await c.reply(`Prefix for ${c.guild.name} set to ${prefix} successfully.`);
         } else {
             await c.reply(`Prefix was unable to be set for ${c.guild!.name}.`);
         }
@@ -38,12 +39,13 @@ export class Set extends Module {
         },
     ])
     @isAdmin()
-    public async viprole(c: CommandContext, role: Role) {
+    @guildOnly()
+    public async viprole(c: CommandContext<true>, role: Role) {
         if (!role) {
             await c.reply(`Role could not be found!`);
         } else {
-            if (c.bot.db.guildConfigs.setVipRole(c.guild!.id, role.id)) {
-                await c.reply(`VIP role for ${c.guild!.name} set to ${role.name}!`);
+            if (c.bot.db.guildConfigs.setVipRole(c.guild.id, role.id)) {
+                await c.reply(`VIP role for ${c.guild.name} set to ${role.name}!`);
             } else {
                 await c.reply(`Role was unable to be set for guild.`);
             }
@@ -59,12 +61,13 @@ export class Set extends Module {
         },
     ])
     @isAdmin()
-    public async modrole(c: CommandContext, role: Role) {
+    @guildOnly()
+    public async modrole(c: CommandContext<true>, role: Role) {
         if (!role) {
             await c.reply(`Role could not be found!`);
         } else {
-            if (c.bot.db.guildConfigs.setModRole(c.guild!.id, role.id)) {
-                await c.reply(`Mod role for ${c.guild!.name} set to ${role.name}!`);
+            if (c.bot.db.guildConfigs.setModRole(c.guild.id, role.id)) {
+                await c.reply(`Mod role for ${c.guild.name} set to ${role.name}!`);
             } else {
                 await c.reply(`Role was unable to be set for guild.`);
             }
@@ -80,12 +83,13 @@ export class Set extends Module {
         },
     ])
     @isAdmin()
-    public async adminrole(c: CommandContext, role: Role) {
+    @guildOnly()
+    public async adminrole(c: CommandContext<true>, role: Role) {
         if (!role) {
             await c.reply(`Role could not be found!`);
         } else {
-            if (c.bot.db.guildConfigs.setAdminRole(c.guild!.id, role.id)) {
-                await c.reply(`Admin role for ${c.guild!.name} set to ${role.name}!`);
+            if (c.bot.db.guildConfigs.setAdminRole(c.guild.id, role.id)) {
+                await c.reply(`Admin role for ${c.guild.name} set to ${role.name}!`);
             } else {
                 await c.reply(`Role was unable to be set for guild.`);
             }
@@ -101,12 +105,13 @@ export class Set extends Module {
         },
     ])
     @isAdmin()
-    public async eventlog(c: CommandContext, channel: GuildChannel) {
+    @guildOnly()
+    public async eventlog(c: CommandContext<true>, channel: GuildChannel) {
         if (!channel) {
             await c.reply(`Channel could not be found!`);
         } else {
-            if (c.bot.db.eventLogs.setChannel(c.guild!.id, channel.id)) {
-                await c.reply(`Log channel for ${c.guild!.name} set to ${channel.name}!`);
+            if (c.bot.db.eventLogs.setChannel(c.guild.id, channel.id)) {
+                await c.reply(`Log channel for ${c.guild.name} set to ${channel.name}!`);
             } else {
                 await c.reply(`Channel was unable to be set for guild.`);
             }
@@ -122,12 +127,13 @@ export class Set extends Module {
         },
     ])
     @isAdmin()
-    public async modchannel(c: CommandContext, channel: GuildChannel) {
+    @guildOnly()
+    public async modchannel(c: CommandContext<true>, channel: GuildChannel) {
         if (!channel) {
             await c.reply(`Channel could not be found!`);
         } else {
-            if (c.bot.db.guildConfigs.setModChannel(c.guild!.id, channel.id)) {
-                await c.reply(`Mod channel for ${c.guild!.name} set to ${channel.name}!`);
+            if (c.bot.db.guildConfigs.setModChannel(c.guild.id, channel.id)) {
+                await c.reply(`Mod channel for ${c.guild.name} set to ${channel.name}!`);
             } else {
                 await c.reply(`Channel was unable to be set for guild.`);
             }

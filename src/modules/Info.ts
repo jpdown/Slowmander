@@ -5,7 +5,7 @@ import { PermissionLevel } from "commands/Command";
 import { MessageEmbed } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, guild, isMod } from "./ModuleDecorators";
+import { args, command, guild, guildOnly, isMod } from "./ModuleDecorators";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { ButtonPaginator } from "utils/ButtonPaginator";
 import { memoryUsage, uptime as process_uptime } from "process";
@@ -21,16 +21,9 @@ export class Info extends Module {
         { name: `user`, type: `member`, description: `The user to grab info on`, optional: true },
     ])
     @guild("472222827421106201")
-    public async whois(c: CommandContext, user?: GuildMember) {
-        let member: GuildMember | undefined = user ? user : c.member;
-        if (!member) {
-            await c.reply(`Error parsing user, please try again.`);
-            return;
-        }
-        if (!c.guild) {
-            await c.reply(`This command must be run in a server!`);
-            return;
-        }
+    @guildOnly()
+    public async whois(c: CommandContext<true>, user?: GuildMember) {
+        let member: GuildMember = user ? user : c.member;
         const avatar: string = member!.displayAvatarURL({
             format: `png`,
             dynamic: true,
@@ -81,11 +74,8 @@ export class Info extends Module {
 
     @command(`Get roles in a discord`)
     @isMod()
-    public async roles(c: CommandContext) {
-        if (!c.guild) {
-            await c.reply(`This command must be run in a server!`);
-            return;
-        }
+    @guildOnly()
+    public async roles(c: CommandContext<true>) {
         const rolesList: Collection<Snowflake, Role> = await c.guild!.roles.fetch();
         const output: string[] = [];
         rolesList.sort((a, b) => b.position - a.position);
@@ -98,7 +88,8 @@ export class Info extends Module {
     @command(`Get roles in a discord`)
     @args([{ name: `role`, type: `role`, description: `The role to check` }])
     @isMod()
-    public async members(c: CommandContext, r: Role) {
+    @guildOnly()
+    public async members(c: CommandContext<true>, r: Role) {
         if (!r) {
             await c.reply("Role could not be found!");
             return;
