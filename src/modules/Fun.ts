@@ -78,4 +78,23 @@ export class Fun extends Module {
         
         await c.reply(dadjokeMsg);
     }
+
+    @command("Get a random cat girl")
+    public async catgirl(c: CommandContext) {
+        await c.defer();
+
+        // Get from nekos.life
+        let resp = await (await fetch("https://nekos.life/api/v2/img/neko")).json();
+        if (!resp.url) {
+            throw new Error(`Error obtaining image from nekos.life`);
+        }
+
+        let embed = new MessageEmbed()
+            .setColor(await CommandUtils.getSelfColor(c.channel))
+            .setTitle("Awoo!")
+            .setURL(resp.url)
+            .setImage(resp.url);
+        
+        await c.reply({embeds: [embed]});
+    }
 }
