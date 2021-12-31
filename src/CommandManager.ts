@@ -1,4 +1,4 @@
-import type { Command, CommandArgument, CommandParsedType } from "commands/Command";
+import { Command, CommandArgument, CommandParsedType, PermissionLevel } from "commands/Command";
 // import * as commands from 'commands';
 import * as modules from "modules";
 import type { Bot } from "Bot";
@@ -24,6 +24,10 @@ import {
     Collection,
     ApplicationCommandManager,
     GuildApplicationCommandManager,
+    SystemChannelFlags,
+    GuildResolvable,
+    Role,
+    ApplicationCommandPermissionData,
 } from "discord.js";
 // import { HelpManager } from 'HelpManager';
 import { CommandContext } from "CommandContext";
@@ -259,7 +263,6 @@ export class CommandManager {
         if (globalCommands) {
             // Fetch all commands so we can compare
             await this.bot.client.application.commands.fetch();
-            // TODO: Make sure this method of getting global commands actually works
             await this.compareSlash(globalCommands, this.bot.client.application.commands);
         }
         commands.delete("GLOBAL");
@@ -273,6 +276,82 @@ export class CommandManager {
         }
     }
 
+    public async deploySlashPermissions() { // TODO: Deploy on guild join and role set
+        let globalCmds: Map<string, [ApplicationCommand<{guild: GuildResolvable}>, Command]> = new Map();
+        let currPerms: ApplicationCommandPermissionData[];
+        let currGuildCmds: Map<string, [ApplicationCommand<{}>, Command]> = new Map();
+        let currGuildVIPRole: Snowflake | null | undefined;
+        let currGuildModRole: Snowflake | null | undefined;
+        let currGuildAdminRole: Snowflake | null | undefined;
+        let ownerPerms: ApplicationCommandPermissionData[] = [];
+
+        // Get owners
+        for (let owner of this.bot.owners) {
+            ownerPerms.push({id: owner, type: "USER", permission: true});
+        }
+
+        globalCmds = await this.getSlashWithPerms(this.bot.client.application.commands, "GLOBAL");
+        
+        // Global commands need to deploy permissions per guild
+        for (let [guildId, guild] of this.bot.client.guilds.cache) {
+            // Get roles
+            currGuildVIPRole = this.bot.db.guildConfigs.getVipRole(guildId);
+            currGuildModRole = this.bot.db.guildConfigs.getModRole(guildId);
+            currGuildAdminRole = this.bot.db.guildConfigs.getAdminRole(guildId);
+
+            // Handle global commands first
+            for (let [cmdId, [slash, cmd]] of globalCmds) {
+                currPerms = await this.generateSlashPerms(cmd, currGuildVIPRole, currGuildModRole, currGuildAdminRole, ownerPerms);
+                slash.permissions.set({ guild: guildId, permissions: currPerms });
+            }
+
+            // Get list of guild commands to set permissions
+            currGuildCmds = await this.getSlashWithPerms(guild.commands, guildId);
+            // Deploy guild perms
+            for (let [cmdId, [slash, cmd]] of currGuildCmds) {
+                currPerms = await this.generateSlashPerms(cmd, currGuildVIPRole, currGuildModRole, currGuildAdminRole, ownerPerms);
+                slash.permissions.set({ permissions: currPerms });
+            }
+        }
+    }
+
+    private async getSlashWithPerms(manager: ApplicationCommandManager | GuildApplicationCommandManager, guildId: string): Promise<Map<string, [ApplicationCommand, Command]>> {
+        let cmds: Map<string, [ApplicationCommand, Command]> = new Map();
+        for (let cmd of manager.cache.values()) {
+            let localCmd = this.commandMap.get(guildId + "," + cmd.name);
+            if (!localCmd) {
+                this.logger.error(`Slash command exists that we don't have. ${guildId} command ${cmd.name}.`);
+                continue;
+            }
+
+            // We only need to set perms if not an everyone command
+            if (localCmd.permLevel > PermissionLevel.Everyone) {
+                cmds.set(cmd.name, [cmd, localCmd]);
+            }
+        }
+
+        return cmds;
+    }
+
+    private async generateSlashPerms(cmd: Command, vipRole: Snowflake | null | undefined, modRole: Snowflake | null | undefined, adminRole: Snowflake | null | undefined, ownerPerms: ApplicationCommandPermissionData[]): Promise<ApplicationCommandPermissionData[]> {
+        let currPerms: ApplicationCommandPermissionData[] = [];
+        // Always allow owners
+        currPerms = currPerms.concat(ownerPerms);
+
+        if (cmd.permLevel <= PermissionLevel.VIP && vipRole) {
+            currPerms.push({ id: vipRole, type: "ROLE", permission: true })
+        }
+        if (cmd.permLevel <= PermissionLevel.Mod && modRole) {
+            currPerms.push({ id: modRole, type: "ROLE", permission: true })
+        }
+        if (cmd.permLevel <= PermissionLevel.Admin && adminRole) {
+            currPerms.push({ id: adminRole, type: "ROLE", permission: true })
+        }
+
+        // Deploy
+        return currPerms;
+    }
+
     private async compareSlash(gen: ApplicationCommandData[], manager: ApplicationCommandManager | GuildApplicationCommandManager) {
         let existingCmd: ApplicationCommand | undefined;
         let compared: Snowflake[] = [];
@@ -284,7 +363,6 @@ export class CommandManager {
                     await existingCmd.edit(cmd);
                 }
                 else {
-                    // TODO: ensure this properly deploys guild commands
                     existingCmd = await manager.create(cmd);
                 }
             }
@@ -324,7 +402,6 @@ export class CommandManager {
         let currSlash: ApplicationCommandData;
 
         // Convert every command to slash command JSON
-        // TODO: Add permissions
         this.commandMap.forEach((v, k) => {
             // Ignore non slash commands and subcommands
             if (!v.slash || v.parent) return;
@@ -335,6 +412,11 @@ export class CommandManager {
                 description: v.desc ?? "",
                 type: "CHAT_INPUT",
             };
+
+            if (v.permLevel > PermissionLevel.Everyone) {
+                currSlash.defaultPermission = false;
+            }
+
             currGuild = k.split(",")[0];
 
             if (!commands.has(currGuild)) {
