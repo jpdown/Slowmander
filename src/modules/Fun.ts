@@ -1,7 +1,8 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
 import type { Command } from "commands/Command";
-import type { Channel, User } from "discord.js";
+import { Channel, MessageEmbed, User } from "discord.js";
+import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
 import {
     args,
@@ -16,97 +17,65 @@ import {
     subcommand,
     subgroup,
 } from "./ModuleDecorators";
+import fetch from 'node-fetch';
 
 export class Fun extends Module {
     public constructor(bot: Bot) {
         super(bot);
     }
 
-    @command("cats")
-    @guild("472222827421106201")
-    public async cat(ctx: CommandContext) {
-        await ctx.reply("cat");
+    @command("Get a random cat image")
+    public async cat(c: CommandContext) {
+        if (this.bot.catApiToken === "") {
+            throw new Error("Cat API token missing.");
+        }
+
+        await c.defer();
+
+        // Get from TheCatAPI
+        let catApiResp = await (await fetch("https://api.thecatapi.com/v1/images/search?limit=1", { method: "get", headers: { "X-API-KEY": this.bot.catApiToken } })).json();
+        if (!(catApiResp instanceof Array) || catApiResp.length < 1 || !catApiResp[0].url || catApiResp[0].url === "") {
+            throw new Error(`Error obtaining image from TheCatAPI`);
+        }
+
+        let embed = new MessageEmbed()
+            .setColor(await CommandUtils.getSelfColor(c.channel))
+            .setTitle("🐱 Meow!")
+            .setURL(catApiResp[0].url)
+            .setImage(catApiResp[0].url);
+        
+        await c.reply({embeds: [embed]});
     }
 
-    @command("dogs")
-    @guild("472222827421106201")
-    public async dog(ctx: CommandContext) {
-        await ctx.reply("dog");
+    @command("Get a random dog image")
+    public async dog(c: CommandContext) {
+        await c.defer();
+
+        // Get from TheCatAPI
+        let dogApiResp = await (await fetch("https://dog.ceo/api/breeds/image/random", { method: "get", headers: { "User-Agent": "Slowmander" } })).json();
+        if (!dogApiResp.message || dogApiResp.message === "") {
+            throw new Error(`Error obtaining image from dog.ceo`);
+        }
+
+        let embed = new MessageEmbed()
+            .setColor(await CommandUtils.getSelfColor(c.channel))
+            .setTitle("🐶 Woof!")
+            .setURL(dogApiResp.message)
+            .setImage(dogApiResp.message);
+        
+        await c.reply({embeds: [embed]});
     }
 
-    @group("dad jokes")
-    @guild("472222827421106201")
-    public async dadjoke(ctx: CommandContext) {
-        await ctx.reply("dadjoke");
-    }
+    @command("Get a random dad joke")
+    public async dadjoke(c: CommandContext) {
+        await c.defer();
 
-    @subcommand("dadjoke", "sub of dadjokes")
-    @guild("472222827421106201")
-    public async sub(ctx: CommandContext) {
-        await ctx.reply("dadjoke sub");
-    }
-
-    @subgroup("dadjoke", "another sub of dadjokes")
-    @guild("472222827421106201")
-    @guildOnly()
-    public async testargs2(ctx: CommandContext) {
-        await ctx.reply(`hi`);
-    }
-
-    @subcommand("dadjoke,testargs2", "another sub of testartgs2")
-    @guild("472222827421106201")
-    @args([
-        { name: "user", type: "user", description: "the user" },
-        { name: "channel", type: "channel", description: "the channel" },
-    ])
-    @guildOnly()
-    public async testargs(ctx: CommandContext, user: User, channel: Channel) {
-        await ctx.reply(`User ID: ${user.id}, Channel ID: ${channel.id}`);
-    }
-
-    @command("owner test")
-    @guild("472222827421106201")
-    @isOwner()
-    public async testowner(ctx: CommandContext) {
-        await ctx.reply("you passed the test");
-    }
-
-    @command("admin test")
-    @guild("472222827421106201")
-    @isAdmin()
-    public async testadmin(ctx: CommandContext) {
-        await ctx.reply("you passed the test");
-    }
-
-    @command("mod test")
-    @guild("472222827421106201")
-    @isMod()
-    public async testmod(ctx: CommandContext) {
-        await ctx.reply("you passed the test");
-    }
-
-    @command("vip test lol")
-    @guild("472222827421106201")
-    @isVIP()
-    public async testvip(ctx: CommandContext) {
-        await ctx.reply("you passed the test");
-    }
-
-    @group("parent")
-    @guild("472222827421106201")
-    public async group(ctx: CommandContext) {
-        await ctx.reply("parent");
-    }
-
-    @subgroup("group", "subgroup")
-    @guild("472222827421106201")
-    public async subgroup(ctx: CommandContext) {
-        await ctx.reply("subgroup");
-    }
-
-    @subcommand("group,subgroup", "subcommand1")
-    @guild("472222827421106201")
-    public async subcommand(ctx: CommandContext) {
-        await ctx.reply("subcommand1");
+        // Get from TheCatAPI
+        let dadjokeMsg = await (await fetch("https://icanhazdadjoke.com/", { method: "get", headers: { "User-Agent": "Slowmander", Accept: 'text/plain' } })).text();
+        if (!dadjokeMsg || dadjokeMsg === "") {
+            throw new Error(`Error obtaining dadjoke`);
+        }
+        
+        await c.reply(dadjokeMsg);
     }
 }
