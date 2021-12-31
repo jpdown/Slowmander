@@ -15,7 +15,7 @@ import {
 } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, guild } from "./ModuleDecorators";
+import { args, command, guild, isMod } from "./ModuleDecorators";
 
 // TODO handle the command when it's not used as a slash command, and refactor
 export class Lockdown extends Module {
@@ -43,6 +43,7 @@ export class Lockdown extends Module {
             optional: true,
         },
     ])
+    @isMod()
     public async lock(c: CommandContext, m?: string) {
         // TODO allow giving guild ids as input and figure out how the heck to make these arguments work
         /*if (channel) {
@@ -72,6 +73,7 @@ export class Lockdown extends Module {
             optional: true,
         },
     ])
+    @isMod()
     public async unlock(c: CommandContext, channel?: GuildChannel, m?: string) {
         /*if (channel) {
             this.perform(c, false, channel.id);

@@ -5,7 +5,7 @@ import { PermissionLevel } from "commands/Command";
 import { MessageEmbed } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, guild } from "./ModuleDecorators";
+import { args, command, guild, isMod } from "./ModuleDecorators";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { ButtonPaginator } from "utils/ButtonPaginator";
 import { memoryUsage, uptime as process_uptime } from "process";
@@ -80,6 +80,7 @@ export class Info extends Module {
     }
 
     @command(`Get roles in a discord`)
+    @isMod()
     public async roles(c: CommandContext) {
         if (!c.guild) {
             await c.reply(`This command must be run in a server!`);
@@ -96,6 +97,7 @@ export class Info extends Module {
 
     @command(`Get roles in a discord`)
     @args([{ name: `role`, type: `role`, description: `The role to check` }])
+    @isMod()
     public async members(c: CommandContext, r: Role) {
         if (!r) {
             await c.reply("Role could not be found!");

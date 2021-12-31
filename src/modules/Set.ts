@@ -2,7 +2,7 @@ import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
 import type { Channel, GuildChannel, Role } from "discord.js";
 import { Module } from "./Module";
-import { args, group, subcommand } from "./ModuleDecorators";
+import { args, group, isAdmin, subcommand } from "./ModuleDecorators";
 
 export class Set extends Module {
     public constructor(bot: Bot) {
@@ -20,6 +20,7 @@ export class Set extends Module {
             description: "the new prefix",
         },
     ])
+    @isAdmin()
     public async prefix(c: CommandContext, prefix: string) {
         if (c.bot.db.guildConfigs.setPrefix(c.guild!.id, prefix)) {
             await c.reply(`Prefix for ${c.guild!.name} set to ${prefix} successfully.`);
@@ -36,6 +37,7 @@ export class Set extends Module {
             description: "the vip role",
         },
     ])
+    @isAdmin()
     public async viprole(c: CommandContext, role: Role) {
         if (!role) {
             await c.reply(`Role could not be found!`);
@@ -56,6 +58,7 @@ export class Set extends Module {
             description: "the mod role",
         },
     ])
+    @isAdmin()
     public async modrole(c: CommandContext, role: Role) {
         if (!role) {
             await c.reply(`Role could not be found!`);
@@ -76,6 +79,7 @@ export class Set extends Module {
             description: "the admin role",
         },
     ])
+    @isAdmin()
     public async adminrole(c: CommandContext, role: Role) {
         if (!role) {
             await c.reply(`Role could not be found!`);
@@ -96,6 +100,7 @@ export class Set extends Module {
             description: "the log channel",
         },
     ])
+    @isAdmin()
     public async eventlog(c: CommandContext, channel: GuildChannel) {
         if (!channel) {
             await c.reply(`Channel could not be found!`);
@@ -116,6 +121,7 @@ export class Set extends Module {
             description: "the mod channel",
         },
     ])
+    @isAdmin()
     public async modchannel(c: CommandContext, channel: GuildChannel) {
         if (!channel) {
             await c.reply(`Channel could not be found!`);
