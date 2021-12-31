@@ -85,23 +85,11 @@ export class Fun extends Module {
         await ctx.reply("you passed the test");
     }
 
-    @command("vip test")
+    @command("vip test lol")
     @guild("472222827421106201")
     @isVIP()
     public async testvip(ctx: CommandContext) {
         await ctx.reply("you passed the test");
-    }
-
-    @command("slash deploying")
-    @isOwner()
-    @guild("472222827421106201")
-    public async deployslash(ctx: CommandContext) {
-        try {
-            await this.bot.commandManager.deploySlashCommands();
-            await ctx.reply("slash commands theoretically deployed");
-        } catch (err) {
-            console.log(err);
-        }
     }
 
     @group("parent")

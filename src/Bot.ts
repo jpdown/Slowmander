@@ -69,6 +69,7 @@ export class Bot {
             await this.logger.info(
                 `Welcome to Slowmander! Logged in as ${this.client.user.tag} in ${this.client.guilds.cache.size} guild(s).`
             );
+            await this.commandManager.deploySlashCommands();
         });
     }
 

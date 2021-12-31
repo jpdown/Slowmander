@@ -20,6 +20,10 @@ import {
     ApplicationCommandOptionData,
     ApplicationCommandNumericOptionData,
     ApplicationCommandAutocompleteOption,
+    ApplicationCommand,
+    Collection,
+    ApplicationCommandManager,
+    GuildApplicationCommandManager,
 } from "discord.js";
 // import { HelpManager } from 'HelpManager';
 import { CommandContext } from "CommandContext";
@@ -29,7 +33,7 @@ import { PermissionsHelper } from "utils/PermissionsHelper";
 import type { APIInteractionGuildMember } from "discord-api-types";
 import { CommandUtils } from "utils/CommandUtils";
 
-export class CommandManager { // TODO fix subcommands with the same name
+export class CommandManager {
     // Map guild id and command name to command, just command name for global
     private commandMap: Map<string, Command>;
 
@@ -249,19 +253,47 @@ export class CommandManager { // TODO fix subcommands with the same name
     public async deploySlashCommands() {
         let commands = this.generateSlashObjs();
         let globalCommands: ApplicationCommandData[] | undefined;
-
+        
         // Deploy global commands
-        // TODO: Detect changes and only deploy changed commands
         globalCommands = commands.get("GLOBAL");
         if (globalCommands) {
-            await this.bot.client.application.commands.set(globalCommands);
+            // Fetch all commands so we can compare
+            await this.bot.client.application.commands.fetch();
+            // TODO: Make sure this method of getting global commands actually works
+            await this.compareSlash(globalCommands, this.bot.client.application.commands);
         }
         commands.delete("GLOBAL");
 
         // Deploy guild commands
         for (let [guild, cmds] of commands) {
-            await this.bot.client.guilds.cache.get(guild)?.commands.set(cmds);
+            let guildObj = await this.bot.client.guilds.fetch(guild);
+            // Fetch all commands so we can compare
+            await guildObj.commands.fetch();
+            await this.compareSlash(cmds, guildObj.commands);
         }
+    }
+
+    private async compareSlash(gen: ApplicationCommandData[], manager: ApplicationCommandManager | GuildApplicationCommandManager) {
+        let existingCmd: ApplicationCommand | undefined;
+        let compared: Snowflake[] = [];
+        for (let cmd of gen) {
+            // This is gross but idk if it's any better than the alternative of making a new map
+            existingCmd = manager.cache.find((appCmd) => appCmd.name === cmd.name);
+            if (!existingCmd?.equals(cmd)) {
+                if (existingCmd) {
+                    await existingCmd.edit(cmd);
+                }
+                else {
+                    // TODO: ensure this properly deploys guild commands
+                    existingCmd = await manager.create(cmd);
+                }
+            }
+            compared.push(existingCmd.id);
+        };
+
+        // Remove all commands that no longer exist
+        let toRemove = manager.cache.filter((cmd) => !compared.includes(cmd.id));
+        toRemove.forEach(async (cmd) => await cmd.delete());
     }
 
     private registerCommand(command: Command) {
