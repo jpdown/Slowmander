@@ -13,9 +13,18 @@ import {
     TextChannel,
     VoiceChannel,
 } from "discord.js";
+import { ButtonPaginator } from "utils/ButtonPaginator";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, guild, guildOnly, isMod } from "./ModuleDecorators";
+import {
+    args,
+    command,
+    group,
+    guild,
+    guildOnly,
+    isMod,
+    subcommand,
+} from "./ModuleDecorators";
 
 // TODO handle the command when it's not used as a slash command, and refactor
 export class Lockdown extends Module {
@@ -46,7 +55,7 @@ export class Lockdown extends Module {
     @isMod()
     @guildOnly()
     public async lock(c: CommandContext<true>, m?: string) {
-        // TODO allow giving guild ids as input and figure out how the heck to make these arguments work
+        //? for some reason i can't have one or theo ther with these args, i would like to give either a channel or a string of ids >:(
         /*if (channel) {
             this.perform(c, true, channel.id);
         } else 
@@ -55,7 +64,6 @@ export class Lockdown extends Module {
         } else {
             this.perform(c, true, c.channel.id);
         }*/
-        await c.reply("not working yet");
     }
 
     @command("unlocks a given channel")
@@ -85,56 +93,171 @@ export class Lockdown extends Module {
         } else {
             this.perform(c, false, c.channel.id);
         } */
-        await c.reply("not working yet");
+    }
+
+    @group("Lockdown config commands")
+    @isMod()
+    @guildOnly()
+    public async lcfg(c: CommandContext) {}
+
+    @subcommand("lcfg", "list")
+    @isMod()
+    @guildOnly()
+    public async list(c: CommandContext) {
+        const lockdownPresets = c.bot.db.lockdownPresets.getPresetList(c.guild!.id);
+        if (!lockdownPresets) {
+            await c.reply(`Error getting from the database, please try again later.`);
+            return;
+        }
+        if (lockdownPresets.length === 0) {
+            await c.reply(`No presets found.`);
+            return;
+        }
+        const paginator = new ButtonPaginator(
+            lockdownPresets,
+            c,
+            10,
+            `Lockdown presets for guild ${c.guild!.name}`
+        );
+        await paginator.postMessage();
+    }
+
+    @subcommand("lcfg", "info")
+    @isMod()
+    @guildOnly()
+    @args([{ name: "preset", type: "string", description: "ye" }])
+    public async info(c: CommandContext, input: string) {
+        const guildId = c.guild!.id;
+        const lockdownPreset = c.bot.db.lockdownPresets.getPreset(guildId, input);
+        const lockdownChannels = c.bot.db.lockdownPresets.getPresetChannels(guildId, input);
+        const lockdownRoles = c.bot.db.lockdownPresets.getPresetRoles(guildId, input);
+        const channelList: string[] = [];
+        const roleList: string[] = [];
+        if (!lockdownPreset) {
+            await c.reply(`No preset could be found with this name.`);
+            return;
+        }
+        if (!lockdownChannels || !lockdownRoles) {
+            await c.reply(`There was an error with the database.`);
+            return;
+        }
+        for (let c of channelList) {
+            channelList.push(c);
+        }
+        for (let r of roleList) {
+            roleList.push(r);
+        }
+        const cListEmbed = new ButtonPaginator(
+            channelList,
+            c,
+            10,
+            `Channels in lockdown preset ${lockdownPreset.preset}`
+        );
+        const rListembed = new ButtonPaginator(
+            roleList,
+            c,
+            10,
+            `Channels in lockdown preset ${lockdownPreset.preset}`
+        );
+        await cListEmbed.postMessage();
+        await rListembed.postMessage();
+    }
+
+    @subcommand("lcfg", "set")
+    @isMod()
+    @guildOnly()
+    @args([
+        { name: "preset", type: "string", description: "ye" },
+        { name: "channel(s)", type: "channel", description: "ye" },
+        { name: "role(s)", type: "role", description: "ye" },
+    ])
+    public async set(c: CommandContext, input: string) {
+        await c.reply(`Not implemented.`);
+    }
+
+    @subcommand("lcfg", "remove")
+    @isMod()
+    @guildOnly()
+    @args([
+        { name: "preset", type: "string", description: "ye" },
+        { name: "channel(s)", type: "channel", description: "ye" },
+        { name: "role(s)", type: "role", description: "ye" },
+    ])
+    public async remove(c: CommandContext, input: string) {
+        await c.reply(`Not implemented.`);
     }
 
     private async perform(c: CommandContext, lock: boolean, m: string) {
         await c.defer();
-        let ids = m.split(" ");
+        //? avoid splitting input into array if preset given?
+        const lockdownPreset = c.bot.db.lockdownPresets.getPreset(c.guild!.id, m);
+        const lockdownChannels = c.bot.db.lockdownPresets.getPresetChannels(c.guild!.id, m);
+        const lockdownRoles = c.bot.db.lockdownPresets.getPresetRoles(c.guild!.id, m);
         let channels: GuildChannel[] = [];
-        let failed: string[] = [];
-        let guilds: Guild[] = [];
+        let invalidIds: string[] = [];
         let finalMsg = "";
-        if (ids.length > 0) {
-            // verify we got IDs
-            for (let i = 0; i < ids.length; i++) {
-                let guild = await c.bot.client.guilds.fetch(ids[0]).catch((e) => {
-                    console.log(`MissingAccess on getting guild`, e);
-                });
-                if (guild) {
-                    guilds.push(guild);
-                    continue;
-                }
-                let ch = await c
-                    .guild!.channels.fetch(ids[i])
-                    .catch((e) => console.log(`MissingAccess on getting channel`, e));
-                if (ch instanceof CategoryChannel) {
-                    let catChannels = ch.children;
-                    for (let i = 0; i < catChannels.size; i++) {
-                        let channel = catChannels.at(i);
-                        if (channel instanceof TextChannel || channel instanceof VoiceChannel) {
-                            channels.push(channel);
-                        }
-                    }
-                    continue;
-                }
-                if (ch) {
-                    channels.push(ch);
-                } else {
-                    failed.push(ids[i]);
-                }
+        if (!lockdownPreset) {
+            await c.reply({
+                content: `No lockdown config found, please make one with \'${await c.bot.commandManager.getPrefix(
+                    c.guild!.id
+                )}managelockdown\`. The default preset is \`default\`.`,
+            });
+            return;
+        }
+        if (!lockdownPreset || !lockdownChannels || !lockdownRoles) {
+            await c.reply({ content: `There was an error with the database.`, ephemeral: true });
+            return false;
+        }
+        for (let ch of lockdownChannels) {
+            let chanIds = c.client.channels.fetch(ch);
+            if (!chanIds) {
+                invalidIds.push(ch);
+                return;
             }
-            if (failed.length > 0) {
-                finalMsg += `\nThe following IDs could not be resolved:\n`;
-                for (let i = 0; i < failed.length; i++) {
-                    finalMsg += `${failed[i]} `;
-                }
-                finalMsg += `\n`;
+            if (chanIds instanceof GuildChannel) {
+                channels.push(chanIds);
+            } else {
+                invalidIds.push(ch);
             }
         }
-        if (channels.length > 0) {
-            for (let i = 0; i < channels.length; i++) {
-                let channel = channels[i];
+        //? maybe build the channels array before this block so i can check if it's empty before parsing ids
+        //? because typically if locking with a preset, no ids will be provided in the message
+        if (channels.length === 0) {
+            //* verify we got IDs, and this should mean we didn't receive a preset
+            let ids = m.split(" ");
+            if (ids.length > 0) {
+                for (let id of ids) {
+                    let channel = await c.bot.client.channels.fetch(id);
+                    if (!(channel instanceof GuildChannel)) return;
+                    if (channel instanceof CategoryChannel) {
+                        let categoryChannels = channel.children;
+                        for (let categoryChannel of categoryChannels) {
+                            if (
+                                categoryChannel instanceof TextChannel ||
+                                categoryChannel instanceof VoiceChannel
+                            ) {
+                                channels.push(categoryChannel);
+                            }
+                        }
+                        continue;
+                    }
+                    if (channel) {
+                        channels.push(channel);
+                    } else {
+                        invalidIds.push(id);
+                    }
+                }
+                if (invalidIds.length > 0) {
+                    finalMsg += `\nThe following IDs could not be resolved:\n`;
+                    for (let invalid of invalidIds) {
+                        finalMsg += `${invalid} `;
+                    }
+                    finalMsg += `\n`;
+                }
+            }
+        } else {
+            for (let channel of channels) {
+                // for of and for in SMILEEEEEEEEEEEEEEEEEEEE
                 if (channel) {
                     await this.updateChannelPerms(
                         channel,
@@ -232,6 +355,30 @@ export class Lockdown extends Module {
             return true;
         }
         return false;
+    }
+
+    private static async parseChannels(
+        channels: string,
+        guild: Guild
+    ): Promise<{ result: boolean; parsedIDs: string[] }> {
+        const splitChannels: string[] = channels.split(",");
+
+        let result = true;
+        const parsedIDs: string[] = [];
+        splitChannels.every(async (givenChannel) => {
+            const parsedID: string | undefined = await CommandUtils.parseChannelID(givenChannel);
+            // Make sure valid channel
+            if (!parsedID || !guild.channels.resolve(parsedID)) {
+                result = false;
+                return false;
+            }
+
+            parsedIDs.push(parsedID);
+
+            return true;
+        });
+
+        return { result, parsedIDs };
     }
 
     private async trySendMessage(
