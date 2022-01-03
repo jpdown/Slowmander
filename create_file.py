@@ -12,6 +12,6 @@ else:
     else:
         fn = fn.capitalize()
         with open(fp, 'w') as nf:
-            nf.write('import { Module } from "./Module";\n\nexport class {0} extends Module {{\n}}'.format(fn))
+            nf.write('import {{ Module }} from "./Module";\n\nexport class {0} extends Module {{\n}}'.format(fn))
         with open('src/modules/index.ts', 'a+') as i:
             i.write('export {{ {0} }} from "./{0}"\n'.format(fn))
