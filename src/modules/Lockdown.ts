@@ -172,7 +172,7 @@ export class Lockdown extends Module {
         { name: "role(s)", type: "role", description: "ye" },
     ])
     public async set(c: CommandContext, input: string) {
-        await c.reply(`Not implemented.`);
+       //! look into select menus
     }
 
     @subcommand("lcfg", "remove")
@@ -190,11 +190,13 @@ export class Lockdown extends Module {
     private async perform(c: CommandContext, lock: boolean, m: string) {
         await c.defer();
         //? avoid splitting input into array if preset given?
+        //? lmfao i forgot to handle the roles at all...
         const lockdownPreset = c.bot.db.lockdownPresets.getPreset(c.guild!.id, m);
         const lockdownChannels = c.bot.db.lockdownPresets.getPresetChannels(c.guild!.id, m);
         const lockdownRoles = c.bot.db.lockdownPresets.getPresetRoles(c.guild!.id, m);
         let channels: GuildChannel[] = [];
         let invalidIds: string[] = [];
+        let roles: Role[] = [c.guild!.roles.everyone]
         let finalMsg = "";
         if (!lockdownPreset) {
             await c.reply({
@@ -207,6 +209,21 @@ export class Lockdown extends Module {
         if (!lockdownPreset || !lockdownChannels || !lockdownRoles) {
             await c.reply({ content: `There was an error with the database.`, ephemeral: true });
             return false;
+        }
+        if (lockdownRoles.length > 0) {
+            roles = [];
+            for (let r of lockdownRoles) {
+                let ids = c.guild!.roles.fetch(r);
+                if (!ids) {
+                    invalidIds.push(ids)
+                    return;
+                }
+                if (ids instanceof Role) {
+                    roles.push(ids);
+                } else {
+                    invalidIds.push(r);
+                }
+            }
         }
         for (let ch of lockdownChannels) {
             let chanIds = c.client.channels.fetch(ch);
@@ -261,7 +278,8 @@ export class Lockdown extends Module {
                 if (channel) {
                     await this.updateChannelPerms(
                         channel,
-                        [c.guild!.roles.everyone],
+                        //[c.guild!.roles.everyone],
+                        roles,
                         lock,
                         false,
                         c
@@ -269,7 +287,8 @@ export class Lockdown extends Module {
                 } else {
                     await this.updateChannelPerms(
                         c.channel as GuildChannel,
-                        [c.guild!.roles.everyone],
+                        //[c.guild!.roles.everyone],
+                        roles,
                         lock,
                         false,
                         c
