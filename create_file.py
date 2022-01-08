@@ -10,8 +10,8 @@ else:
         print('file already exists')
         sys.exit()
     else:
-        fn = fn.capitalize()
+        # make sure you use the capilization you want when running the script
         with open(fp, 'w') as nf:
             nf.write('import {{ Module }} from "./Module";\n\nexport class {0} extends Module {{\n}}'.format(fn))
-        with open('src/modules/index.ts', 'a+') as i:
+        with open('src/modules/index.ts', 'a') as i:
             i.write('export {{ {0} }} from "./{0}"\n'.format(fn))
