@@ -28,6 +28,7 @@ import {
     GuildResolvable,
     Role,
     ApplicationCommandPermissionData,
+    ApplicationCommandNonOptionsData,
 } from "discord.js";
 // import { HelpManager } from 'HelpManager';
 import { CommandContext } from "CommandContext";
@@ -470,22 +471,53 @@ export class CommandManager {
     private getSlashArgs(cmd: Command): | Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] | undefined {
         let args: Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] = [];
         cmd.args?.forEach((arg) => {
-            let type = CommandUtils.getSlashArgType(arg.type);
             // Will change type later
-            // TODO: Handle autocomplete and numeric options
-            let currArg: Exclude<ApplicationCommandOptionData, | ApplicationCommandSubGroupData | ApplicationCommandSubCommandData | ApplicationCommandNumericOptionData | ApplicationCommandAutocompleteOption> = { // todo fix typing on this
-                name: arg.name,
-                description: arg.description ?? "",
-                type: type,
-                required: !arg.optional,
-            };
-
-            if (arg.choices && (currArg.type === "STRING" || currArg.type === "INTEGER" || currArg.type === "NUMBER") && !currArg.autocomplete) {
-                currArg.choices = arg.choices;
+            let type = CommandUtils.getSlashArgType(arg.type);
+            let currArg: Exclude<ApplicationCommandOptionData, | ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>;
+            if ("autocomplete" in arg) {
+                currArg = {
+                    name: arg.name,
+                    description: arg.description ?? "",
+                    type: type as "STRING" | "NUMBER" | "INTEGER", // TODO: Better way to check this?
+                    required: !arg.optional,
+                    autocomplete: true
+                };
             }
-
-            if (arg.channelTypes && currArg.type === "CHANNEL") {
-                currArg.channelTypes = arg.channelTypes;
+            else if ("choices" in arg) {
+                currArg = {
+                    name: arg.name,
+                    description: arg.description ?? "",
+                    type: type as "STRING" | "NUMBER" | "INTEGER", // TODO: Better way to check this?
+                    required: !arg.optional,
+                    choices: arg.choices
+                };
+            }
+            else if ("channelTypes" in arg) {
+                currArg = {
+                    name: arg.name,
+                    description: arg.description ?? "",
+                    type: type as "CHANNEL", // TODO: Better way to check this?
+                    required: !arg.optional,
+                    channelTypes: arg.channelTypes
+                };
+            }
+            else if ("maxValue" in arg || "minValue" in arg) {
+                currArg = {
+                    name: arg.name,
+                    description: arg.description ?? "",
+                    type: type as "NUMBER" | "INTEGER", // TODO: Better way to check this?
+                    required: !arg.optional,
+                    maxValue: arg.maxValue,
+                    minValue: arg.minValue
+                };
+            }
+            else {
+                currArg = {
+                    name: arg.name,
+                    description: arg.description ?? "",
+                    type: type,
+                    required: !arg.optional,
+                } as ApplicationCommandNonOptionsData; // TODO: Better way to do this?
             }
 
             args.push(currArg);

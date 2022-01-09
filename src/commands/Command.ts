@@ -150,17 +150,40 @@ export type CommandOptions = {
     slash?: boolean;
 };
 
-export type CommandArgument = {
+interface BaseCommandArgument {
     name: string;
     type: CommandArgumentType;
     description: string;
     optional?: boolean;
-    autocomplete?: boolean;
-    choices?: ApplicationCommandOptionChoice[];
-    channelTypes?: ExcludeEnum<typeof ChannelTypes, "UNKNOWN">[];
 };
 
+interface ChoicesCommandArgument extends BaseCommandArgument {
+    type: "string" | "int" | "number";
+    choices?: ApplicationCommandOptionChoice[];
+}
+
+interface ChannelCommandArgument extends BaseCommandArgument {
+    type: "channel";
+    channelTypes?: ExcludeEnum<typeof ChannelTypes, "UNKNOWN">[];
+}
+
+interface NumericCommandArgument extends BaseCommandArgument {
+    type: "int" | "number";
+    minValue?: number;
+    maxValue?: number;
+}
+
+interface AutocompleteCommandArgument extends BaseCommandArgument {
+    type: "string" | "int" | "number";
+    autocomplete: true;
+    choices: undefined;
+    autocompleteFunc: () => Promise<void>; // TODO Change this signature
+}
+
+export type CommandArgument = BaseCommandArgument | ChoicesCommandArgument | ChannelCommandArgument | NumericCommandArgument | AutocompleteCommandArgument;
+
 // TODO: Add member, mentionable, message
+// TODO: Is there a better way to do this?
 export type CommandArgumentType =
     | "string"
     | "int"
