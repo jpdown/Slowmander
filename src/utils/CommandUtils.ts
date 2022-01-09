@@ -487,6 +487,7 @@ export class CommandUtils {
             case "role":
                 return "ROLE";
             default:
+                // TODO: Add exhaustiveness check with never
                 this.logger.debug(
                     "Default STRING case on SlashArgType " + type
                 );

@@ -131,6 +131,7 @@ export class ArgumentParser {
                     if (currParsedArg === null) currParsedArg = undefined;
                     break;
                 default:
+                    // TODO: Add exhaustivenexx check with never
                     currParsedArg = undefined;
                     break;
             }
@@ -204,6 +205,7 @@ export class ArgumentParser {
                         currArg = member;
                         break;
                     default:
+                        // TODO: Add exhaustiveness check with never
                         currArg = undefined;
                 }
 
