@@ -7,3 +7,4 @@ export { Set } from "./Set";
 export { Info } from "./Info"
 export { Say } from "./Say"
 export { Test } from "./Test"
+export { ReactionRole } from "./ReactionRole"

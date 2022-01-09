@@ -5,7 +5,10 @@ import {
     Guild,
     GuildChannel,
     GuildMember,
+    MessageActionRow,
     MessageEmbed,
+    MessageSelectMenu,
+    MessageSelectOptionData,
     NewsChannel,
     Permissions,
     Role,
@@ -16,15 +19,7 @@ import {
 import { ButtonPaginator } from "utils/ButtonPaginator";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import {
-    args,
-    command,
-    group,
-    guild,
-    guildOnly,
-    isMod,
-    subcommand,
-} from "./ModuleDecorators";
+import { args, command, group, guild, guildOnly, isMod, subcommand } from "./ModuleDecorators";
 
 // TODO handle the command when it's not used as a slash command, and refactor
 export class Lockdown extends Module {
@@ -95,15 +90,10 @@ export class Lockdown extends Module {
         } */
     }
 
-    @group("Lockdown config commands")
+    @command("lcfg")
     @isMod()
     @guildOnly()
-    public async lcfg(c: CommandContext) {}
-
-    @subcommand("lcfg", "list")
-    @isMod()
-    @guildOnly()
-    public async list(c: CommandContext) {
+    public async lcfglist(c: CommandContext) {
         const lockdownPresets = c.bot.db.lockdownPresets.getPresetList(c.guild!.id);
         if (!lockdownPresets) {
             await c.reply(`Error getting from the database, please try again later.`);
@@ -122,11 +112,11 @@ export class Lockdown extends Module {
         await paginator.postMessage();
     }
 
-    @subcommand("lcfg", "info")
+    @command("lcfg")
     @isMod()
     @guildOnly()
     @args([{ name: "preset", type: "string", description: "ye" }])
-    public async info(c: CommandContext, input: string) {
+    public async lcfginfo(c: CommandContext, input: string) {
         const guildId = c.guild!.id;
         const lockdownPreset = c.bot.db.lockdownPresets.getPreset(guildId, input);
         const lockdownChannels = c.bot.db.lockdownPresets.getPresetChannels(guildId, input);
@@ -153,37 +143,49 @@ export class Lockdown extends Module {
             10,
             `Channels in lockdown preset ${lockdownPreset.preset}`
         );
-        const rListembed = new ButtonPaginator(
+        const rListEmbed = new ButtonPaginator(
             roleList,
             c,
             10,
             `Channels in lockdown preset ${lockdownPreset.preset}`
         );
         await cListEmbed.postMessage();
-        await rListembed.postMessage();
+        await rListEmbed.postMessage();
     }
 
-    @subcommand("lcfg", "set")
+    @command("lcfg")
+    @isMod()
+    @guildOnly()
+    @args([{ name: "preset", type: "string", description: "ye" }])
+    public async lcfgset(c: CommandContext<true>, preset: string) {
+        await c.reply(":)!");
+        //! look into select menus
+        //! god i hate slash commands
+        // await c.defer();
+        // let arr: MessageSelectOptionData[] = [];
+        // for (let ch of await c.guild.channels.fetch()) {
+        //     if (ch instanceof GuildChannel) {
+        //         arr.push({ label: ch.name, description: ch.name, value: ch.name });
+        //     }
+        // }
+        // const row = new MessageActionRow().addComponents(
+        //     new MessageSelectMenu()
+        //         .setCustomId(`select`)
+        //         .setPlaceholder(`None selected`)
+        //         .addOptions(arr)
+        // );
+        // await c.channel.send({ content: "Select channels for preset:", components: [row] });
+    }
+
+    @command("lcfg")
     @isMod()
     @guildOnly()
     @args([
         { name: "preset", type: "string", description: "ye" },
-        { name: "channel(s)", type: "channel", description: "ye" },
-        { name: "role(s)", type: "role", description: "ye" },
+        { name: "channel", type: "channel", description: "ye" },
+        { name: "role", type: "role", description: "ye" },
     ])
-    public async set(c: CommandContext, input: string) {
-       //! look into select menus
-    }
-
-    @subcommand("lcfg", "remove")
-    @isMod()
-    @guildOnly()
-    @args([
-        { name: "preset", type: "string", description: "ye" },
-        { name: "channel(s)", type: "channel", description: "ye" },
-        { name: "role(s)", type: "role", description: "ye" },
-    ])
-    public async remove(c: CommandContext, input: string) {
+    public async lcfgremove(c: CommandContext, input: string) {
         await c.reply(`Not implemented.`);
     }
 
@@ -196,7 +198,7 @@ export class Lockdown extends Module {
         const lockdownRoles = c.bot.db.lockdownPresets.getPresetRoles(c.guild!.id, m);
         let channels: GuildChannel[] = [];
         let invalidIds: string[] = [];
-        let roles: Role[] = [c.guild!.roles.everyone]
+        let roles: Role[] = [c.guild!.roles.everyone];
         let finalMsg = "";
         if (!lockdownPreset) {
             await c.reply({
@@ -215,7 +217,7 @@ export class Lockdown extends Module {
             for (let r of lockdownRoles) {
                 let ids = c.guild!.roles.fetch(r);
                 if (!ids) {
-                    invalidIds.push(ids)
+                    invalidIds.push(ids);
                     return;
                 }
                 if (ids instanceof Role) {
