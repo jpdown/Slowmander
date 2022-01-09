@@ -94,6 +94,10 @@ export class Bot {
                 this.commandManager.handleSlash.bind(this.commandManager)
             );
             this.client.on(
+                "interactionCreate",
+                this.commandManager.handleAutocomplete.bind(this.commandManager)
+            );
+            this.client.on(
                 "messageReactionAdd",
                 this.reactionRoleManager.onMessageReactionAdd.bind(
                     this.reactionRoleManager

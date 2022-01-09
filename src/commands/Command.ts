@@ -17,6 +17,7 @@ import type { ChannelTypes } from "discord.js/typings/enums";
 
 import type { CommandContext } from "CommandContext";
 import type { CommandGroup } from "commands/CommandGroup";
+import type { Bot } from "Bot";
 
 export enum PermissionLevel {
     Disabled = -1,
@@ -177,7 +178,7 @@ interface AutocompleteCommandArgument extends BaseCommandArgument {
     type: "string" | "int" | "number";
     autocomplete: true;
     choices: undefined;
-    autocompleteFunc: () => Promise<void>; // TODO Change this signature
+    autocompleteFunc: (guildId: string | null, bot: Bot) => Promise<string[] | number[]>;
 }
 
 export type CommandArgument = BaseCommandArgument | ChoicesCommandArgument | ChannelCommandArgument | NumericCommandArgument | AutocompleteCommandArgument;

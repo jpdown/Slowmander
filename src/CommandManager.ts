@@ -227,6 +227,50 @@ export class CommandManager {
         }
     }
 
+    public async handleAutocomplete(interaction: Interaction): Promise<void> {
+        if (!interaction.isAutocomplete()) {
+            return;
+        }
+
+        // Get command
+        let subGroup = interaction.options.getSubcommandGroup(false);
+        let subCmd = interaction.options.getSubcommand(false);
+
+        let cmd = this.getCommand(interaction.guildId ?? undefined, interaction.commandName);
+        if (subGroup && cmd instanceof CommandGroup) {
+            cmd = cmd.getSubCommand(subGroup);
+        }
+        if (subCmd && cmd instanceof CommandGroup) {
+            cmd = cmd.getSubCommand(subCmd);
+        }
+        if (!cmd) {
+            return;
+        }
+
+        // Find the focused option
+        let focused = interaction.options.getFocused(true);
+
+        // Get arg and get array from function
+        let arg = cmd.args?.find((v) => v.name === focused.name);
+        // Arg should be an autocomplete
+        if (!arg || !("autocomplete" in arg)) {
+            return;
+        }
+
+        // Filter by starts with
+        let arr = await arg.autocompleteFunc(interaction.guildId, this.bot);
+        let filtered: string[] | number[];
+        if (arg.type === "string") {
+            filtered = (arr as string[]).filter((choice) => choice.startsWith(focused.value as string));
+        }
+        else {
+            filtered = (arr as number[]).filter((choice) => choice.toString().startsWith((focused.value as number).toString()))
+        }
+
+        // Respond
+        await interaction.respond(filtered.map((choice) => ({ name: choice.toString(), value: choice })))
+    }
+
     public getCommand(guildId: Snowflake | undefined, commandToGet: string): Command | undefined {
         console.log(this.commandMap);
         return (

@@ -115,7 +115,7 @@ export class Lockdown extends Module {
     @command("lcfg")
     @isMod()
     @guildOnly()
-    @args([{ name: "preset", type: "string", description: "ye" }])
+    @args([{ name: "preset", type: "string", description: "ye", autocomplete: true, autocompleteFunc: Lockdown.getPresetList }])
     public async lcfginfo(c: CommandContext, input: string) {
         const guildId = c.guild!.id;
         const lockdownPreset = c.bot.db.lockdownPresets.getPreset(guildId, input);
@@ -187,6 +187,13 @@ export class Lockdown extends Module {
     ])
     public async lcfgremove(c: CommandContext, input: string) {
         await c.reply(`Not implemented.`);
+    }
+
+    public static async getPresetList(guildId: string | null, bot: Bot): Promise<string[]> {
+        if (!guildId) {
+            return [];
+        }
+        return bot.db.lockdownPresets.getPresetList(guildId) ?? [];
     }
 
     private async perform(c: CommandContext, lock: boolean, m: string) {
