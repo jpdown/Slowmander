@@ -1,4 +1,3 @@
-import { ConfigError } from "@twurple/api/lib";
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
 import { GuildChannel, GuildChannelResolvable, GuildEmoji, Message, MessageManager, ReactionEmoji, Role, Sweepers, TextBasedChannel, TextChannel } from "discord.js";
