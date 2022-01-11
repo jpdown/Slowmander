@@ -418,7 +418,9 @@ export class CommandManager {
 
         // Remove all commands that no longer exist
         let toRemove = manager.cache.filter((cmd) => !compared.includes(cmd.id));
-        toRemove.forEach(async (cmd) => await cmd.delete());
+        for (let [id, cmd] of toRemove) {
+            await manager.delete(cmd);
+        }
     }
 
     private registerCommand(command: Command) {
