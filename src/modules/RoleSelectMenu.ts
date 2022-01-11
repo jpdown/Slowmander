@@ -1,12 +1,11 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
-import { GuildChannel, GuildEmoji, MessageActionRow, MessageSelectMenu, MessageSelectOption, MessageSelectOptionData, Role, TextBasedChannel, TextChannel } from "discord.js";
+import { GuildEmoji, MessageActionRow, MessageSelectMenu, MessageSelectOptionData, Role, TextChannel } from "discord.js";
 import { Permissions } from "discord.js";
 import { Module } from "./Module";
 import { args, command, guild, isMod } from "./ModuleDecorators";
 
 export class RoleSelectMenu extends Module {
-    //! the commented lines have errors and i'll fix them tomorrow
     public constructor(bot: Bot) {
         super(bot);
     }
@@ -18,13 +17,13 @@ export class RoleSelectMenu extends Module {
     public async selfassignlist(context: CommandContext<true>, emote: GuildEmoji, role: Role, listMessage: string, chan?: TextChannel) {
         // TODO parse a message link
         await context.defer();
-        // if (!await this.checkPerms(context, chan, role)) {
-        //     return; 
-        // }
+        let channel = chan ? chan : context.channel as TextChannel; // lmao
+        if (!await this.checkPerms(context, channel, role)) {
+            return; 
+        }
         const map: Map<Role, GuildEmoji | undefined> = new Map();
-        // const menu = new Menu(map);
-        // wait menu.create(context, listMessage, map, chan);
-        await context.reply("nyi");
+        const menu = new Menu(context, map);
+        await menu.create(listMessage, map);
     }
 
     private async checkPerms(context: CommandContext<true>, listChannel: TextChannel, role: Role): Promise<boolean> {
@@ -63,13 +62,13 @@ export class Menu {
         this.roles.delete(role);
     }
 
-    public async create(context: CommandContext, message: string, roles: Map<Role, GuildEmoji | undefined>) {
+    public async create(message: string, roles: Map<Role, GuildEmoji | undefined>) {
         // we could probably make this delete the old message if it's already posted, basically editing the list
-        if (!roles || !context) {
-            await context.reply("Error when posting list");
+        if (!this.context) return;
+        if (!roles) {
+            await this.context.reply("Error when posting list");
             return;
         }
-        // this.channel = context.channel;
         let options: MessageSelectOptionData[] = [];
         roles.forEach((e, r) => { // emoji | role
             if (e) {
@@ -79,7 +78,7 @@ export class Menu {
             }
         })
         const menu = new MessageActionRow().addComponents(new MessageSelectMenu().setCustomId("self_assign_roles").setPlaceholder("Select a role").addOptions(options));
-        await context.channel.send({content: message, components: [menu]})
-        await context.reply({content: "Successfully posted self assign roles.", ephemeral: true})
+        await this.context.channel.send({content: message, components: [menu]})
+        await this.context.reply({content: "Successfully posted self assign roles.", ephemeral: true})
     }
 }
