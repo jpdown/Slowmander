@@ -130,6 +130,9 @@ export class ArgumentParser {
                     if (guild) currParsedArg = await CommandUtils.parseMember(currStr, guild);
                     if (currParsedArg === null) currParsedArg = undefined;
                     break;
+                case "emoji":
+                    if (guild) currParsedArg = await CommandUtils.parseEmote(currStr);
+                    if (currParsedArg === null) currParsedArg = undefined;
                 default:
                     // TODO: Add exhaustivenexx check with never
                     currParsedArg = undefined;

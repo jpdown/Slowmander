@@ -5,9 +5,9 @@ import { Logger } from "Logger";
 // import type { Message, PermissionResolvable } from 'discord.js';
 import type {
     ApplicationCommandOptionChoice,
-    ApplicationCommandOptionType,
     Channel,
     ExcludeEnum,
+    GuildEmoji,
     GuildMember,
     Role,
     Snowflake,
@@ -193,6 +193,7 @@ export type CommandArgumentType =
     | "user"
     | "channel"
     | "member"
+    | "emoji"
     | "role";
 export type CommandParsedType =
     | string
@@ -202,4 +203,5 @@ export type CommandParsedType =
     | Channel
     | Role
     | GuildMember
+    | GuildEmoji
     | undefined;

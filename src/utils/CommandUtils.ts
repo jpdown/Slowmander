@@ -31,6 +31,7 @@ import { Logger } from "Logger";
 export class CommandUtils {
     public static bot: Bot;
     private static logger: Logger = Logger.getLogger("Command Utils");
+    private static emojiRegex: RegExp = /\p{EPres}|\p{ExtPict}/gu; // Emoji_Presentation and Extended_Pictographic
 
     public static async getSelfColor(channel: TextBasedChannel): Promise<ColorResolvable> {
         let color: ColorResolvable | undefined;
@@ -265,9 +266,7 @@ export class CommandUtils {
         let parsedEmote: GuildEmoji | null = null;
 
         try {
-            const snowflake: Snowflake | undefined = await this.parseEmoteID(
-                potentialEmote
-            );
+            const snowflake: Snowflake | undefined = await this.parseEmoteID(potentialEmote);
             if (snowflake) {
                 parsedEmote = this.bot.client.emojis.resolve(snowflake);
             }
@@ -389,9 +388,7 @@ export class CommandUtils {
         return true;
     }
 
-    public static async getEmote(
-        message: Message
-    ): Promise<ReactionEmoji | GuildEmoji | undefined> {
+    public static async getEmote(message: Message): Promise<ReactionEmoji | GuildEmoji | undefined> {
         // Ask for emote
         const sentMessage: Message = await this.sendMessage(
             "Please react on this message with the emote you would like to use.",
@@ -426,22 +423,6 @@ export class CommandUtils {
         return emote;
     }
 
-    public static async sendMessage(
-        message: string,
-        channel: TextBasedChannel,
-        repliedMessage?: Message
-    ): Promise<Message> {
-        const embed: MessageEmbed = new MessageEmbed()
-            .setColor(await this.getSelfColor(channel))
-            .setDescription(message);
-
-        const options: MessageOptions = { embeds: [embed] };
-        if (repliedMessage) {
-            options.reply = { messageReference: repliedMessage };
-        }
-
-        return channel.send(options);
-    }
 
     // eslint-disable-next-line class-methods-use-this
     public static async makeEmoteFromId(emoteId: string): Promise<string | undefined> {
@@ -463,6 +444,23 @@ export class CommandUtils {
 
         return emote;
     }
+
+    public static async sendMessage(
+        message: string,
+            channel: TextBasedChannel,
+            repliedMessage?: Message
+        ): Promise<Message> {
+            const embed: MessageEmbed = new MessageEmbed()
+                .setColor(await this.getSelfColor(channel))
+                .setDescription(message);
+    
+            const options: MessageOptions = { embeds: [embed] };
+            if (repliedMessage) {
+                options.reply = { messageReference: repliedMessage };
+            }
+    
+            return channel.send(options);
+        }
 
     public static getSlashArgType(
         type: CommandArgumentType
