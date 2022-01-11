@@ -29,6 +29,7 @@ import {
     Role,
     ApplicationCommandPermissionData,
     ApplicationCommandNonOptionsData,
+    Guild,
 } from "discord.js";
 // import { HelpManager } from 'HelpManager';
 import { CommandContext } from "CommandContext";
@@ -323,7 +324,7 @@ export class CommandManager {
         }
     }
 
-    public async deploySlashPermissions() { // TODO: Deploy on guild join and role set
+    public async deploySlashPermissions(guild: Guild | undefined) { // TODO: Deploy on guild join and role set
         let globalCmds: Map<string, [ApplicationCommand<{guild: GuildResolvable}>, Command]> = new Map();
         let currPerms: ApplicationCommandPermissionData[];
         let currGuildCmds: Map<string, [ApplicationCommand<{}>, Command]> = new Map();
@@ -331,6 +332,8 @@ export class CommandManager {
         let currGuildModRole: Snowflake | null | undefined;
         let currGuildAdminRole: Snowflake | null | undefined;
         let ownerPerms: ApplicationCommandPermissionData[] = [];
+        // If given a guild, make a one element array of that guild
+        let guilds = guild ? [guild] : this.bot.client.guilds.cache.values();
 
         // Get owners
         for (let owner of this.bot.owners) {
@@ -340,20 +343,20 @@ export class CommandManager {
         globalCmds = await this.getSlashWithPerms(this.bot.client.application.commands, "GLOBAL");
         
         // Global commands need to deploy permissions per guild
-        for (let [guildId, guild] of this.bot.client.guilds.cache) {
+        for (let guild of guilds) {
             // Get roles
-            currGuildVIPRole = this.bot.db.guildConfigs.getVipRole(guildId);
-            currGuildModRole = this.bot.db.guildConfigs.getModRole(guildId);
-            currGuildAdminRole = this.bot.db.guildConfigs.getAdminRole(guildId);
+            currGuildVIPRole = this.bot.db.guildConfigs.getVipRole(guild.id);
+            currGuildModRole = this.bot.db.guildConfigs.getModRole(guild.id);
+            currGuildAdminRole = this.bot.db.guildConfigs.getAdminRole(guild.id);
 
             // Handle global commands first
             for (let [cmdId, [slash, cmd]] of globalCmds) {
                 currPerms = await this.generateSlashPerms(cmd, currGuildVIPRole, currGuildModRole, currGuildAdminRole, ownerPerms);
-                slash.permissions.set({ guild: guildId, permissions: currPerms });
+                slash.permissions.set({ guild: guild.id, permissions: currPerms });
             }
 
             // Get list of guild commands to set permissions
-            currGuildCmds = await this.getSlashWithPerms(guild.commands, guildId);
+            currGuildCmds = await this.getSlashWithPerms(guild.commands, guild.id);
             // Deploy guild perms
             for (let [cmdId, [slash, cmd]] of currGuildCmds) {
                 currPerms = await this.generateSlashPerms(cmd, currGuildVIPRole, currGuildModRole, currGuildAdminRole, ownerPerms);
