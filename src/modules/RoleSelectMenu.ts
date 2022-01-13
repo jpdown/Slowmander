@@ -38,7 +38,7 @@ export class RoleSelectMenu extends Module {
             optional: true,
         },
     ])
-    public async addrole(context: CommandContext<true>,emote: GuildEmoji,role: Role,listMessage: string,chan?: TextChannel) {
+    public async addrole(context: CommandContext<true>, emote: GuildEmoji,role: Role, listMessage: string,chan?: TextChannel) {
         // TODO parse a message link, maybe a text file if possible?
         await context.defer();
         let channel = chan ? chan : context.channel;
@@ -49,7 +49,7 @@ export class RoleSelectMenu extends Module {
         if (!(await this.checkPerms(context, channel, role))) {
             return;
         }
-        const map: Map<Role, GuildEmoji | undefined> = new Map();
+        const map: Map<Role, GuildEmoji | null> = new Map();
         const menu = new Menu(context, map);
         await menu.create(listMessage, map);
     }
@@ -92,12 +92,12 @@ export class RoleSelectMenu extends Module {
 
 export class Menu {
     private channel: TextChannel;
-    private roles: Map<Role, GuildEmoji | undefined> = new Map();
+    private roles: Map<Role, GuildEmoji | null> = new Map();
     private context: CommandContext;
 
     public constructor(
         context: CommandContext,
-        roles: Map<Role, GuildEmoji | undefined>,
+        roles: Map<Role, GuildEmoji | null>,
         channel?: TextChannel
     ) {
         this.roles = roles;
@@ -113,7 +113,7 @@ export class Menu {
         this.roles.delete(role);
     }
 
-    public async create(message: string, roles: Map<Role, GuildEmoji | undefined>) {
+    public async create(message: string, roles: Map<Role, GuildEmoji | null>) {
         if (!roles) {
             await this.context.reply("Error when posting list");
             return;
@@ -127,7 +127,7 @@ export class Menu {
         }
         let options: MessageSelectOptionData[] = [];
         roles.forEach((e, r) => { // emoji | role
-            if (e) {
+            if (e !== null) {
                 options.push({ label: r.name, value: r.name, emoji: e });
             } else {
                 options.push({ label: r.name, value: r.name });
