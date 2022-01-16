@@ -3,7 +3,7 @@ import type BS3 from "better-sqlite3";
 import type { Bot } from "Bot";
 import { Logger } from "Logger";
 
-import type { Guild, Message, Role, Snowflake } from "discord.js";
+import type { CommandInteraction, Guild, Message, Role, Snowflake } from "discord.js";
 
 export class ReactionRoles {
     private readonly logger: Logger;
@@ -68,13 +68,18 @@ export class ReactionRoles {
     }
 
     public setReactionRole(
-        message: Message,
+        message: Message | CommandInteraction,
         emoteId: string,
         role: Role
     ): boolean {
         let rowsModified = 0;
 
         if (message.guild?.id !== role.guild.id) {
+            return false;
+        }
+
+        // is not handling this just okay? we shouldn't ever have no channel with a command
+        if (message.channel === null) { 
             return false;
         }
 
