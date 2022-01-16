@@ -31,7 +31,6 @@ import { Logger } from "Logger";
 export class CommandUtils {
     public static bot: Bot;
     private static logger: Logger = Logger.getLogger("Command Utils");
-    private static emojiRegex: RegExp = /\p{EPres}|\p{ExtPict}/gu; // Emoji_Presentation and Extended_Pictographic
 
     public static async getSelfColor(channel: TextBasedChannel): Promise<ColorResolvable> {
         let color: ColorResolvable | undefined;
