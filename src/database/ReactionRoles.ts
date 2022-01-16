@@ -68,18 +68,13 @@ export class ReactionRoles {
     }
 
     public setReactionRole(
-        message: Message | CommandInteraction,
+        message: Message,
         emoteId: string,
         role: Role
     ): boolean {
         let rowsModified = 0;
 
         if (message.guild?.id !== role.guild.id) {
-            return false;
-        }
-
-        // is not handling this just okay? we shouldn't ever have no channel with a command
-        if (message.channel === null) { 
             return false;
         }
 
@@ -103,6 +98,11 @@ export class ReactionRoles {
         }
 
         return rowsModified > 0;
+    }
+
+    public setAutoAssignRole(interaction: CommandInteraction, emoteId: string, role: Role): boolean {
+        // TODO add database section for this
+        return false;
     }
 
     public removeReactionRole(
