@@ -72,6 +72,11 @@ export class RoleSelectMenu extends Module {
         }
 
         map.set(role, emote);
+        const dbAdd = context.bot.db.reactionRoles.setReactionRole(context.message!, emoteId, role);
+        if (!dbAdd) {
+            await context.reply("Error adding self assign role.");
+            return;
+        }
         let menu = new Menu(context, map, listMessage);
         await menu.create();
     }
