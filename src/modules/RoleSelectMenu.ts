@@ -1,5 +1,6 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
+import type { APIMessage } from "discord-api-types";
 import {
     Emoji,
     GuildEmoji,
@@ -39,7 +40,7 @@ export class RoleSelectMenu extends Module {
             optional: true,
         },
     ])
-    public async addrole(context: CommandContext<true>, emoteInput: string, role: Role, listMessage: string, chan?: TextChannel) {
+    public async addrole(context: CommandContext<true>, emoteInput: string, role: Role, listMessage: string, chan?: TextChannel): Promise<Menu | undefined> {
         // TODO parse a message link, maybe a text file if possible?
         await context.defer();
         let channel = chan ? chan : context.channel;
@@ -77,8 +78,21 @@ export class RoleSelectMenu extends Module {
             await context.reply("Error adding self assign role.");
             return;
         }
-        let menu = new Menu(context, map, listMessage);
-        await menu.create();
+        return new Menu(context, listMessage, map);
+    }
+
+    public async addroles(context: CommandContext<true>, input: Map<Role, GuildEmoji | string | undefined>, listMessage: string, channel: TextChannel) {
+        let menu: Menu | undefined;
+        let set = false;
+        for (let [role, emoji] of input) {
+            emoji = emoji as string;
+            if (!set) {
+                menu = await this.addrole(context, emoji, role, listMessage, channel)
+                set = true;
+            }
+        }
+        if (!menu) return; // only should be undefined when it fails anyways 
+        await menu.create(input);
     }
 
     @subcommand("selfassignlist", "Removes a self assignable role")
@@ -126,12 +140,11 @@ export class Menu {
     private message: string;
     private roles: Map<Role, GuildEmoji | string | undefined> = new Map();
 
-    public constructor(context: CommandContext, roles: Map<Role, GuildEmoji | string | undefined>, message: string, channel?: TextChannel
-    ) {
-        this.roles = roles;
+    public constructor(context: CommandContext, message: string, map: Map<Role, GuildEmoji | string | undefined>, channel?: TextChannel) {
         this.channel = channel ? channel : (context.channel as TextChannel);
         this.context = context;
         this.message = message;
+        this.roles = map;
     }
 
     public async addRole(role: Role, emoji: GuildEmoji) {
@@ -142,16 +155,16 @@ export class Menu {
         this.roles.delete(role);
     }
 
-    public async create() {
+    public async create(roles: Map<Role, GuildEmoji | string | undefined>): Promise<Message<boolean> | APIMessage | undefined> {
         let msg: Message<boolean> | undefined;
         let menu: MessageActionRow;
 
-        if (!this.roles) {
+        if (!roles) {
             await this.context.reply("Error when posting list");
             return;
         }
 
-        if (this.roles.size === 0) {
+        if (roles.size === 0) {
             await this.context.reply("No roles given!");
             return;
         }
@@ -165,7 +178,7 @@ export class Menu {
         }
 
         const options: MessageSelectOptionData[] = [];
-        this.roles.forEach((e, r) => { // emoji | role
+        roles.forEach((e, r) => { // emoji | role
             options.push({ label: r.name, value: r.name, emoji: e });
         });
 
@@ -177,7 +190,7 @@ export class Menu {
         );
 
         await this.channel.send({ content: this.message, components: [menu] });
-        await this.context.reply({
+        return await this.context.reply({
             content: "Successfully posted self assign roles.",
             ephemeral: true,
         });
