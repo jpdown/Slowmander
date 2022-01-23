@@ -318,15 +318,20 @@ export class CommandUtils {
 
     // eslint-disable-next-line class-methods-use-this
     public static async verifySnowflake(potentialSnowflake: string): Promise<boolean> {
-        // Deconstruct snowflake
-        const deconstructedSnowflake: DeconstructedSnowflake =
-            SnowflakeUtil.deconstruct(potentialSnowflake);
-        if (deconstructedSnowflake.timestamp <= SnowflakeUtil.EPOCH) {
+        try {
+            // Deconstruct snowflake
+            const deconstructedSnowflake: DeconstructedSnowflake =
+                SnowflakeUtil.deconstruct(potentialSnowflake);
+            if (deconstructedSnowflake.timestamp <= SnowflakeUtil.EPOCH) {
+                return false;
+            }
+            
+            // We good
+            return true;
+        }
+        catch (e) {
             return false;
         }
-
-        // We good
-        return true;
     }
 
     // eslint-disable-next-line class-methods-use-this
