@@ -20,6 +20,8 @@ export class Help extends Module {
             type: "string",
             description: "specific command",
             optional: true,
+            autocomplete: true,
+            autocompleteFunc: Help.getAutoComplete
         },
     ])
     public async help(c: CommandContext) {
@@ -56,6 +58,19 @@ export class Help extends Module {
                 ],
             });
         }
+    }
+
+    private static async getAutoComplete(id: string | null, bot: Bot): Promise<string[]> {
+        if (id) {
+            let ret: string[] = [];
+            let commands = bot.commandManager.getAllCommands();
+            for (let cmd of commands) {
+                //if (await PermissionsHelper.checkPerms(c, cmd))
+                ret.push(cmd.name);
+            }
+            return ret;
+        }
+        return [];
     }
 
     private async generateEmbed(

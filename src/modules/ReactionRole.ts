@@ -145,6 +145,7 @@ export class ReactionRole extends Module {
                     }
                 }
             });
+            return ret;
         }
         return [];
     }
