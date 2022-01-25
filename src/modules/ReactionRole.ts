@@ -1,6 +1,7 @@
-import type { Bot } from "Bot";
-import type { CommandContext } from "CommandContext";
-import type { Collection, GuildChannelResolvable, GuildEmoji, Message, MessageReaction, Role } from "discord.js";
+import { Bot } from "Bot";
+import { CommandContext } from "CommandContext";
+import { Collection, GuildChannelResolvable, GuildEmoji, Message, MessageReaction, Role } from "discord.js";
+import { APIMessage } from "discord-api-types/v9";
 import { ReactionEmoji } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
@@ -20,27 +21,22 @@ export class ReactionRole extends Module {
     @isMod()
     @args([
         {
-            name: "Message link",
+            name: "link",
             type: "string",
-            description: ""
+            description: "Message link"
         },
         {
-            name: "Role",
+            name: "role",
             type: "string",
-            description: "",
+            description: "Role to add",
             autocomplete: true,
             autocompleteFunc: ReactionRole.getRoles,
         },
-        {
-            name: "Name",
-            type: "string",
-            description: "",
-        },
     ])
-    public async addrole(c: CommandContext<true>, link: string, role: string, name: string) {
+    public async addrole(c: CommandContext<true>, link: string, role: string) {
         await c.defer();
         let bot = c.bot;
-        let args: string[] = [link, role, name];
+        let args: string[] = [link, role];
         if (args.length < 2) {
             await c.reply("Missing arguments!");
             return;
@@ -50,13 +46,14 @@ export class ReactionRole extends Module {
         if (!parsedArgs) {
             return;
         }
+        let msg = parsedArgs.reactionMessage;
 
         const emote: ReactionEmoji | GuildEmoji | undefined = await ReactionRole.getEmote(c);
         if (!emote) {
             return;
         }
 
-        const config = bot.db.reactionRoles.getReactionRole(c.message!, emote.identifier);
+        const config = bot.db.reactionRoles.getReactionRole(msg, emote.identifier);
         if (config === null) {
             await c.reply({content: `Error checking database, please try again later.`, ephemeral: true})
             return;
@@ -102,7 +99,15 @@ export class ReactionRole extends Module {
     // TODO this is temp
     private static async getEmote(message: CommandContext): Promise<ReactionEmoji | GuildEmoji | undefined> {
         // Ask for emote
-        const sentMessage: Message = await message.channel.send("Please react on this message with the emote you would like to use.");
+        const sentMessage: APIMessage | Message | undefined = await message.reply("Please react on this message with the emote you would like to use.");
+        if (!sentMessage) {
+            this.logger.error("Error with getting emote");
+            return undefined;
+        }
+        if (!(sentMessage instanceof Message)) {
+            this.logger.error("Error with getting emote")
+            return undefined;
+        }
         const reactions: Collection<string, MessageReaction> =
             await sentMessage.awaitReactions({
                 filter: (reaction, user) => user.id === message.user.id,
@@ -112,7 +117,7 @@ export class ReactionRole extends Module {
 
         // Check if unicode or if we have the custom emote
         if (reactions.size < 1) {
-            await message.channel.send(
+            await message.reply(
                 "No reaction given, cancelling.",
             );
             return undefined;
@@ -121,7 +126,7 @@ export class ReactionRole extends Module {
         let emote: ReactionEmoji | GuildEmoji | undefined =
             reactions.first()?.emoji;
         if (emote?.id && emote instanceof ReactionEmoji) {
-            await message.channel.send("I do not have access to the emote given, cancelling.");
+            await message.reply("I do not have access to the emote given, cancelling.");
             emote = undefined;
         }
 
