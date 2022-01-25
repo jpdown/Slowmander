@@ -5,7 +5,6 @@
         "sourceMap": true,
         "outDir": "dist",
         "baseUrl": "./src/",
-        "importsNotUsedAsValues": "error",
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "noImplicitOverride": true
