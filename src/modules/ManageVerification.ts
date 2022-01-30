@@ -1,6 +1,6 @@
 import {Module} from "./Module";
 import {Bot} from "../Bot";
-import {group, isMod, subcommand} from "./ModuleDecorators";
+import {args, group, isMod, subcommand} from "./ModuleDecorators";
 import {CommandContext} from "../CommandContext";
 import {CommandUtils} from "../utils/CommandUtils";
 import {
@@ -28,6 +28,7 @@ export class ManageVerification extends Module {
     public static async verification() {}
 
     @subcommand("verification", "Enable server verification")
+    @isMod()
     public static async enable(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
@@ -46,6 +47,7 @@ export class ManageVerification extends Module {
     }
 
     @subcommand("verification", "Enable server verification")
+    @isMod()
     public static async disable(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
@@ -64,6 +66,7 @@ export class ManageVerification extends Module {
     }
 
     @subcommand("verification", "Enable server verification")
+    @isMod()
     public static async enableremove(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
@@ -86,6 +89,7 @@ export class ManageVerification extends Module {
     }
 
     @subcommand("verification", "Enable server verification")
+    @isMod()
     public static async disableremove(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
@@ -108,6 +112,19 @@ export class ManageVerification extends Module {
     }
 
     @subcommand("verification", "Enable server verification")
+    @isMod()
+    @args([
+        {
+            name: "channel",
+            description: "description",
+            type: "string"
+        },
+        {
+            name: "role",
+            description: "description",
+            type: "string"
+        },
+    ])
     public static async set(ctx: CommandContext, c: string, r: string) {
         let args = [c, r];
         let bot = ctx.bot;
@@ -166,6 +183,7 @@ export class ManageVerification extends Module {
     }
 
     @subcommand("verification", "Enable server verification")
+    @isMod()
     public static async status(ctx: CommandContext) {
         let bot = ctx.bot;
         const verificationConfig = bot.db.verification.getConfig(ctx.guild!.id);
