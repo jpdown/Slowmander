@@ -23,16 +23,14 @@ import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
 import { args, command, group, guild, guildOnly, isMod, subcommand } from "./ModuleDecorators";
 
-// TODO handle the command when it's not used as a slash command, and refactor
+// TODO refactor, this was copy pasted :)
 export class Lockdown extends Module {
     private readonly PERMISSION = Permissions.FLAGS.SEND_MESSAGES;
     private readonly LOCK_MESSAGE = "🔒 Channel has been locked down.";
     private readonly UNLOCK_MESSAGE = "🔓 Channel has been unlocked.";
-    private readonly logger: Logger;
 
     public constructor(bot: Bot) {
         super(bot);
-        this.logger = Logger.getLogger(this);
     }
 
     @command("Locks a server down.")

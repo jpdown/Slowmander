@@ -324,7 +324,7 @@ export class CommandManager {
         }
     }
 
-    public async deploySlashPermissions(guild: Guild | undefined) { // TODO: Deploy on guild join and role set
+    public async deploySlashPermissions(guild: Guild | undefined) {
         let globalCmds: Map<string, [ApplicationCommand<{guild: GuildResolvable}>, Command]> = new Map();
         let currPerms: ApplicationCommandPermissionData[];
         let currGuildCmds: Map<string, [ApplicationCommand<{}>, Command]> = new Map();

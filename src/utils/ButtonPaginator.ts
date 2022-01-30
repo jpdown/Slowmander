@@ -71,7 +71,6 @@ export class ButtonPaginator {
     }
 
     public async onClick(inter: Interaction) {
-        //TODO add proper filtering, only work in given instance
         // TODO check for perms maybe?
         if (!(inter instanceof ButtonInteraction)) return;
         let com = inter.message?.components;

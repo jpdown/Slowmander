@@ -1,6 +1,7 @@
 import type { Bot } from "Bot";
 import { Command, CommandOptions, PermissionLevel } from "commands/Command";
 import { CommandGroup } from "commands/CommandGroup";
+import { Logger } from "Logger";
 
 import "reflect-metadata";
 
@@ -8,12 +9,14 @@ export abstract class Module {
     public readonly commands: Command[];
 
     protected readonly bot: Bot;
+    protected readonly logger: Logger;
 
     constructor(bot: Bot) {
         this.commands = [];
         this.addCommands();
 
         this.bot = bot;
+        this.logger = Logger.getLogger(this);
     }
 
     private addCommands() {
