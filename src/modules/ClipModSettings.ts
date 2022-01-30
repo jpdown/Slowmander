@@ -113,7 +113,7 @@ export class ClipModSettings extends Module {
         },
     ])
     @isAdmin()
-    public async enableApprovedChannels(ctx: CommandContext<true>, id: string) {
+    public async enableapprovedchannels(ctx: CommandContext<true>, id: string) {
         let bot = ctx.bot;
         let args = [id];
 
@@ -161,7 +161,7 @@ export class ClipModSettings extends Module {
         },
     ])
     @isAdmin()
-    public async disableApprovedChannels(ctx: CommandContext<true>, id: string) {
+    public async disableapprovedchannels(ctx: CommandContext<true>, id: string) {
         let bot = ctx.bot;
         let args = [id];
 
@@ -207,7 +207,7 @@ export class ClipModSettings extends Module {
         }
     ])
     @isAdmin()
-    public async addChannel(ctx: CommandContext<true>, id: string, twitchChan: string) {
+    public async addchannel(ctx: CommandContext<true>, id: string, twitchChan: string) {
         let bot = ctx.bot;
         let args = [id, twitchChan];
 
@@ -267,7 +267,7 @@ export class ClipModSettings extends Module {
         }
     ])
     @isAdmin()
-    public async deleteChannel(ctx: CommandContext<true>, id: string, twitchChan: string) {
+    public async deletechannel(ctx: CommandContext<true>, id: string, twitchChan: string) {
         let bot = ctx.bot;
         let args = [id, twitchChan];
 
