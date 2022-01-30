@@ -32,4 +32,16 @@ export class Test extends Module {
     public async globalcmd(ctx: CommandContext) {
         await ctx.reply("this do be global");
     }
+
+    @command("testing choices")
+    @guild("472222827421106201")
+    @args([
+        { name:"arg", type: "string", description: "ye", choices: [
+            {name: "this is name 1", value: "value1"},
+            {name: "This is name 2", value:"value2"}
+        ]}
+    ])
+    public async choicestest(ctx: CommandContext, arg: string) {
+        await ctx.reply(arg);
+    }
 }

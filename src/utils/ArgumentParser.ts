@@ -76,6 +76,7 @@ export class ArgumentParser {
         const parsedArgs: CommandParsedType[] = [];
         let currStr;
         let currParsedArg;
+        let currArg;
         let type: CommandArgumentType;
 
         if (!command.args) {
@@ -83,7 +84,6 @@ export class ArgumentParser {
         }
 
         // Use every to short circuit on first fail
-        // TODO: Restrict to choices if choices defined
         for (let i = 0; i < command.args.length; i += 1) {
             if (args.length <= i) {
                 if (!command.args[i].optional) {
@@ -91,11 +91,12 @@ export class ArgumentParser {
                 }
                 break;
             }
-
+            
             // Match either space separated or quote separated
             // This could potentially be cleaned with a better RegEx
             currStr = args[i][4] ? args[i][4] : args[i][3];
-            type = command.args[i].type;
+            currArg = command.args[i];
+            type = currArg.type;
 
             switch (type) {
                 case "string":
@@ -141,7 +142,11 @@ export class ArgumentParser {
                     throw new Error('Unhandled arg type: ' + exhaustiveCheck);
             }
 
-            if (currParsedArg === undefined && !command.args[i].optional) {
+            if ("choices" in currArg && !currArg.choices?.map((v) => v.value).includes(currParsedArg as string | number)) {
+                currParsedArg = undefined;
+            }
+
+            if (currParsedArg === undefined && !currArg.optional) {
                 allRequired = false;
                 break;
             } else {
