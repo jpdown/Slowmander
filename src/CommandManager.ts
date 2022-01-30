@@ -30,6 +30,7 @@ import {
     ApplicationCommandPermissionData,
     ApplicationCommandNonOptionsData,
     Guild,
+    Permissions,
 } from "discord.js";
 // import { HelpManager } from 'HelpManager';
 import { CommandContext } from "CommandContext";
@@ -88,6 +89,11 @@ export class CommandManager {
 
         // Make sure we have prefix
         if (!fullMessage.content?.startsWith(prefix)) {
+            return;
+        }
+
+        // If user doesn't have slash command perms, ignore
+        if (message.member && !message.member.permissionsIn(message.channelId).has(Permissions.FLAGS.USE_APPLICATION_COMMANDS)) {
             return;
         }
 
