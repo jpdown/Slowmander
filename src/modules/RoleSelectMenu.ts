@@ -1,8 +1,10 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
+import { CommandArgs } from "commands/Command";
 import type { APIMessage } from "discord-api-types";
 import {
     Emoji,
+    EmojiResolvable,
     GuildEmoji,
     Message,
     MessageActionRow,
@@ -29,9 +31,9 @@ export class RoleSelectMenu extends Module {
     @isMod()
     @guild("472222827421106201")
     @args([
-        { name: "emote", description: "Icon to use for the role", type: "string" },
+        { name: "emote", description: "Icon to use for the role", type: "emoji" },
         { name: "role", description: "The role to add", type: "role" },
-        { name: "message", description: "Message to place at the top of the list", type: "emoji" },
+        { name: "message", description: "Message to place at the top of the list", type: "string" },
         {
             name: "channel",
             description:
@@ -40,16 +42,15 @@ export class RoleSelectMenu extends Module {
             optional: true,
         },
     ])
-    public async addrole(context: CommandContext<true>, emoteInput: string, role: Role, listMessage: string, chan?: TextChannel): Promise<Menu | undefined> {
+    public async addrole(context: CommandContext<true>, emote: CommandArgs["emoji"], role: Role, listMessage: string, chan?: TextChannel): Promise<Menu | undefined> {
         // TODO parse a message link, maybe a text file if possible?
         await context.defer();
         let channel = chan ? chan : context.channel;
-        let map: Map<Role, GuildEmoji | string | undefined> = new Map();
-        let emote: GuildEmoji | string | undefined;
-        let emoteId = emoteInput;
-        if (!emoteInput.match(RoleSelectMenu.emojiRegex)) {
-            emoteId = emoteInput.split(":")[2].replace(">", "");
-            emote = context.bot.client.emojis.cache.filter((e) => e.id === emoteId).at(0);
+        let map: Map<Role, EmojiResolvable | undefined> = new Map();
+        let emoteId = typeof emote === "string" ? emote : emote.id;
+        if (!emoteId) {
+            this.logger.warning("Somehow don't have an emote id.");
+            return;
         }
         let config = context.bot.db.reactionRoles.getReactionRole(context.message!, emoteId);
 
@@ -138,9 +139,9 @@ export class Menu {
     private channel: TextChannel;
     private context: CommandContext;
     private message: string;
-    private roles: Map<Role, GuildEmoji | string | undefined> = new Map();
+    private roles: Map<Role, EmojiResolvable | undefined> = new Map();
 
-    public constructor(context: CommandContext, message: string, map: Map<Role, GuildEmoji | string | undefined>, channel?: TextChannel) {
+    public constructor(context: CommandContext, message: string, map: Map<Role, EmojiResolvable | undefined>, channel?: TextChannel) {
         this.channel = channel ? channel : (context.channel as TextChannel);
         this.context = context;
         this.message = message;

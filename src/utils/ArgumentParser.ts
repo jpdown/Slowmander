@@ -1,5 +1,5 @@
 import type { Bot } from "Bot";
-import type { Command, CommandParsedType } from "commands/Command";
+import type { Command, CommandArgumentType, CommandParsedType } from "commands/Command";
 import { CommandGroup } from "commands/CommandGroup";
 import {
     CacheType,
@@ -76,6 +76,7 @@ export class ArgumentParser {
         const parsedArgs: CommandParsedType[] = [];
         let currStr;
         let currParsedArg;
+        let type: CommandArgumentType;
 
         if (!command.args) {
             return [];
@@ -94,8 +95,9 @@ export class ArgumentParser {
             // Match either space separated or quote separated
             // This could potentially be cleaned with a better RegEx
             currStr = args[i][4] ? args[i][4] : args[i][3];
+            type = command.args[i].type;
 
-            switch (command.args[i].type) {
+            switch (type) {
                 case "string":
                     currParsedArg = currStr;
                     break;
@@ -133,10 +135,10 @@ export class ArgumentParser {
                 case "emoji":
                     if (guild) currParsedArg = await CommandUtils.parseEmote(currStr);
                     if (currParsedArg === null) currParsedArg = undefined;
-                default:
-                    // TODO: Add exhaustivenexx check with never
-                    currParsedArg = undefined;
                     break;
+                default:
+                    const exhaustiveCheck: never = type;
+                    throw new Error('Unhandled arg type: ' + exhaustiveCheck);
             }
 
             if (currParsedArg === undefined && !command.args[i].optional) {
@@ -164,10 +166,12 @@ export class ArgumentParser {
 
         const parsedArgs: CommandParsedType[] = [];
         let currArg: CommandParsedType;
+        let type: CommandArgumentType;
         // Get args in order, we know that we have all required
         try {
             for (let arg of cmd.args) {
-                switch (arg.type) {
+                type = arg.type;
+                switch (type) {
                     case "string":
                         currArg = options.getString(arg.name, !arg.optional) ?? undefined;
                         break;
@@ -207,9 +211,16 @@ export class ArgumentParser {
                         }
                         currArg = member;
                         break;
+                    case "emoji":
+                        let emoteId = options.getString(arg.name, !arg.optional);
+                        if (!emoteId) {
+                            return undefined;
+                        }
+                        currArg = await CommandUtils.parseEmote(emoteId) ?? undefined;
+                        break;
                     default:
-                        // TODO: Add exhaustiveness check with never
-                        currArg = undefined;
+                        const exhaustiveCheck: never = type;
+                        throw new Error('Unhandled arg type: ' + exhaustiveCheck);
                 }
 
                 if (!currArg) {

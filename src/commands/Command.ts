@@ -6,6 +6,7 @@ import { Logger } from "Logger";
 import type {
     ApplicationCommandOptionChoice,
     Channel,
+    EmojiResolvable,
     ExcludeEnum,
     GuildEmoji,
     GuildMember,
@@ -183,25 +184,17 @@ interface AutocompleteCommandArgument extends BaseCommandArgument {
 
 export type CommandArgument = BaseCommandArgument | ChoicesCommandArgument | ChannelCommandArgument | NumericCommandArgument | AutocompleteCommandArgument;
 
-// TODO: Add member, mentionable, message
-// TODO: Is there a better way to do this?
-export type CommandArgumentType =
-    | "string"
-    | "int"
-    | "number"
-    | "bool"
-    | "user"
-    | "channel"
-    | "member"
-    | "emoji"
-    | "role";
-export type CommandParsedType =
-    | string
-    | number
-    | boolean
-    | User
-    | Channel
-    | Role
-    | GuildMember
-    | GuildEmoji
-    | undefined;
+// TODO: Add mentionable, message
+export type CommandArgs = {
+    string: string,
+    int: number,
+    number: number,
+    bool: boolean,
+    user: User,
+    member: GuildMember,
+    channel: Channel,
+    role: Role,
+    emoji: EmojiResolvable
+}
+export type CommandArgumentType = keyof CommandArgs;
+export type CommandParsedType = CommandArgs[keyof CommandArgs] | undefined;

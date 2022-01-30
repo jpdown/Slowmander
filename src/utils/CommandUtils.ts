@@ -32,6 +32,8 @@ export class CommandUtils {
     public static bot: Bot;
     private static logger: Logger = Logger.getLogger("Command Utils");
 
+    private static readonly EMOJI_REGEX = /\p{EPres}|\p{ExtPict}/gu;
+
     public static async getSelfColor(channel: TextBasedChannel): Promise<ColorResolvable> {
         let color: ColorResolvable | undefined;
 
@@ -261,21 +263,25 @@ export class CommandUtils {
         return snowflake;
     }
 
-    public static async parseEmote(potentialEmote: string): Promise<GuildEmoji | null> {
-        let parsedEmote: GuildEmoji | null = null;
+    public static async parseEmote(potentialEmote: string): Promise<GuildEmoji | string | null> {
+        let parsedEmote: GuildEmoji | string | null = 
+            potentialEmote.match(CommandUtils.EMOJI_REGEX) ? potentialEmote : null;
 
-        try {
-            const snowflake: Snowflake | undefined = await this.parseEmoteID(potentialEmote);
-            if (snowflake) {
-                parsedEmote = this.bot.client.emojis.resolve(snowflake);
+        if (!parsedEmote) {
+            try {
+                const snowflake: Snowflake | undefined = await this.parseEmoteID(potentialEmote);
+                if (snowflake) {
+                    parsedEmote = this.bot.client.emojis.resolve(snowflake);
+                }
+            } catch (err) {
+                parsedEmote = null;
             }
-        } catch (err) {
-            parsedEmote = null;
         }
 
         if (!parsedEmote) {
             parsedEmote = (await this.parseEmoteByName(potentialEmote)) ?? null;
         }
+
         return parsedEmote;
     }
 
@@ -474,6 +480,7 @@ export class CommandUtils {
     > {
         switch (type) {
             case "string":
+            case "emoji":
                 return "STRING";
             case "int":
                 return "INTEGER";
@@ -489,11 +496,8 @@ export class CommandUtils {
             case "role":
                 return "ROLE";
             default:
-                // TODO: Add exhaustiveness check with never
-                this.logger.debug(
-                    "Default STRING case on SlashArgType " + type
-                );
-                return "STRING";
+                const exhaustiveCheck: never = type;
+                throw new Error("Unhandled arg type: " + exhaustiveCheck);
         }
     }
 }
