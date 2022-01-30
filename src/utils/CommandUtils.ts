@@ -299,7 +299,7 @@ export class CommandUtils {
 
     public static async parseEmoteID(potentialEmote: string): Promise<Snowflake | undefined> {
         let snowflake: Snowflake | undefined = potentialEmote;
-        if (snowflake.startsWith("<:") && snowflake.endsWith(">")) {
+        if (snowflake.startsWith("<") && snowflake.endsWith(">")) {
             snowflake = snowflake.substring(
                 snowflake.lastIndexOf(":") + 1,
                 snowflake.length - 1

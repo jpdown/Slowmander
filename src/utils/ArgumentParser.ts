@@ -222,6 +222,9 @@ export class ArgumentParser {
                             return undefined;
                         }
                         currArg = await CommandUtils.parseEmote(emoteId) ?? undefined;
+                        if (!currArg) {
+                            return undefined;
+                        }
                         break;
                     default:
                         const exhaustiveCheck: never = type;

@@ -1,6 +1,6 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
-import type { Command } from "commands/Command";
+import type { Command, CommandArgs } from "commands/Command";
 import type { Channel, User } from "discord.js";
 import { Module } from "./Module";
 import {
@@ -43,5 +43,19 @@ export class Test extends Module {
     ])
     public async choicestest(ctx: CommandContext, arg: string) {
         await ctx.reply(arg);
+    }
+
+    @command("testing emoji parsing")
+    @guild("472222827421106201")
+    @args([
+        { name: "yeah", type: "emoji", "description": "yup" }
+    ])
+    public async testemoji(c: CommandContext, yeah: CommandArgs["emoji"]) {
+        if (typeof yeah === "string") {
+            await c.reply(yeah + " is an emoji");
+        }
+        else {
+            await c.reply(yeah.toString() + " is an emote");
+        }
     }
 }
