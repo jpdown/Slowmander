@@ -107,6 +107,10 @@ export class Credentials {
         return this.credentialsObject.twitchSecret;
     }
 
+    public get devIds(): string[] {
+        return this.credentialsObject.devIds;
+    }
+
     private static generateConfig(): CredentialsObject {
         return {
             token: "",
@@ -114,6 +118,7 @@ export class Credentials {
             catApiToken: "",
             twitchId: "",
             twitchSecret: "",
+            devIds: []
         };
     }
 }
@@ -124,4 +129,5 @@ type CredentialsObject = {
     catApiToken: "";
     twitchId: string;
     twitchSecret: string;
+    devIds: string[];
 };
