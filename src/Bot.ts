@@ -34,7 +34,7 @@ export class Bot {
 
     public readonly twitch: TwitchAPIManager;
 
-    public readonly dev: boolean;
+    public dev: boolean = false;
 
     constructor() {
         this.client = new Client({
@@ -73,12 +73,12 @@ export class Bot {
             );
             await this.commandManager.deploySlashCommands();
             await this.commandManager.deploySlashPermissions(undefined);
-        });
 
-        this.dev = this.credentials.devIds.filter(id => {this.client.user.id === id}).length > 0;
-        if (this.dev) {
-            this.logger.debug("Running in IDE, debug features enabled")
-        }
+            this.dev = this.credentials.devIds.filter(id => {return this.client.user.id === id;}).length > 0;
+            if (this.dev) {
+                this.logger.info("Running in IDE, debug features enabled")
+            }
+        });
     }
 
     public run() {
