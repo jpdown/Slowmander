@@ -66,10 +66,6 @@ export class Bot {
         this.twitchClipModManager = new TwitchClipModManager(this);
         this.reactionRoleManager = new ReactionRoleManager(this);
         CommandUtils.bot = this;
-        this.dev = this.credentials.devIds.filter(id => {this.client.user.id === id}).length > 0;
-        if (this.dev) {
-            this.logger.debug("Running in IDE, debug features enabled")
-        }
 
         this.client.on("ready", async () => {
             await this.logger.info(
@@ -78,6 +74,11 @@ export class Bot {
             await this.commandManager.deploySlashCommands();
             await this.commandManager.deploySlashPermissions(undefined);
         });
+
+        this.dev = this.credentials.devIds.filter(id => {this.client.user.id === id}).length > 0;
+        if (this.dev) {
+            this.logger.debug("Running in IDE, debug features enabled")
+        }
     }
 
     public run() {
