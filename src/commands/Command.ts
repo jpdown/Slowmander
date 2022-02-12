@@ -8,10 +8,12 @@ import type {
     Channel,
     EmojiResolvable,
     ExcludeEnum,
+    GuildChannel,
     GuildEmoji,
     GuildMember,
     Role,
     Snowflake,
+    TextBasedChannel,
     User,
 } from "discord.js";
 import type { ChannelTypes } from "discord.js/typings/enums";
@@ -179,7 +181,7 @@ interface AutocompleteCommandArgument extends BaseCommandArgument {
     type: "string" | "int" | "number";
     autocomplete: true;
     choices: undefined;
-    autocompleteFunc: (guildId: string | null, bot: Bot) => Promise<string[] | number[]>;
+    autocompleteFunc: (channel: TextBasedChannel, user: User, guildId: string | null, bot: Bot) => Promise<string[] | number[]>;
 }
 
 export type CommandArgument = BaseCommandArgument | ChoicesCommandArgument | ChannelCommandArgument | NumericCommandArgument | AutocompleteCommandArgument;

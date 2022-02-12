@@ -15,6 +15,7 @@ import {
     TextBasedChannel,
     TextChannel,
     ThreadChannel,
+    User,
     VoiceChannel,
 } from "discord.js";
 import { Logger } from "Logger";
@@ -234,7 +235,7 @@ export class Lockdown extends Module {
         }
     }
 
-    public static async getPresetList(guildId: string | null, bot: Bot): Promise<string[]> {
+    public static async getPresetList(channel: TextBasedChannel, user: User, guildId: string | null, bot: Bot): Promise<string[]> {
         if (!guildId) {
             return [];
         }

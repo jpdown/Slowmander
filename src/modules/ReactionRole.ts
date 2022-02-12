@@ -1,6 +1,6 @@
 import { Bot } from "Bot";
 import { CommandContext } from "CommandContext";
-import { Collection, GuildChannelResolvable, GuildEmoji, Message, MessageReaction, Role } from "discord.js";
+import { Collection, GuildChannelResolvable, GuildEmoji, Message, MessageReaction, Role, TextBasedChannel, User } from "discord.js";
 import { APIMessage } from "discord-api-types/v9";
 import { ReactionEmoji } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
@@ -133,7 +133,7 @@ export class ReactionRole extends Module {
         return emote;
     }
 
-    private static async getRoles(id: string | null, bot: Bot): Promise<string[]> {
+    private static async getRoles(channel: TextBasedChannel, user: User, id: string | null, bot: Bot): Promise<string[]> {
         if (id) {
             let g = bot.client.guilds.cache.get(id);
             if (!g) return [];

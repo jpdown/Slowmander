@@ -1,6 +1,6 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
-import { MessageEmbed, TextBasedChannel } from "discord.js";
+import { Channel, GuildChannel, MessageEmbed, TextBasedChannel, User } from "discord.js";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { Module } from "./Module";
 import { args, command, guild } from "./ModuleDecorators";
@@ -30,7 +30,7 @@ export class Help extends Module {
         let args = c.args;
         await c.defer();
         for (let cmd of commands) {
-            if (await PermissionsHelper.checkPerms(c, cmd)) {
+            if (await PermissionsHelper.checkPerms(cmd, c)) {
                 map.set(cmd.name, cmd.desc);
             }
         }
@@ -44,9 +44,9 @@ export class Help extends Module {
             await paginator.postMessage();
         } else {
             let cmdName = args[0]?.toString();
-            if (!cmdName) return; // is this the best way to handle something possibly being undefined?
-            if (!map.get(cmdName)) {
+            if (!cmdName || !map.get(cmdName)) {
                 await c.reply("Command not found!");
+                return;
             }
             await c.reply({
                 embeds: [
@@ -60,13 +60,14 @@ export class Help extends Module {
         }
     }
 
-    private static async getAutoComplete(id: string | null, bot: Bot): Promise<string[]> {
+    private static async getAutoComplete(channel: TextBasedChannel, user: User, id: string | null, bot: Bot): Promise<string[]> {
         if (id) {
             let ret: string[] = [];
             let commands = bot.commandManager.getAllCommands();
             for (let cmd of commands) {
-                //if (await PermissionsHelper.checkPerms(c, cmd))
-                ret.push(cmd.name);
+                if (await PermissionsHelper.checkPerms(cmd, user, bot, channel as GuildChannel)) { 
+                    ret.push(cmd.name);
+                }
             }
             return ret;
         }

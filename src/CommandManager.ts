@@ -132,7 +132,7 @@ export class CommandManager {
             );
             
         // Check perms
-        if (!(await PermissionsHelper.checkPerms(ctx, commandToRun))) {
+        if (!(await PermissionsHelper.checkPerms(commandToRun, ctx))) {
             return;
         }
         
@@ -265,7 +265,7 @@ export class CommandManager {
         }
 
         // Filter by starts with
-        let arr = await arg.autocompleteFunc(interaction.guildId, this.bot);
+        let arr = await arg.autocompleteFunc(interaction.channel!, interaction.user, interaction.guildId, this.bot);
         let filtered: string[] | number[];
         if (arg.type === "string") {
             filtered = (arr as string[]).filter((choice) => choice.startsWith(focused.value as string));
