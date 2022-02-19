@@ -36,6 +36,8 @@ export class PermissionsHelper {
                 this.logger.error(`Error when checking permissions: channel=${channel} bot=${bot}`);
                 permLevel = PermissionLevel.Disabled;
             }
+        } else if (ctxOrMember instanceof User) {
+            permLevel = await PermissionsHelper.getUserPermLevel(ctxOrMember, bot!);
         } else {
             permLevel = PermissionLevel.Disabled;
         }

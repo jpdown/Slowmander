@@ -273,6 +273,7 @@ export class CommandManager {
         else {
             filtered = (arr as number[]).filter((choice) => choice.toString().startsWith((focused.value as number).toString()))
         }
+        filtered = filtered.slice(0, 25); // Discord has limit of 25 choices
 
         // Respond
         await interaction.respond(filtered.map((choice) => ({ name: choice.toString(), value: choice })))
