@@ -21,7 +21,6 @@ export class Ping extends Module {
     }
 
     @command("ping")
-    @guild("472222827421106201")
     public async ping(c: CommandContext) {
         await c.reply(`Pong!\nHeartbeat: ${c.client.ws.ping}ms`, true); // JAVASCRIIIIIIIIIIIIPT
     }

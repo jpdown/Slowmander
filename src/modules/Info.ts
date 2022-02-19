@@ -20,7 +20,6 @@ export class Info extends Module {
     @args([
         { name: `user`, type: `member`, description: `The user to grab info on`, optional: true },
     ])
-    @guild("472222827421106201")
     @guildOnly()
     public async whois(c: CommandContext<true>, user?: GuildMember) {
         let member: GuildMember = user ? user : c.member;

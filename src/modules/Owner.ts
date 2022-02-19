@@ -11,12 +11,10 @@ export class Owner extends Module {
     }
 
     @group("Various owner only commands")
-    @guild("472222827421106201")
     @isOwner()
     public async owner(c: CommandContext) {}
 
     @subcommand("owner", "sets the bots username")
-    @guild("472222827421106201")
     @args([
         {
             name: "name",
@@ -40,7 +38,6 @@ export class Owner extends Module {
     }
 
     @subcommand("owner", "sets the bots avatar")
-    @guild("472222827421106201")
     @args([
         {
             name: "url",
@@ -60,7 +57,6 @@ export class Owner extends Module {
     }
 
     @subcommand("owner", "adds a bot owner")
-    @guild("472222827421106201")
     @args([
         {
             name: "user",
@@ -78,7 +74,6 @@ export class Owner extends Module {
     }
 
     @subcommand("owner", "removes a bot owner")
-    @guild("472222827421106201")
     @args([
         {
             name: "user",
@@ -96,7 +91,6 @@ export class Owner extends Module {
     }
 
     @subcommand("owner", "Sets the default prefix")
-    @guild("472222827421106201")
     @args([
         {
             name: "prefix",
@@ -116,7 +110,6 @@ export class Owner extends Module {
     }
 
     @subcommand("owner", "sets the status")
-    @guild("472222827421106201")
     @args([
         {
             name: "status",
@@ -151,7 +144,6 @@ export class Owner extends Module {
     }
 
     @subcommand("owner", "sets the bots activity")
-    @guild("472222827421106201")
     @args([
         {
             name: "type",
@@ -217,7 +209,6 @@ export class Owner extends Module {
     }
 
     @subcommand("owner", "sets a new webhook for error logging for developers", "logwebhook")
-    @guild("472222827421106201")
     @args([
         {
             name: "url",
@@ -236,7 +227,6 @@ export class Owner extends Module {
     }
 
     @subcommand("owner", "gives the link to invite the bot to a server", "getinvite")
-    @guild("472222827421106201")
     @isOwner()
     public async getInviteLink(c: CommandContext) {
         const invite = c.bot.client.generateInvite({
@@ -267,7 +257,6 @@ export class Owner extends Module {
     }
 
     @command("shuts the bot down", "shutdown")
-    @guild("472222827421106201")
     @isOwner()
     public async shutdown(c: CommandContext) {
         await c.reply("Shutting down!");
@@ -276,7 +265,6 @@ export class Owner extends Module {
     }
 
     @command("Checks discord.js version")
-    @guild("472222827421106201")
     @isOwner()
     public async djsv(c: CommandContext) {
         await c.reply(`Discord.js version: ${require("discord.js").version}`);

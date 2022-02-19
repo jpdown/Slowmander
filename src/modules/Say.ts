@@ -13,7 +13,6 @@ export class Say extends Module {
 
     @command("Send a message as the bot.")
     @isOwner()
-    @guild("472222827421106201")
     @args([
         {
             name: "message",

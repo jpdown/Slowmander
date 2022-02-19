@@ -15,7 +15,7 @@ import {
 } from "discord.js";
 import { Permissions } from "discord.js";
 import { Module } from "./Module";
-import { args, group, guild, isMod, subcommand } from "./ModuleDecorators";
+import { args, group, guild, guildOnly, isMod, subcommand } from "./ModuleDecorators";
 
 export class RoleSelectMenu extends Module {
     private static emojiRegex = /\p{EPres}|\p{ExtPict}/gu;
@@ -29,7 +29,6 @@ export class RoleSelectMenu extends Module {
 
     @subcommand("selfassignlist", "Adds a self assignable role")
     @isMod()
-    @guild("472222827421106201")
     @args([
         { name: "emote", description: "Icon to use for the role", type: "emoji" },
         { name: "role", description: "The role to add", type: "role" },
@@ -42,6 +41,7 @@ export class RoleSelectMenu extends Module {
             optional: true,
         },
     ])
+    @guildOnly()
     public async addrole(context: CommandContext<true>, emote: CommandArgs["emoji"], role: Role, listMessage: string, chan?: TextChannel): Promise<Menu | undefined> {
         // TODO parse a message link, maybe a text file if possible?
         await context.defer();

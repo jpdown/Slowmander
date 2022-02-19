@@ -4,7 +4,7 @@ import { CommandContext } from "CommandContext";
 import { MessageEmbed } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, group, isAdmin, subcommand } from "./ModuleDecorators";
+import { args, group, guildOnly, isAdmin, subcommand } from "./ModuleDecorators";
 
 //TODO
 export class ClipModSettings extends Module {
@@ -13,6 +13,7 @@ export class ClipModSettings extends Module {
     }
 
     @group("Manages Twitch Clip moderation")
+    @guildOnly()
     @isAdmin()
     public async clipmod(ctx: CommandContext<true>) {}
 
@@ -25,6 +26,7 @@ export class ClipModSettings extends Module {
         },
     ])
     @isAdmin()
+    @guildOnly()
     public async enable(ctx: CommandContext<true>, id: string) {
         let bot = ctx.bot;
         let args = [id]; // temporary to satisfy copy paste
@@ -72,6 +74,7 @@ export class ClipModSettings extends Module {
         },
     ])
     @isAdmin()
+    @guildOnly()
     public async disable(ctx: CommandContext<true>, id: string) {
         let bot = ctx.bot;
         let args = [id];
@@ -113,6 +116,7 @@ export class ClipModSettings extends Module {
         },
     ])
     @isAdmin()
+    @guildOnly()
     public async enableapprovedchannels(ctx: CommandContext<true>, id: string) {
         let bot = ctx.bot;
         let args = [id];
@@ -161,6 +165,7 @@ export class ClipModSettings extends Module {
         },
     ])
     @isAdmin()
+    @guildOnly()
     public async disableapprovedchannels(ctx: CommandContext<true>, id: string) {
         let bot = ctx.bot;
         let args = [id];
@@ -207,6 +212,7 @@ export class ClipModSettings extends Module {
         }
     ])
     @isAdmin()
+    @guildOnly()
     public async addchannel(ctx: CommandContext<true>, id: string, twitchChan: string) {
         let bot = ctx.bot;
         let args = [id, twitchChan];
@@ -267,6 +273,7 @@ export class ClipModSettings extends Module {
         }
     ])
     @isAdmin()
+    @guildOnly()
     public async deletechannel(ctx: CommandContext<true>, id: string, twitchChan: string) {
         let bot = ctx.bot;
         let args = [id, twitchChan];
@@ -322,6 +329,7 @@ export class ClipModSettings extends Module {
         },
     ])
     @isAdmin()
+    @guildOnly()
     public async info(ctx: CommandContext<true>, id: string) {
         let bot = ctx.bot;
         let args = [id];

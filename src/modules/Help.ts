@@ -13,7 +13,6 @@ export class Help extends Module {
     }
 
     @command("help")
-    @guild("472222827421106201")
     @args([
         {
             name: "name",

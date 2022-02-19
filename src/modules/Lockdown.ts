@@ -475,7 +475,6 @@ export class Lockdown extends Module {
 
     // Partial work section
     // @command("locks a given channel")
-    // @guild("472222827421106201")
     // @args([
     //     /* {
     //         name: "channel",
@@ -505,7 +504,6 @@ export class Lockdown extends Module {
     // }
 
     // @command("unlocks a given channel")
-    // @guild("472222827421106201")
     // @args([
     //     /* {
     //         name: "channel",
