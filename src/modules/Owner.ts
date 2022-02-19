@@ -95,6 +95,26 @@ export class Owner extends Module {
         }
     }
 
+    @subcommand("owner", "Sets the default prefix")
+    @guild("472222827421106201")
+    @args([
+        {
+            name: "prefix",
+            type: "string",
+            description: "The prefix to use",
+        },
+    ])
+    @isOwner()
+    public async prefix(ctx: CommandContext, prefix: string) {
+        const result = await ctx.bot.config.setPrefix(prefix);
+
+        if (result) {
+            await ctx.reply(`Default prefix set to ${prefix} successfully.`);
+        } else {
+            await ctx.reply("Default prefix was unable to be set.");
+        }
+    }
+
     @subcommand("owner", "sets the status")
     @guild("472222827421106201")
     @args([
