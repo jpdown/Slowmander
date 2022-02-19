@@ -58,7 +58,7 @@ export class EventLogger {
                     member.user.discriminator
                 }`
             )
-            .setFooter(`ID: ${member.user.id}`)
+            .setFooter({ text: `ID: ${member.user.id}` })
             .setTimestamp(member.joinedAt ?? undefined)
             .setColor("GREEN");
 
@@ -100,7 +100,7 @@ export class EventLogger {
                     fullMember.user.discriminator
                 }`
             )
-            .setFooter(`ID: ${fullMember.user.id}`)
+            .setFooter({ text: `ID: ${fullMember.user.id}` })
             .setTimestamp(Date.now())
             .setColor("RED");
 
@@ -142,7 +142,7 @@ export class EventLogger {
                     fullBan.user.discriminator
                 }`
             )
-            .setFooter(`ID: ${fullBan.user.id}`)
+            .setFooter({ text: `ID: ${fullBan.user.id}` })
             .setTimestamp(Date.now())
             .setColor("RED");
 
@@ -176,7 +176,7 @@ export class EventLogger {
                     ban.user.discriminator
                 }`
             )
-            .setFooter(`ID: ${ban.user.id}`)
+            .setFooter({ text: `ID: ${ban.user.id}` })
             .setTimestamp(Date.now())
             .setColor("GREEN");
 
@@ -213,7 +213,7 @@ export class EventLogger {
                     message.content
                 }`
             )
-            .setFooter(`Author: ${message.author.id} | Message: ${message.id}`)
+            .setFooter({ text: `Author: ${message.author.id} | Message: ${message.id}` })
             .setTimestamp(Date.now())
             .setColor("RED");
 
@@ -307,9 +307,9 @@ export class EventLogger {
                     fullMessage.url
                 })`
             )
-            .setFooter(
-                `Author: ${fullMessage.author.id} | Message: ${fullMessage.id}`
-            )
+            .setFooter({
+                text: `Author: ${fullMessage.author.id} | Message: ${fullMessage.id}`
+            })
             .setTimestamp(Date.now())
             .setColor("AQUA");
 

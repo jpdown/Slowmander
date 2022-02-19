@@ -104,7 +104,7 @@ export class ButtonPaginator {
     private async generateEmbed(): Promise<MessageEmbed> {
         const embed: MessageEmbed = new MessageEmbed()
             .setColor(await CommandUtils.getSelfColor(this.channel))
-            .setFooter(`Page ${this.page + 1} of ${this.pages}`)
+            .setFooter({ text: `Page ${this.page + 1} of ${this.pages}` })
             .setDescription(
                 this.elements
                     .slice(this.page * this.numPerPage, (this.page + 1) * this.numPerPage)

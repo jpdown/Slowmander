@@ -117,7 +117,7 @@ export class ReactionPaginator {
     private async generateEmbed(): Promise<MessageEmbed> {
         const embed: MessageEmbed = new MessageEmbed()
             .setColor(await CommandUtils.getSelfColor(this.channel))
-            .setFooter(`Page ${this.currPage + 1} of ${this.numPages}`)
+            .setFooter({ text: `Page ${this.currPage + 1} of ${this.numPages}` })
             .setDescription(
                 this.elements
                     .slice(this.currPage * this.numPerPage, (this.currPage + 1) * this.numPerPage)

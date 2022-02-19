@@ -33,7 +33,7 @@ export class Info extends Module {
             .setThumbnail(avatar)
             .setColor(member.displayColor)
             .setDescription(member.toString())
-            .setFooter(`ID: ${member.id}`, avatar)
+            .setFooter({ text: `ID: ${member.id}`, iconURL: avatar })
             .setTimestamp(Date.now());
         if (member.nickname) {
             embed.addField("Nickname", member.nickname, false);
