@@ -1,13 +1,10 @@
-import { Command, CommandArgument, CommandParsedType, PermissionLevel } from "commands/Command";
-// import * as commands from 'commands';
+import { Command, PermissionLevel } from "commands/Command";
 import * as modules from "modules";
 import type { Bot } from "Bot";
-// import { PermissionsHelper } from 'utils/PermissionsHelper';
 import { CommandGroup } from "commands/CommandGroup";
 import { Logger } from "Logger";
 
 import {
-    ApplicationCommandSubCommand,
     ApplicationCommandData,
     GuildMember,
     Interaction,
@@ -18,26 +15,19 @@ import {
     ApplicationCommandSubCommandData,
     ApplicationCommandSubGroupData,
     ApplicationCommandOptionData,
-    ApplicationCommandNumericOptionData,
-    ApplicationCommandAutocompleteOption,
     ApplicationCommand,
-    Collection,
     ApplicationCommandManager,
     GuildApplicationCommandManager,
-    SystemChannelFlags,
     GuildResolvable,
-    Role,
     ApplicationCommandPermissionData,
     ApplicationCommandNonOptionsData,
     Guild,
     Permissions,
 } from "discord.js";
-// import { HelpManager } from 'HelpManager';
 import { CommandContext } from "CommandContext";
 import type { Module } from "modules/Module";
 import { ArgumentParser } from "utils/ArgumentParser";
 import { PermissionsHelper } from "utils/PermissionsHelper";
-import type { APIInteractionGuildMember } from "discord-api-types";
 import { CommandUtils } from "utils/CommandUtils";
 
 export class CommandManager {

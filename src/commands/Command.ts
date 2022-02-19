@@ -1,15 +1,10 @@
-// import type { Bot } from 'Bot';
-// import type { CommandGroup } from 'commands/CommandGroup';
 import { Logger } from "Logger";
 
-// import type { Message, PermissionResolvable } from 'discord.js';
 import type {
     ApplicationCommandOptionChoice,
     Channel,
     EmojiResolvable,
     ExcludeEnum,
-    GuildChannel,
-    GuildEmoji,
     GuildMember,
     Role,
     Snowflake,
@@ -36,25 +31,13 @@ export class Command {
 
     public readonly args?: CommandArgument[];
 
-    // public readonly aliases: string[];
-
     private readonly _permLevel: PermissionLevel;
 
     public get permLevel(): PermissionLevel {
         return this._permLevel;
     }
 
-    // private readonly _requiredPerm?: PermissionResolvable | undefined;
-
-    // public get requiredPerm(): PermissionResolvable | undefined {
-    //   return this._requiredPerm;
-    // }
-
     public readonly desc: string;
-
-    // public readonly longDesc: string;
-
-    // public readonly usage: string;
 
     // The guild this command is registered for
     public readonly guild?: Snowflake;
@@ -74,7 +57,6 @@ export class Command {
         ...args: any[]
     ) => Promise<void>;
 
-    // constructor(name: string, permLevel: PermissionLevel, desc: string, bot: Bot, params: CommandParameters = {}) {
     constructor(
         name: string,
         desc: string,
@@ -93,19 +75,9 @@ export class Command {
         this.guildOnly = options.guildOnly;
         this.slash = options.slash;
 
-        // this._permLevel = permLevel;
-
-        // this.aliases = params.aliases ? params.aliases : [];
-        // this._requiredPerm = params.requiredPerm;
-        // this.longDesc = params.longDesc ? params.longDesc : '';
-        // this.usage = params.usage ? params.usage : '';
-        // this.runsInDm = params.runsInDm !== undefined ? params.runsInDm : true;
-        // this.group = params.group;
-
         this.logger = Logger.getLogger(this);
     }
 
-    // abstract run(bot: Bot, message: Message, args: string[]): Promise<CommandResult>;
     public async invoke(
         ctx: CommandContext,
         args: CommandParsedType[] | undefined
@@ -120,31 +92,7 @@ export class Command {
         }
         return false;
     }
-
-    // public get fullName(): string {
-    //   let name = '';
-    //   if (this.group) {
-    //     name = `${this.group.fullName} `;
-    //   }
-    //   name += this.name;
-    //   return name;
-    // }
 }
-
-// export interface CommandResult {
-//   sendHelp: boolean;
-//   command: Command | null;
-//   message: Message;
-// }
-
-// export interface CommandParameters {
-//   aliases?: string[];
-//   requiredPerm?: PermissionResolvable;
-//   longDesc?: string;
-//   usage?: string;
-//   runsInDm?: boolean;
-//   group?: CommandGroup;
-// }
 
 export type CommandOptions = {
     parent?: CommandGroup;

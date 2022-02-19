@@ -6,7 +6,6 @@ export { Owner } from "./Owner";
 export { Set } from "./Set";
 export { Info } from "./Info"
 export { Say } from "./Say"
-export { Test } from "./Test"
 export { RoleSelectMenu } from "./RoleSelectMenu"
 export { ReactionRole } from "./ReactionRole"
 export { ClipModSettings } from "./ClipModSettings"

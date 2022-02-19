@@ -18,8 +18,6 @@ import { Module } from "./Module";
 import { args, group, guild, guildOnly, isMod, subcommand } from "./ModuleDecorators";
 
 export class RoleSelectMenu extends Module {
-    private static emojiRegex = /\p{EPres}|\p{ExtPict}/gu;
-
     public constructor(bot: Bot) {
         super(bot);
     }

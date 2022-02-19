@@ -24,7 +24,6 @@ import {
     TextBasedChannel,
     MessageOptions,
     ApplicationCommandOptionType,
-    AnyChannel,
 } from "discord.js";
 import { Logger } from "Logger";
 

@@ -1,13 +1,9 @@
 import {
     Command,
     CommandOptions,
-    CommandParsedType,
     PermissionLevel,
 } from "commands/Command";
-import type { Bot } from "Bot";
 
-import { Message, PermissionResolvable, Permissions } from "discord.js";
-import { CommandManager } from "CommandManager";
 import type { CommandContext } from "CommandContext";
 
 export class CommandGroup extends Command {
@@ -40,28 +36,7 @@ export class CommandGroup extends Command {
         return lowestPerm;
     }
 
-    //   public get requiredPerm(): PermissionResolvable | undefined {
-    //     const perms: Permissions = new Permissions();
-    //     let numWithPerms = 0;
-
-    //     this.subCommands.forEach((subCommand) => {
-    //       if (subCommand.requiredPerm && !perms.any(subCommand.requiredPerm)) {
-    //         perms.add(subCommand.requiredPerm);
-    //         numWithPerms += 1;
-    //       }
-    //     });
-
-    //     if (numWithPerms === 0) {
-    //       return undefined;
-    //     }
-
-    //     return perms;
-    //   }
-
     public registerSubCommand(command: Command): void {
         this.subCommands.set(command.name, command);
-        // command.aliases.forEach((alias) => {
-        //   this.subCommands.set(alias, command);
-        // });
     }
 }

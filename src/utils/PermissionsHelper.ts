@@ -1,4 +1,4 @@
-import { PermissionLevel, Command, CommandArgument } from "commands/Command";
+import { PermissionLevel, Command } from "commands/Command";
 import type { Bot } from "Bot";
 
 import {
@@ -9,8 +9,6 @@ import {
     Role,
     Permissions,
     GuildChannel,
-    Channel,
-    TextBasedChannel,
 } from "discord.js";
 import { CommandContext } from "CommandContext";
 import { Logger } from "Logger";

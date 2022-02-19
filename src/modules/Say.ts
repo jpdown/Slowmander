@@ -1,7 +1,6 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
 import type { TextBasedChannel } from "discord.js";
-import { Logger } from "Logger";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
 import { args, command, guild, isOwner } from "./ModuleDecorators";

@@ -1,6 +1,6 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
-import type { Channel, GuildChannel, Role } from "discord.js";
+import type { GuildChannel, Role } from "discord.js";
 import { Module } from "./Module";
 import { args, group, guildOnly, isAdmin, subcommand } from "./ModuleDecorators";
 

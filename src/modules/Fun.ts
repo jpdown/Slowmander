@@ -1,22 +1,9 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
-import type { Command } from "commands/Command";
-import { Channel, MessageEmbed, User } from "discord.js";
+import { MessageEmbed } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import {
-    args,
-    command,
-    group,
-    guild,
-    guildOnly,
-    isAdmin,
-    isMod,
-    isOwner,
-    isVIP,
-    subcommand,
-    subgroup,
-} from "./ModuleDecorators";
+import { command } from "./ModuleDecorators";
 import fetch from 'node-fetch';
 
 export class Fun extends Module {

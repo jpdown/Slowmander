@@ -1,6 +1,6 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
-import { Channel, GuildChannel, MessageEmbed, TextBasedChannel, User } from "discord.js";
+import { GuildChannel, MessageEmbed, TextBasedChannel, User } from "discord.js";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { Module } from "./Module";
 import { args, command, guild } from "./ModuleDecorators";

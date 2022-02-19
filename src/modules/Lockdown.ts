@@ -5,10 +5,7 @@ import {
     Guild,
     GuildChannel,
     GuildMember,
-    MessageActionRow,
     MessageEmbed,
-    MessageSelectMenu,
-    MessageSelectOptionData,
     NewsChannel,
     Permissions,
     Role,
@@ -16,13 +13,11 @@ import {
     TextChannel,
     ThreadChannel,
     User,
-    VoiceChannel,
 } from "discord.js";
-import { Logger } from "Logger";
 import { ButtonPaginator } from "utils/ButtonPaginator";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, group, guild, guildOnly, isMod, subcommand } from "./ModuleDecorators";
+import { args, command, group, guildOnly, isMod, subcommand } from "./ModuleDecorators";
 
 // TODO refactor, this was copy pasted :)
 export class Lockdown extends Module {

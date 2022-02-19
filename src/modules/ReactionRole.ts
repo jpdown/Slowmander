@@ -1,11 +1,9 @@
 import { Bot } from "Bot";
 import { CommandContext } from "CommandContext";
-import { Collection, Emoji, EmojiResolvable, GuildChannelResolvable, GuildEmoji, Message, MessageReaction, Role, TextBasedChannel, User } from "discord.js";
-import { APIMessage } from "discord-api-types/v9";
-import { ReactionEmoji } from "discord.js";
+import { EmojiResolvable, GuildChannelResolvable, Message, MessageReaction, Role, TextBasedChannel } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, group, guildOnly, isMod, subcommand } from "./ModuleDecorators";
+import { args, group, guildOnly, isMod, subcommand } from "./ModuleDecorators";
 import { Permissions } from "discord.js";
 import { Logger } from "Logger";
 import { ButtonPaginator } from "utils/ButtonPaginator";

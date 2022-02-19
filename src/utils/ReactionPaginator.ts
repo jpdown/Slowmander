@@ -1,5 +1,4 @@
 import type { Command } from "commands/Command";
-// import { PermissionsHelper } from 'utils/PermissionsHelper';
 import type { Bot } from "Bot";
 
 import {
