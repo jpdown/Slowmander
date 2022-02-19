@@ -1,13 +1,14 @@
 import { Bot } from "Bot";
 import { CommandContext } from "CommandContext";
-import { Collection, GuildChannelResolvable, GuildEmoji, Message, MessageReaction, Role, TextBasedChannel, User } from "discord.js";
+import { Collection, Emoji, EmojiResolvable, GuildChannelResolvable, GuildEmoji, Message, MessageReaction, Role, TextBasedChannel, User } from "discord.js";
 import { APIMessage } from "discord-api-types/v9";
 import { ReactionEmoji } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, isMod } from "./ModuleDecorators";
+import { args, command, group, guildOnly, isMod, subcommand } from "./ModuleDecorators";
 import { Permissions } from "discord.js";
 import { Logger } from "Logger";
+import { ButtonPaginator } from "utils/ButtonPaginator";
 
 export class ReactionRole extends Module {
     private static logger: Logger = Logger.getLogger(this);
@@ -16,145 +17,246 @@ export class ReactionRole extends Module {
         super(bot);
     }
 
-    //TODO refactor all of this copy and pasta
-    @command("Adds a reaction role.")
+    @group("Reaction role management commands")
     @isMod()
+    @guildOnly()
+    public async reactionrole(ctx: CommandContext) {}
+
+    //TODO refactor all of this copy and pasta
+    @subcommand("reactionrole", "Adds a reaction role.")
+    @isMod()
+    @guildOnly()
     @args([
         {
             name: "link",
             type: "string",
-            description: "Message link"
+            description: "Message link",
         },
         {
             name: "role",
-            type: "string",
+            type: "role",
             description: "Role to add",
-            autocomplete: true,
-            autocompleteFunc: ReactionRole.getRoles,
+        },
+        {
+            name: "emote",
+            type: "emoji",
+            description: "Emote to use",
         },
     ])
-    public async addrole(c: CommandContext<true>, link: string, role: string) {
+    public async add(c: CommandContext<true>, link: string, role: Role, emote: EmojiResolvable) {
         await c.defer();
         let bot = c.bot;
-        let args: string[] = [link, role];
-        if (args.length < 2) {
-            await c.reply("Missing arguments!");
+
+        const msg = await ReactionRole.parseMessage(link, c);
+        if (!msg) {
             return;
         }
 
-        const parsedArgs = await ReactionRole.parseArgs(args, c);
-        if (!parsedArgs) {
-            return;
-        }
-        let msg = parsedArgs.reactionMessage;
+        const emoteId = typeof emote === "string" ? emote : emote.identifier;
 
-        const emote: ReactionEmoji | GuildEmoji | undefined = await ReactionRole.getEmote(c);
-        if (!emote) {
-            return;
-        }
-
-        const config = bot.db.reactionRoles.getReactionRole(msg, emote.identifier);
+        const config = bot.db.reactionRoles.getReactionRole(msg, emoteId);
         if (config === null) {
-            await c.reply({content: `Error checking database, please try again later.`, ephemeral: true})
+            await c.reply({
+                content: `Error checking database, please try again later.`,
+                ephemeral: true,
+            });
             return;
         }
         if (config) {
             const emoji = await CommandUtils.makeEmoteFromId(config.emoteId);
-            await c.reply({content: `Adding reaction role failed. Reaction role with emote ${emoji} already exists.`, ephemeral: true})
+            await c.reply({
+                content: `Adding reaction role failed. Reaction role with emote ${emoji} already exists.`,
+                ephemeral: true,
+            });
             return;
         }
 
-        if (
-            !(await ReactionRole.checkPerms(
-                parsedArgs.role,
-                parsedArgs.reactionMessage,
-            ))
-        ) {
+        if (!(await ReactionRole.checkPerms(role, msg))) {
             return;
         }
 
-        const dbResult = bot.db.reactionRoles.setReactionRole(
-            parsedArgs.reactionMessage,
-            emote.identifier,
-            parsedArgs.role
-        );
+        const dbResult = bot.db.reactionRoles.setReactionRole(msg, emoteId, role);
         if (!dbResult) {
-            await c.reply({content: "Adding reaction role failed.", ephemeral: true})
+            await c.reply({ content: "Adding reaction role failed.", ephemeral: true });
             return;
         }
 
         // React to message
         try {
-            await parsedArgs.reactionMessage.react(emote);
+            await msg.react(emote);
         } catch (err) {
-            await c.reply({content: "Error reacting to message. Do I have perms? The reaction role is still registered.", ephemeral: true})
+            await c.reply({
+                content:
+                    "Error reacting to message. Do I have perms? The reaction role is still registered.",
+                ephemeral: true,
+            });
             await ReactionRole.logger.warning(
                 // eslint-disable-next-line max-len
-                `Error reacting to message ${parsedArgs.reactionMessage.id} in channel ${parsedArgs.reactionMessage.channel.id} in guild ${parsedArgs.reactionMessage.guild?.id}`,
+                `Error reacting to message ${msg.id} in channel ${msg.channel.id} in guild ${c.guild.id}`,
                 err
             );
         }
+
+        await c.reply('Reaction role added successfully');
     }
 
-    // TODO this is temp
-    private static async getEmote(message: CommandContext): Promise<ReactionEmoji | GuildEmoji | undefined> {
-        // Ask for emote
-        const sentMessage: APIMessage | Message | undefined = await message.reply("Please react on this message with the emote you would like to use.");
-        if (!sentMessage) {
-            this.logger.error("Error with getting emote");
-            return undefined;
+    @subcommand("reactionrole", "Removes a reaction role")
+    @isMod()
+    @guildOnly()
+    @args([
+        {
+            name: "link",
+            type: "string",
+            description: "Message link",
+        },
+        {
+            name: "role",
+            type: "role",
+            description: "Role to add",
+        },
+        {
+            name: "emote",
+            type: "emoji",
+            description: "Emote to use",
+        },
+    ])
+    public async remove(
+        ctx: CommandContext<true>,
+        link: string,
+        role: Role,
+        emote: EmojiResolvable
+    ) {
+        const reactionMessage = await ReactionRole.parseMessage(link, ctx);
+        if (!reactionMessage) {
+            return;
         }
-        if (!(sentMessage instanceof Message)) {
-            this.logger.error("Error with getting emote")
-            return undefined;
-        }
-        const reactions: Collection<string, MessageReaction> =
-            await sentMessage.awaitReactions({
-                filter: (reaction, user) => user.id === message.user.id,
-                time: 60000,
-                max: 1,
-            });
+        const emoteId = typeof emote === "string" ? emote : emote.identifier;
+        const config = ctx.bot.db.reactionRoles.getReactionRole(reactionMessage, emoteId);
 
-        // Check if unicode or if we have the custom emote
-        if (reactions.size < 1) {
-            await message.reply(
-                "No reaction given, cancelling.",
+        if (config === null) {
+            await ctx.reply("Error accessing db, please try again later.", true);
+            return;
+        }
+        if (!config) {
+            await ctx.reply("Error removing reaction role, it does not exist.", true);
+            return;
+        }
+
+        const success: boolean = await this.removeReactionRole(reactionMessage, emoteId, ctx);
+        if (success) {
+            await ctx.reply("Reaction role removed successfully.", true);
+        } else {
+            await ctx.reply("Error removing reaction role.", true);
+        }
+    }
+
+    @subcommand("reactionrole", "Lists current reaction roles")
+    @isMod()
+    @guildOnly()
+    public async list(ctx: CommandContext<true>) {
+        // Get reactionroles
+        const reactionRoles = ctx.bot.db.reactionRoles.getReactionRolesByGuild(ctx.guild);
+
+        if (reactionRoles === null) {
+            await ctx.reply("Error accessing db, please try again later.", true);
+            return;
+        }
+        if (!reactionRoles || reactionRoles.length < 1) {
+            await ctx.reply("I have no current reaction roles.");
+            return;
+        }
+
+        // List of strings
+        const stringList: string[] = [];
+        let currString: string;
+        for (let reactionRole of reactionRoles) {
+            let reactionChannel: TextBasedChannel;
+            let reactionMessage: Message;
+
+            currString = "";
+
+            try {
+                reactionChannel = <TextBasedChannel>(
+                    await ctx.client.channels.fetch(reactionRole.channelId)
+                );
+                reactionMessage = await reactionChannel.messages.fetch(reactionRole.messageId);
+                currString += `[Message](${reactionMessage.url}),`;
+            } catch (err) {
+                currString += `BROKEN: Channel: <#${reactionRole.channelId}>, Message: ${reactionRole.messageId},`;
+            }
+
+            currString += ` Emote: ${await CommandUtils.makeEmoteFromId(reactionRole.emoteId)},`;
+            currString += ` Role: <@&${reactionRole.roleId}>`;
+            stringList.push(currString);
+        }
+
+        // Make paginator
+        const paginator: ButtonPaginator = new ButtonPaginator(
+            stringList,
+            ctx,
+            10,
+            "Reaction Roles",
+        );
+
+        await paginator.postMessage();
+    }
+
+    private async removeReactionRole(
+        message: Message,
+        emoteId: string,
+        ctx: CommandContext
+    ): Promise<boolean> {
+        const result = ctx.bot.db.reactionRoles.removeReactionRole(
+            message.channel.id,
+            message.id,
+            emoteId
+        );
+
+        if (!result) return false;
+
+        // Remove our reaction
+        const reaction: MessageReaction | undefined = await this.getReaction(message, emoteId);
+        if (reaction) {
+            try {
+                await reaction.users.remove(message.client.user!);
+            } catch (err) {
+                await ctx.reply("Unexpected error occurred when removing reaction.", true);
+                await this.logger.warning("Error removing reaction from message.", err);
+            }
+        }
+        return true;
+    }
+
+    private async getReaction(
+        message: Message,
+        emoteId: string
+    ): Promise<MessageReaction | undefined> {
+        let reaction: MessageReaction | undefined;
+
+        // Get reaction
+        try {
+            reaction = message.reactions.cache.get(emoteId);
+            if (reaction?.partial) {
+                reaction = await reaction.fetch();
+            }
+        } catch (err) {
+            await this.logger.warning(
+                // eslint-disable-next-line max-len
+                `Error getting reaction ${emoteId} from message,channel,guild ${message.id}.${message.channelId},${message.guildId}`
             );
-            return undefined;
+            reaction = undefined;
         }
-
-        let emote: ReactionEmoji | GuildEmoji | undefined =
-            reactions.first()?.emoji;
-        if (emote?.id && emote instanceof ReactionEmoji) {
-            await message.reply("I do not have access to the emote given, cancelling.");
-            emote = undefined;
-        }
-
-        return emote;
+        return reaction;
     }
 
-    private static async getRoles(channel: TextBasedChannel, user: User, id: string | null, bot: Bot): Promise<string[]> {
-        if (id) {
-            let g = bot.client.guilds.cache.get(id);
-            if (!g) return [];
-            let ret: string[] = [];
-            g.roles.cache.forEach((r) => {
-                if (g && g.me) {
-                    if (r.comparePositionTo(g.me.roles.highest) < 0) {
-                        ret.push(r.name);
-                    }
-                }
-            });
-            return ret;
-        }
-        return [];
-    }
-
-    private static async parseArgs(args: string[], message: CommandContext): Promise<ReactionRoleParsedArgs | undefined> {
+    private static async parseMessage(
+        link: string,
+        ctx: CommandContext
+    ): Promise<Message | undefined> {
         let reactionMessage: Message;
 
         // Parse message link
-        const splitLink = args[0].split("/");
+        const splitLink = link.split("/");
         if (splitLink.length < 7) {
             return undefined;
         }
@@ -163,7 +265,7 @@ export class ReactionRole extends Module {
         const linkChannelId: string = splitLink[5];
         const linkMessageId: string = splitLink[6];
 
-        if (linkGuildId !== message.guild!.id) {
+        if (linkGuildId !== ctx.guild!.id) {
             return undefined;
         }
 
@@ -181,21 +283,10 @@ export class ReactionRole extends Module {
             return undefined;
         }
 
-        const role = await CommandUtils.parseRole(args[1], channel.guild);
-        if (!role) {
-            return undefined;
-        }
-
-        return {
-            reactionMessage,
-            role,
-        };
+        return reactionMessage;
     }
 
-    private static async checkPerms(
-        role: Role,
-        reactionMessage: Message,
-    ): Promise<boolean> {
+    private static async checkPerms(role: Role, reactionMessage: Message): Promise<boolean> {
         if (
             !role.guild.me ||
             !reactionMessage.guild?.me ||
@@ -223,8 +314,3 @@ export class ReactionRole extends Module {
         return true;
     }
 }
-
-type ReactionRoleParsedArgs = {
-    role: Role;
-    reactionMessage: Message;
-};

@@ -445,11 +445,11 @@ export class CommandUtils {
                 emote = this.bot.client.emojis.resolve(newEmoteId)?.toString();
             }
         } catch (err) {
-            if (emoteId.indexOf(":") === -1) {
-                emote = decodeURI(emoteId);
-            } else {
-                emote = emoteId;
-            }
+            emote = emoteId;
+        }
+
+        if (!emote) {
+            emote = emoteId;
         }
 
         return emote;

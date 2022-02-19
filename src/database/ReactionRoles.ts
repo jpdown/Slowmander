@@ -115,7 +115,7 @@ export class ReactionRoles {
         try {
             const info = this.db
                 .prepare(
-                    "DELETE FROM ReactionRoles WHERE channelId = ? AND messageId = ? emoteId = ?;"
+                    "DELETE FROM ReactionRoles WHERE channelId = ? AND messageId = ? AND emoteId = ?;"
                 )
                 .run(channelId, messageId, emoteId);
             rowsModified = info.changes;

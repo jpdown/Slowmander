@@ -81,7 +81,7 @@ export class ReactionRoleManager {
         // Try to grab reaction role
         const reactionRole = this.bot.db.reactionRoles.getReactionRole(
             fullMessage,
-            fullReaction.emoji.identifier
+            fullReaction.emoji.id ? fullReaction.emoji.identifier : fullReaction.emoji.name!
         );
         if (!reactionRole) {
             return;
@@ -147,7 +147,7 @@ export class ReactionRoleManager {
         // Try to grab reaction role
         const reactionRole = this.bot.db.reactionRoles.getReactionRole(
             fullMessage,
-            fullReaction.emoji.identifier
+            fullReaction.emoji.id ? fullReaction.emoji.identifier : fullReaction.emoji.name!
         );
         if (!reactionRole) {
             return;
