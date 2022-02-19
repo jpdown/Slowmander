@@ -60,17 +60,27 @@ export class Help extends Module {
     }
 
     private static async getAutoComplete(channel: TextBasedChannel, user: User, id: string | null, bot: Bot): Promise<string[]> {
+        let ret: string[] = [];
+        let commands = bot.commandManager.getAllCommands();
+        let member;
         if (id) {
-            let ret: string[] = [];
-            let commands = bot.commandManager.getAllCommands();
+            member = (<GuildChannel>channel).guild.members.resolve(user);
+        }
+        if (!member) {
             for (let cmd of commands) {
-                if (await PermissionsHelper.checkPerms(cmd, user, bot, channel as GuildChannel)) { 
+                if (await PermissionsHelper.checkPerms(cmd, user, bot) && !cmd.guildOnly) { 
                     ret.push(cmd.name);
                 }
             }
-            return ret;
         }
-        return [];
+        else {
+            for (let cmd of commands) {
+                if (await PermissionsHelper.checkPerms(cmd, member, bot, channel as GuildChannel)) { 
+                    ret.push(cmd.name);
+                }
+            }
+        }
+        return ret;
     }
 
     private async generateEmbed(

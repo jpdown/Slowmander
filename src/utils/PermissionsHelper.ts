@@ -18,9 +18,9 @@ import { Logger } from "Logger";
 export class PermissionsHelper {
     private static readonly logger: Logger = Logger.getLogger(this);
 
-    public static async checkPerms(command: Command, user: User, bot: Bot, channel: GuildChannel): Promise<Boolean>;
-    public static async checkPerms(command: Command, member: GuildMember, bot: Bot, channel: GuildChannel): Promise<Boolean>;
-    public static async checkPerms(command: Command, ctx: CommandContext): Promise<Boolean>;
+    public static async checkPerms(command: Command, user: User, bot: Bot): Promise<boolean>;
+    public static async checkPerms(command: Command, member: GuildMember, bot: Bot, channel: GuildChannel): Promise<boolean>;
+    public static async checkPerms(command: Command, ctx: CommandContext): Promise<boolean>;
     public static async checkPerms(command: Command, ctxOrMember: CommandContext | GuildMember | User, bot?: Bot, channel?: GuildChannel): Promise<boolean> {
         let permLevel: PermissionLevel;
         if (ctxOrMember instanceof CommandContext) {

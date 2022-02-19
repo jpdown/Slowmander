@@ -10,8 +10,10 @@ import {
     ReactionCollector,
     TextBasedChannel,
     GuildMember,
+    GuildChannel,
 } from "discord.js";
 import { CommandUtils } from "./CommandUtils";
+import { PermissionsHelper } from "./PermissionsHelper";
 
 export class ReactionPaginator {
     public static readonly NEXT_PAGE: string = "➡️";
@@ -136,10 +138,10 @@ export class ReactionPaginator {
                 user.id
             );
             if (member) {
-                // hasPerms = await PermissionsHelper.checkPermsAndDM(member, this.command, this.bot);
+                hasPerms = await PermissionsHelper.checkPerms(this.command, member, this.bot, <GuildChannel>this.channel);
             }
         } else {
-            // hasPerms = await PermissionsHelper.checkPermsAndDM(user, this.command, this.bot);
+            hasPerms = await PermissionsHelper.checkPerms(this.command, user, this.bot);
         }
 
         return hasPerms;

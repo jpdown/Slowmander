@@ -180,7 +180,7 @@ export class CommandManager {
         }
 
         // Warn me if we get an APIGuildMember
-        if (!(interaction.member instanceof GuildMember)) {
+        if (interaction.member && !(interaction.member instanceof GuildMember)) {
             this.logger.warning(
                 `We got an APIGuildMember\nchannel:${interaction.channelId},guild:${interaction.guildId},user:${interaction.user.id},command:${interaction.commandName}`
             );
@@ -209,7 +209,7 @@ export class CommandManager {
             interaction.user,
             interaction.channel,
             interaction.guild ?? undefined,
-            interaction.member,
+            interaction.member ?? undefined,
             args
         );
 
