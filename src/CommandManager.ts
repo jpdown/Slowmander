@@ -272,7 +272,6 @@ export class CommandManager {
     }
 
     public getCommand(guildId: Snowflake | undefined, commandToGet: string): Command | undefined {
-        console.log(this.commandMap);
         return (
             this.commandMap.get(guildId + "," + commandToGet) ??
             this.commandMap.get("GLOBAL," + commandToGet)

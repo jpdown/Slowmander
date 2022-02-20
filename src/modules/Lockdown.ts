@@ -189,7 +189,6 @@ export class Lockdown extends Module {
 
         // Parse roles
         const rolesResult = await this.parseRoles(roles, c.guild);
-        console.log(rolesResult);
         if (!rolesResult.result) {
             await c.reply("One or more of the roles given was incorrect.");
             return;

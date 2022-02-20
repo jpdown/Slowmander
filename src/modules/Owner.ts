@@ -33,7 +33,7 @@ export class Owner extends Module {
             await c.reply("Username changed successfully!");
         } catch (e) {
             await c.reply("Error while changing username.");
-            console.log(e);
+            this.logger.error("Error while changing username", e)
         }
     }
 
@@ -51,8 +51,8 @@ export class Owner extends Module {
             await c.bot.client.user.setAvatar(url);
             await c.reply("Avatar changed successfully!");
         } catch (e) {
-            await c.reply("Error while changing username.");
-            console.log(e);
+            await c.reply("Error while changing avatar.");
+            this.logger.error("Error while changing avatar", e)
         }
     }
 
