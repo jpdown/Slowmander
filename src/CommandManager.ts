@@ -29,6 +29,7 @@ import type { Module } from "modules/Module";
 import { ArgumentParser } from "utils/ArgumentParser";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { CommandUtils } from "utils/CommandUtils";
+import { HelpManager } from "HelpManager";
 
 export class CommandManager {
     // Map guild id and command name to command, just command name for global
@@ -116,6 +117,7 @@ export class CommandManager {
             fullMessage,
             fullMessage.author,
             fullMessage.channel,
+            commandToRun,
             fullMessage.guild ?? undefined,
             fullMessage.member ?? undefined,
             args
@@ -127,8 +129,7 @@ export class CommandManager {
         }
         
         if (!args) {
-            // TODO: Send help
-            await ctx.reply("help sent haha");
+            await HelpManager.sendCommandHelp(commandToRun, ctx);
             return;
         }
 
@@ -198,6 +199,7 @@ export class CommandManager {
             interaction,
             interaction.user,
             interaction.channel,
+            cmd,
             interaction.guild ?? undefined,
             interaction.member ?? undefined,
             args

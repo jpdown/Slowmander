@@ -92,6 +92,10 @@ export class Command {
         }
         return false;
     }
+
+    public get fullName(): string {
+        return this.parent ? `${this.parent.name} ${this.name}` : this.name;
+    }
 }
 
 export type CommandOptions = {

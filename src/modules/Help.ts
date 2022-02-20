@@ -1,11 +1,11 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
-import { GuildChannel, MessageEmbed, TextBasedChannel, User } from "discord.js";
+import { GuildChannel, TextBasedChannel, User } from "discord.js";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { Module } from "./Module";
-import { args, command, guild } from "./ModuleDecorators";
-import { ButtonPaginator } from "utils/ButtonPaginator";
-import { CommandUtils } from "utils/CommandUtils";
+import { args, command } from "./ModuleDecorators";
+import { HelpManager } from "HelpManager";
+import { CommandGroup } from "commands/CommandGroup";
 
 export class Help extends Module {
     public constructor(bot: Bot) {
@@ -23,39 +23,30 @@ export class Help extends Module {
             autocompleteFunc: Help.getAutoComplete
         },
     ])
-    public async help(c: CommandContext) {
-        let commands = c.bot.commandManager.getAllCommands();
-        let map = new Map();
-        let args = c.args;
-        await c.defer();
-        for (let cmd of commands) {
-            if (await PermissionsHelper.checkPerms(cmd, c)) {
-                map.set(cmd.name, cmd.desc);
-            }
-        }
-        if (!args || args.length === 0) {
-            const paginator: ButtonPaginator = new ButtonPaginator(
-                Array.from(map.keys()),
-                c,
-                5,
-                "Help"
-            );
-            await paginator.postMessage();
+    public async help(c: CommandContext, name?: string) {
+        if (!name) {
+            await HelpManager.sendFullHelp(c)
         } else {
-            let cmdName = args[0]?.toString();
-            if (!cmdName || !map.get(cmdName)) {
-                await c.reply("Command not found!");
+            let splitName = name.split(' ');
+            let cmd = c.bot.commandManager.getCommand(c.guild?.id, splitName[0]);
+            if (!cmd) {
+                await c.reply("Command not found.", true);
                 return;
             }
-            await c.reply({
-                embeds: [
-                    await this.generateEmbed(
-                        cmdName,
-                        map.get(cmdName),
-                        c.channel
-                    ),
-                ],
-            });
+            splitName = splitName.slice(1);
+            for (let split of splitName) {
+                if (!(cmd instanceof CommandGroup)) {
+                    await c.reply("Command not found.");
+                    return;
+                }
+                cmd = cmd.getSubCommand(split);
+                if (!cmd) {
+                    await c.reply("Command not found.");
+                    return;
+                }
+            }
+
+            await HelpManager.sendCommandHelp(cmd, c);
         }
     }
 
@@ -81,18 +72,5 @@ export class Help extends Module {
             }
         }
         return ret;
-    }
-
-    private async generateEmbed(
-        title: string,
-        desc: string,
-        channel: TextBasedChannel
-    ): Promise<MessageEmbed> {
-        const embed: MessageEmbed = new MessageEmbed()
-            .setColor(await CommandUtils.getSelfColor(channel))
-            .setDescription(desc)
-            .setTitle(title)
-            .setTimestamp();
-        return embed;
     }
 }

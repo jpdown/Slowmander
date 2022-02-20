@@ -12,7 +12,7 @@ import {
 } from "discord.js";
 import { Message } from "discord.js";
 import type { APIMessage } from "discord-api-types/v9";
-import type { CommandParsedType } from "commands/Command";
+import type { Command, CommandParsedType } from "commands/Command";
 import { CommandUtils } from "utils/CommandUtils";
 
 export class CommandContext<InGuild extends boolean = boolean> {
@@ -27,6 +27,8 @@ export class CommandContext<InGuild extends boolean = boolean> {
     public readonly channel: TextBasedChannel;
 
     public readonly user: User;
+
+    public readonly command: Command;
 
     public readonly guild: InGuild extends true ? Guild : Guild | undefined;
 
@@ -46,6 +48,7 @@ export class CommandContext<InGuild extends boolean = boolean> {
         msgOrInteraction: Message | CommandInteraction,
         user: User,
         channel: TextBasedChannel,
+        command: Command,
         guild: InGuild extends true ? Guild : Guild | undefined,
         member: InGuild extends true ? GuildMember : GuildMember | undefined,
         args?: CommandParsedType[]
@@ -64,6 +67,7 @@ export class CommandContext<InGuild extends boolean = boolean> {
         this.guild = guild;
         this.member = member;
         this.args = args;
+        this.command = command;
     }
 
     public async reply(
