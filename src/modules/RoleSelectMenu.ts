@@ -63,7 +63,7 @@ export class RoleSelectMenu extends Module {
         }
 
         if (!(channel instanceof TextChannel)) {
-            await context.reply({ content: `Invalid channel provided.`, ephemeral: true });
+            await context.reply(`Invalid channel provided.`, true);
             return;
         }
 
@@ -101,28 +101,28 @@ export class RoleSelectMenu extends Module {
         if (role.guild.me && (listChannel as TextChannel).guild.me) {
             // check if we have the ability to manage roles
             if (!role.guild.me.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
-                await context.reply({
-                    content: `I do not have the Manage Roles permission.`,
-                    ephemeral: true,
-                });
+                await context.reply(
+                    `I do not have the Manage Roles permission.`,
+                    true,
+                );
                 return false;
             }
 
             // check if the role to give is below our highest
             if (role.comparePositionTo(role.guild.me.roles.highest) > 0) {
-                await context.reply({
-                    content: `My highest role is below ${role.name}, so it cannot be assigned.`,
-                    ephemeral: true,
-                });
+                await context.reply(
+                    `My highest role is below ${role.name}, so it cannot be assigned.`,
+                    true,
+                );
                 return false;
             }
 
             // check if we can delete messages
             if (!role.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
-                await context.reply({
-                    content: `I can't manage messages.`,
-                    ephemeral: true,
-                });
+                await context.reply(
+                    `I can't manage messages.`,
+                    true,
+                );
                 return false;
             }
 
@@ -189,9 +189,9 @@ export class Menu {
         );
 
         await this.channel.send({ content: this.message, components: [menu] });
-        return await this.context.reply({
-            content: "Successfully posted self assign roles.",
-            ephemeral: true,
-        });
+        return await this.context.reply(
+            "Successfully posted self assign roles.",
+            true,
+        );
     }
 }

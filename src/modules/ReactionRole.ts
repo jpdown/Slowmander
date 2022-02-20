@@ -54,18 +54,15 @@ export class ReactionRole extends Module {
 
         const config = bot.db.reactionRoles.getReactionRole(msg, emoteId);
         if (config === null) {
-            await c.reply({
-                content: `Error checking database, please try again later.`,
-                ephemeral: true,
-            });
+            await c.reply(`Error checking database, please try again later.`, true);
             return;
         }
         if (config) {
             const emoji = await CommandUtils.makeEmoteFromId(config.emoteId);
-            await c.reply({
-                content: `Adding reaction role failed. Reaction role with emote ${emoji} already exists.`,
-                ephemeral: true,
-            });
+            await c.reply(
+                `Adding reaction role failed. Reaction role with emote ${emoji} already exists.`,
+                true
+            );
             return;
         }
 
@@ -75,7 +72,7 @@ export class ReactionRole extends Module {
 
         const dbResult = bot.db.reactionRoles.setReactionRole(msg, emoteId, role);
         if (!dbResult) {
-            await c.reply({ content: "Adding reaction role failed.", ephemeral: true });
+            await c.reply("Adding reaction role failed.", true);
             return;
         }
 
@@ -83,11 +80,10 @@ export class ReactionRole extends Module {
         try {
             await msg.react(emote);
         } catch (err) {
-            await c.reply({
-                content:
-                    "Error reacting to message. Do I have perms? The reaction role is still registered.",
-                ephemeral: true,
-            });
+            await c.reply(
+                "Error reacting to message. Do I have perms? The reaction role is still registered.",
+                true
+            );
             await ReactionRole.logger.warning(
                 // eslint-disable-next-line max-len
                 `Error reacting to message ${msg.id} in channel ${msg.channel.id} in guild ${c.guild.id}`,

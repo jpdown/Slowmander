@@ -545,7 +545,7 @@ export class Lockdown extends Module {
     //         return;
     //     }
     //     if (!lockdownPreset || !lockdownChannels || !lockdownRoles) {
-    //         await c.reply({ content: `There was an error with the database.`, ephemeral: true });
+    //         await c.reply(`There was an error with the database.`, true);
     //         return false;
     //     }
     //     if (lockdownRoles.length > 0) {
@@ -635,11 +635,11 @@ export class Lockdown extends Module {
     //         }
     //         if (!c.replied) {
     //             finalMsg += "Channel(s) locked!";
-    //             await c.reply({ content: finalMsg, ephemeral: true });
+    //             await c.reply(finalMsg, true);
     //             return;
     //         }
     //         return;
     //     }
-    //     await c.reply({ content: "No channels found from given IDs!", ephemeral: true });
+    //     await c.reply({ content: "No channels found from given IDs!" }, true);
     // }
 }
