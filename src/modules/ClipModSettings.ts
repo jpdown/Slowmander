@@ -246,11 +246,11 @@ export class ClipModSettings extends Module {
         }
 
         const addedUsers: string[] = [];
-        twitchUsers.forEach(async (user) => {
+        for (let user of twitchUsers) {
             if (user && bot.db.twitchClipMod.addApprovedChannel(channel, user.id)) {
                 addedUsers.push(user.displayName);
             }
-        });
+        }
 
         if (addedUsers.length === 0) {
             await ctx.reply("No channels added.");
@@ -307,11 +307,11 @@ export class ClipModSettings extends Module {
         }
 
         const removedUsers: string[] = [];
-        twitchUsers.forEach(async (user) => {
+        for (let user of twitchUsers) {
             if (bot.db.twitchClipMod.removeApprovedChannel(channel, user.id)) {
                 removedUsers.push(user.displayName);
             }
-        });
+        }
 
         if (removedUsers.length === 0) {
             await ctx.reply("No channels removed.");
