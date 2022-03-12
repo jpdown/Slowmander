@@ -104,7 +104,7 @@ export class TwitchClipModManager {
     ): Promise<void> {
         let clipMatch: RegExpExecArray | null;
         let approvedChannels: string[] | null = null;
-        let keepMessage: boolean;
+        let keepMessage: boolean = false;
 
         // Get approved channel list
         if (config.approvedOnly) {
@@ -123,31 +123,37 @@ export class TwitchClipModManager {
                     this.bot.twitch.getClipBroadcasterId(clipMatch[1])
                 );
             }
+
+            const broadcasterIds: (string | null)[] = await Promise.all(
+                broadcasters
+            );
+    
+            if (broadcasterIds.length > 0) {
+                keepMessage = broadcasterIds.every((clipBroadcaster) => {
+                    if (clipBroadcaster === null) {
+                        // Invalid clip
+                        return false;
+                    }
+                    if (
+                        config.approvedOnly &&
+                        approvedChannels &&
+                        !approvedChannels.includes(clipBroadcaster)
+                    ) {
+                        // Not an approved channel
+                        return false;
+                    }
+                    return true;
+                });
+            } else {
+                keepMessage = false;
+            }
+        } else if (this.clipRegex.test(message.content)) {
+            // If message passes test, keep
+            keepMessage = true;
         }
 
-        const broadcasterIds: (string | null)[] = await Promise.all(
-            broadcasters
-        );
-
-        if (broadcasterIds.length > 0) {
-            keepMessage = broadcasterIds.every((clipBroadcaster) => {
-                if (clipBroadcaster === null) {
-                    // Invalid clip
-                    return false;
-                }
-                if (
-                    config.approvedOnly &&
-                    approvedChannels &&
-                    !approvedChannels.includes(clipBroadcaster)
-                ) {
-                    // Not an approved channel
-                    return false;
-                }
-                return true;
-            });
-        } else {
-            keepMessage = false;
-        }
+        // Reset lastIndex for the next test
+        this.clipRegex.lastIndex = 0;
 
         if (!keepMessage) {
             await this.deleteMessage(message);

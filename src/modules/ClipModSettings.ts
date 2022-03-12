@@ -1,7 +1,6 @@
-import { HelixUser } from "@twurple/api/lib";
 import { Bot } from "Bot";
 import { CommandContext } from "CommandContext";
-import { MessageEmbed } from "discord.js";
+import { Channel, GuildChannel, MessageEmbed } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
 import { args, group, guildOnly, isAdmin, subcommand } from "./ModuleDecorators";
@@ -20,32 +19,22 @@ export class ClipModSettings extends Module {
     @subcommand("clipmod", "Enables Twitch clip moderation settings for a channel")
     @args([
         {
-            name: "id",
-            type: "string",
-            description: "ID of the channel"
+            name: "channel",
+            type: "channel",
+            description: "The channel"
         },
     ])
     @isAdmin()
     @guildOnly()
-    public async enable(ctx: CommandContext<true>, id: string) {
+    public async enable(ctx: CommandContext<true>, channel: Channel) {
         let bot = ctx.bot;
-        let args = [id]; // temporary to satisfy copy paste
 
-        // args: 1 channel
-        if (args.length < 1) {
-            await ctx.reply("A channel ID must be provided");
-            return;
-        }
-
-        // Parse channel
-        const channel = await CommandUtils.parseTextChannel(args[0]);
-        if (!channel || channel.type === "DM") {
-            await ctx.reply("Given channel ID is invalid");
-            return;
-        }
-
-        if (channel.guild.id !== ctx.guild!.id) {
-            await ctx.reply("Please give a channel from this guild.");
+        if (
+            !channel.isText() ||
+            !(channel instanceof GuildChannel) ||
+            !(channel.guild.id === ctx.guild.id)
+        ) {
+            await ctx.reply("Given channel is not a a text channel in this guild.");
             return;
         }
 
@@ -68,31 +57,22 @@ export class ClipModSettings extends Module {
     @subcommand("clipmod", "Disables Twitch clip moderation settings for a channel")
     @args([
         {
-            name: "id",
-            type: "string",
-            description: "ID of the channel"
+            name: "channel",
+            type: "channel",
+            description: "The channel"
         },
     ])
     @isAdmin()
     @guildOnly()
-    public async disable(ctx: CommandContext<true>, id: string) {
+    public async disable(ctx: CommandContext<true>, channel: Channel) {
         let bot = ctx.bot;
-        let args = [id];
 
-        if (args.length < 1) {
-            await ctx.reply("A channel ID must be provided");
-            return;
-        }
-
-        // Parse channel
-        const channel = await CommandUtils.parseTextChannel(args[0]);
-        if (!channel || channel.type === "DM") {
-            await ctx.reply("Given channel ID is invalid");
-            return;
-        }
-
-        if (channel.guild.id !== ctx.guild!.id) {
-            await ctx.reply("Please give a channel from this guild.");
+        if (
+            !channel.isText() ||
+            !(channel instanceof GuildChannel) ||
+            !(channel.guild.id === ctx.guild.id)
+        ) {
+            await ctx.reply("Given channel is not a a text channel in this guild.");
             return;
         }
 
@@ -110,78 +90,57 @@ export class ClipModSettings extends Module {
     @subcommand("clipmod", "Enables only allowing approved channels")
     @args([
         {
-            name: "id",
-            type: "string",
-            description: "ID of the channel"
+            name: "channel",
+            type: "channel",
+            description: "The channel"
         },
     ])
     @isAdmin()
     @guildOnly()
-    public async enableapprovedchannels(ctx: CommandContext<true>, id: string) {
+    public async enableapprovedchannels(ctx: CommandContext<true>, channel: Channel) {
         let bot = ctx.bot;
-        let args = [id];
 
-        if (args.length < 1) {
-            return;
-        }
-
-        // Parse Discord channel
-        const channel = await CommandUtils.parseTextChannel(args[0]);
-        if (!channel || channel.type === "DM") {
-            await ctx.reply("Given channel ID is invalid");
-            return;
-        }
-
-        if (channel.guild.id !== ctx.guild!.id) {
-            await CommandUtils.sendMessage("Please give a channel from this guild.", ctx.channel);
+        if (
+            !channel.isText() ||
+            !(channel instanceof GuildChannel) ||
+            !(channel.guild.id === ctx.guild.id)
+        ) {
+            await ctx.reply("Given channel is not a a text channel in this guild.");
             return;
         }
 
         // Check if we have Twitch
         if (!(await bot.twitch.getApiStatus())) {
-            await CommandUtils.sendMessage("I do not have Twitch API access.", ctx.channel);
+            await ctx.reply("I do not have Twitch API access.");
             return;
         }
 
         if (bot.db.twitchClipMod.enableApprovedOnly(channel)) {
-            await CommandUtils.sendMessage(
-                `Successfully enabled approved channels in ${channel.toString()}`,
-                ctx.channel
-            );
+            await ctx.reply(`Successfully enabled approved channels in ${channel.toString()}`);
         } else {
-            await CommandUtils.sendMessage(
-                `Error enabling approved channels in ${channel.toString()}`,
-                ctx.channel
-            );
+            await ctx.reply(`Error enabling approved channels in ${channel.toString()}`);
         }
     }
 
     @subcommand("clipmod", "Disables only allowing approved channels")
     @args([
         {
-            name: "id",
-            type: "string",
-            description: "ID of the channel"
+            name: "channel",
+            type: "channel",
+            description: "The channel"
         },
     ])
     @isAdmin()
     @guildOnly()
-    public async disableapprovedchannels(ctx: CommandContext<true>, id: string) {
+    public async disableapprovedchannels(ctx: CommandContext<true>, channel: Channel) {
         let bot = ctx.bot;
-        let args = [id];
 
-        if (args.length < 1) {
-            return;
-        }
-
-        // Parse Discord channel
-        const channel = await CommandUtils.parseTextChannel(args[0]);
-        if (!channel || channel.type === "DM") {
-            return;
-        }
-
-        if (channel.guild.id !== ctx.guild!.id) {
-            await ctx.reply("Please give a channel from this guild");
+        if (
+            !channel.isText() ||
+            !(channel instanceof GuildChannel) ||
+            !(channel.guild.id === ctx.guild.id)
+        ) {
+            await ctx.reply("Given channel is not a a text channel in this guild.");
             return;
         }
 
@@ -192,7 +151,7 @@ export class ClipModSettings extends Module {
         }
 
         if (bot.db.twitchClipMod.disableApprovedOnly(channel)) {
-            await ctx.reply(`Successfully disabled approved channels in ${channel.toString}`);
+            await ctx.reply(`Successfully disabled approved channels in ${channel.toString()}`);
         } else {
             await ctx.reply(`Error disabling approved channels in ${channel.toString()}`);
         }
@@ -201,34 +160,27 @@ export class ClipModSettings extends Module {
     @subcommand("clipmod", "Adds a Twitch channel(s) to approved channels")
     @args([
         {
-            name: "id",
-            type: "string",
-            description: "ID of the channel"
+            name: "discordchannel",
+            type: "channel",
+            description: "The Discord channel"
         },
         {
-            name: "channel",
+            name: "twitchchannel",
             type: "string",
-            description: "Twitch channel"
+            description: "The Twitch channel"
         }
     ])
     @isAdmin()
     @guildOnly()
-    public async addchannel(ctx: CommandContext<true>, id: string, twitchChan: string) {
+    public async addchannel(ctx: CommandContext<true>, channel: Channel, twitchChan: string) {
         let bot = ctx.bot;
-        let args = [id, twitchChan];
 
-        if (args.length < 2) {
-            return;
-        }
-
-        // Parse Discord channel
-        const channel = await CommandUtils.parseTextChannel(args[0]);
-        if (!channel || channel.type === "DM") {
-            return;
-        }
-
-        if (channel.guild.id !== ctx.guild!.id) {
-            await ctx.reply("Please give a channel from this guild.");
+        if (
+            !channel.isText() ||
+            !(channel instanceof GuildChannel) ||
+            !(channel.guild.id === ctx.guild.id)
+        ) {
+            await ctx.reply("Given channel is not a a text channel in this guild.");
             return;
         }
 
@@ -238,58 +190,46 @@ export class ClipModSettings extends Module {
             return;
         }
 
-        // Get Twitch users
-        const twitchUsers: HelixUser[] | null = await bot.twitch.getUserIds(args.slice(1));
-        if (!twitchUsers) {
-            await ctx.reply("Unknown issue getting Twitch channels");
+        // Get Twitch user
+        const twitchUser: string | null = await bot.twitch.getUserId(twitchChan);
+        if (!twitchUser) {
+            await ctx.reply("Unknown issue getting Twitch channel");
             return;
         }
 
-        const addedUsers: string[] = [];
-        for (let user of twitchUsers) {
-            if (user && bot.db.twitchClipMod.addApprovedChannel(channel, user.id)) {
-                addedUsers.push(user.displayName);
-            }
-        }
+        let result = bot.db.twitchClipMod.addApprovedChannel(channel, twitchUser);
 
-        if (addedUsers.length === 0) {
-            await ctx.reply("No channels added.");
+        if (!result) {
+            await ctx.reply("Error adding channel.");
         } else {
-            await ctx.reply(`Successfully added channels: ${addedUsers.join(", ")}`);
+            await ctx.reply('Successfully added channel');
         }
     }
 
     @subcommand("clipmod", "Deletes a Twitch channel(s) from approved channels")
     @args([
         {
-            name: "id",
-            type: "string",
-            description: "ID of the channel"
+            name: "discordchannel",
+            type: "channel",
+            description: "The Discord channel"
         },
         {
-            name: "channel",
+            name: "twitchchannel",
             type: "string",
-            description: "Twitch channel"
+            description: "The Twitch channel"
         }
     ])
     @isAdmin()
     @guildOnly()
-    public async deletechannel(ctx: CommandContext<true>, id: string, twitchChan: string) {
+    public async deletechannel(ctx: CommandContext<true>, channel: Channel, twitchChan: string) {
         let bot = ctx.bot;
-        let args = [id, twitchChan];
 
-        if (args.length < 2) {
-            return;
-        }
-
-        // Parse Discord channel
-        const channel = await CommandUtils.parseTextChannel(args[0]);
-        if (!channel || channel.type === "DM") {
-            return;
-        }
-
-        if (channel.guild.id !== ctx.guild!.id) {
-            await ctx.reply("Please give a channel from this guild.");
+        if (
+            !channel.isText() ||
+            !(channel instanceof GuildChannel) ||
+            !(channel.guild.id === ctx.guild.id)
+        ) {
+            await ctx.reply("Given channel is not a a text channel in this guild.");
             return;
         }
 
@@ -299,53 +239,41 @@ export class ClipModSettings extends Module {
             return;
         }
 
-        // Get Twitch users
-        const twitchUsers: HelixUser[] | null = await bot.twitch.getUserIds(args.slice(1));
-        if (!twitchUsers) {
-            await ctx.reply("Unknown issue getting Twitch channels");
+        // Get Twitch user
+        const twitchUser: string | null = await bot.twitch.getUserId(twitchChan);
+        if (!twitchUser) {
+            await ctx.reply("Unknown issue getting Twitch channel");
             return;
         }
 
-        const removedUsers: string[] = [];
-        for (let user of twitchUsers) {
-            if (bot.db.twitchClipMod.removeApprovedChannel(channel, user.id)) {
-                removedUsers.push(user.displayName);
-            }
-        }
+        let result = bot.db.twitchClipMod.removeApprovedChannel(channel, twitchUser);
 
-        if (removedUsers.length === 0) {
-            await ctx.reply("No channels removed.");
+        if (!result) {
+            await ctx.reply("Error removing channel.");
         } else {
-            await ctx.reply(`Successfully removed channels: ${removedUsers.join(", ")}`);
+            await ctx.reply('Successfully removed channel');
         }
     }
 
     @subcommand("clipmod", "Gives info about clip moderation in a channel")
     @args([
         {
-            name: "id",
-            type: "string",
-            description: "ID of the channel"
+            name: "channel",
+            type: "channel",
+            description: "The channel"
         },
     ])
     @isAdmin()
     @guildOnly()
-    public async info(ctx: CommandContext<true>, id: string) {
+    public async info(ctx: CommandContext<true>, channel: Channel) {
         let bot = ctx.bot;
-        let args = [id];
 
-        if (args.length < 1) {
-            return;
-        }
-
-        // Parse channel
-        const channel = await CommandUtils.parseTextChannel(args[0]);
-        if (!channel || channel.type === "DM") {
-            return;
-        }
-
-        if (channel.guild.id !== ctx.guild!.id) {
-            await ctx.reply("Please give a channel from this guild.");
+        if (
+            !channel.isText() ||
+            !(channel instanceof GuildChannel) ||
+            !(channel.guild.id === ctx.guild.id)
+        ) {
+            await ctx.reply("Given channel is not a a text channel in this guild.");
             return;
         }
         // Get config
