@@ -33,10 +33,10 @@ export class CommandUtils {
 
     private static readonly EMOJI_REGEX = /\p{EPres}|\p{ExtPict}/gu;
 
-    public static async getSelfColor(channel: TextBasedChannel): Promise<ColorResolvable> {
+    public static async getSelfColor(channel?: TextBasedChannel): Promise<ColorResolvable> {
         let color: ColorResolvable | undefined;
 
-        if (channel.type !== "DM") {
+        if (channel && channel.type !== "DM") {
             color = channel.guild.me?.displayColor;
         }
 
@@ -498,5 +498,16 @@ export class CommandUtils {
                 const exhaustiveCheck: never = type;
                 throw new Error("Unhandled arg type: " + exhaustiveCheck);
         }
+    }
+
+    public static async generateEmbed(message: string, channel?: TextBasedChannel, timestamp?: boolean): Promise<MessageEmbed> {
+        const embed = new MessageEmbed()
+            .setDescription(message)
+            .setColor(await CommandUtils.getSelfColor(channel))
+
+        if (timestamp) {
+            embed.setTimestamp(Date.now());
+        }
+        return embed;
     }
 }

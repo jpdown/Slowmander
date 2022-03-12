@@ -117,7 +117,7 @@ export class VerificationManager {
         }
 
         // Check if emote matches
-        if (fullReaction.emoji.identifier === config.emoteId) {
+        if (fullReaction.emoji.id ? fullReaction.emoji.identifier : fullReaction.emoji.name! === config.emoteId) {
             // Try to remove role from user
             try {
                 await this.applyRole(member, false, config);

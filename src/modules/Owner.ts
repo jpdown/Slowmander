@@ -48,6 +48,7 @@ export class Owner extends Module {
     @isOwner()
     public async avatar(c: CommandContext, url: string) {
         try {
+            await c.defer();
             await c.bot.client.user.setAvatar(url);
             await c.reply("Avatar changed successfully!");
         } catch (e) {

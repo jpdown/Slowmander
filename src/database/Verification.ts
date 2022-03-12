@@ -109,7 +109,7 @@ export class Verification {
     public setConfig(message: Message, role: Role, emoteId: string): boolean {
         let rowsModified = 0;
 
-        if (message.guild?.id !== role.id) {
+        if (message.guild?.id !== role.guild.id) {
             return false;
         }
 

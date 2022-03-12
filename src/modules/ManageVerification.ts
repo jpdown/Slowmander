@@ -4,7 +4,10 @@ import {args, group, isMod, subcommand} from "./ModuleDecorators";
 import {CommandContext} from "../CommandContext";
 import {CommandUtils} from "../utils/CommandUtils";
 import {
+    Channel,
     Collection,
+    EmojiResolvable,
+    GuildChannel,
     GuildEmoji,
     GuildMember,
     Message, MessageEmbed,
@@ -14,22 +17,19 @@ import {
     Role
 } from "discord.js";
 import {APIMessage} from "discord-api-types";
-import {Logger} from "../Logger";
 
 export class ManageVerification extends Module {
-    private static logger: Logger = Logger.getLogger(this);
-
     constructor(b: Bot) {
         super(b);
     }
 
     @group("Moderator commands for editing server verification")
     @isMod()
-    public static async verification() {}
+    public async verification() {}
 
     @subcommand("verification", "Enable server verification")
     @isMod()
-    public static async enable(ctx: CommandContext) {
+    public async enable(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
         const verificationConfig = bot.db.verification.getConfig(ctx.guild!.id);
@@ -48,7 +48,7 @@ export class ManageVerification extends Module {
 
     @subcommand("verification", "Enable server verification")
     @isMod()
-    public static async disable(ctx: CommandContext) {
+    public async disable(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
         const verificationConfig = bot.db.verification.getConfig(ctx.guild!.id);
@@ -67,7 +67,7 @@ export class ManageVerification extends Module {
 
     @subcommand("verification", "Enable server verification")
     @isMod()
-    public static async enableremove(ctx: CommandContext) {
+    public async enableremove(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
         const verificationConfig = bot.db.verification.getConfig(ctx.guild!.id);
@@ -90,7 +90,7 @@ export class ManageVerification extends Module {
 
     @subcommand("verification", "Enable server verification")
     @isMod()
-    public static async disableremove(ctx: CommandContext) {
+    public async disableremove(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
         const verificationConfig = bot.db.verification.getConfig(ctx.guild!.id);
@@ -117,43 +117,34 @@ export class ManageVerification extends Module {
         {
             name: "channel",
             description: "description",
-            type: "string"
+            type: "channel"
         },
         {
             name: "role",
             description: "description",
-            type: "string"
+            type: "role"
         },
-    ])
-    public static async set(ctx: CommandContext, c: string, r: string) {
-        let args = [c, r];
-        let bot = ctx.bot;
-        if (args.length < 2) {
-            return;
+        {
+            name: "emote",
+            description: "The emote to use",
+            type: "emoji"
         }
+    ])
+    public async set(ctx: CommandContext, c: Channel, r: Role, e: EmojiResolvable) {
+        let bot = ctx.bot;
 
-        // Parse input
-        const channel = await CommandUtils.parseTextChannel(args[0]);
-        if (!channel || channel.type === 'DM' || channel.guild.id !== ctx.guild!.id) {
-            await ctx.reply('Invalid channel specified, verification config not saved.');
+        if (
+            !c.isText() ||
+            !(c instanceof GuildChannel) ||
+            !(c.guild.id === c.guild.id)
+        ) {
+            await ctx.reply("Given channel is not a a text channel in this guild.");
             return;
         }
         // Check perms
-        const member: GuildMember = channel.guild.members.cache.get(bot.client.user!.id)!;
-        if (!channel.permissionsFor(member).has(Permissions.FLAGS.SEND_MESSAGES)) {
+        const member: GuildMember = c.guild.members.cache.get(bot.client.user!.id)!;
+        if (!c.permissionsFor(member).has(Permissions.FLAGS.SEND_MESSAGES)) {
             await ctx.reply('I do not have permissions to send a message in specified channel, verification config not saved.');
-            return;
-        }
-
-        const role: Role | null = await CommandUtils.parseRole(args[1], ctx.guild!);
-        if (!role) {
-            await ctx.reply('Invalid role specified, verification config not saved.');
-            return;
-        }
-
-        // Get emote to listen for
-        const emote: GuildEmoji | ReactionEmoji | undefined = await ManageVerification.getEmote(ctx);
-        if (!emote) {
             return;
         }
 
@@ -165,16 +156,26 @@ export class ManageVerification extends Module {
             await ctx.reply('Error saving verification config.');
             return;
         }
-        if (config && config.channelId === channel.id) {
-            messageId = config.messageId;
-            verificationMessage = await (await CommandUtils.parseTextChannel(config.channelId))?.messages.fetch(messageId);
+        if (config && config.channelId === c.id) {
+            try {
+                messageId = config.messageId;
+                verificationMessage = await (await CommandUtils.parseTextChannel(config.channelId))?.messages.fetch(messageId);
+            } catch (e) { }
         }
         if (!verificationMessage) {
-            verificationMessage = await ctx.reply('Please react to this message to gain access to the rest of the server.');
+            verificationMessage = await c.send({
+                embeds: [
+                    await CommandUtils.generateEmbed(
+                        "Please react to this message to gain access to the rest of the server.",
+                        c, false
+                    ),
+                ],
+            });
         }
+        const emoteId = typeof e === "string" ? e : e.identifier;
 
         // Save verification config
-        const saveResult = bot.db.verification.setConfig(verificationMessage as Message, role, emote.identifier);
+        const saveResult = bot.db.verification.setConfig(verificationMessage as Message, r, emoteId);
         if (saveResult) {
             await ctx.reply('Verification config saved successfully, please enable it if not already enabled.');
         } else {
@@ -184,7 +185,7 @@ export class ManageVerification extends Module {
 
     @subcommand("verification", "Enable server verification")
     @isMod()
-    public static async status(ctx: CommandContext) {
+    public async status(ctx: CommandContext) {
         let bot = ctx.bot;
         const verificationConfig = bot.db.verification.getConfig(ctx.guild!.id);
         if (verificationConfig === null) {
@@ -208,7 +209,7 @@ export class ManageVerification extends Module {
     }
 
     // TODO this is temp
-    private static async getEmote(message: CommandContext): Promise<ReactionEmoji | GuildEmoji | undefined> {
+    private async getEmote(message: CommandContext): Promise<ReactionEmoji | GuildEmoji | undefined> {
         // Ask for emote
         const sentMessage: APIMessage | Message | undefined = await message.reply("Please react on this message with the emote you would like to use.");
         if (!sentMessage) {

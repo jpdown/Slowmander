@@ -5,12 +5,9 @@ import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
 import { args, group, guildOnly, isMod, subcommand } from "./ModuleDecorators";
 import { Permissions } from "discord.js";
-import { Logger } from "Logger";
 import { ButtonPaginator } from "utils/ButtonPaginator";
 
 export class ReactionRole extends Module {
-    private static logger: Logger = Logger.getLogger(this);
-
     public constructor(bot: Bot) {
         super(bot);
     }
@@ -84,7 +81,7 @@ export class ReactionRole extends Module {
                 "Error reacting to message. Do I have perms? The reaction role is still registered.",
                 true
             );
-            await ReactionRole.logger.warning(
+            await this.logger.warning(
                 // eslint-disable-next-line max-len
                 `Error reacting to message ${msg.id} in channel ${msg.channel.id} in guild ${c.guild.id}`,
                 err

@@ -78,7 +78,7 @@ export class CommandContext<InGuild extends boolean = boolean> {
         let msg: Message | APIMessage | undefined = undefined;
 
         if (typeof message === "string") {
-            msgOptions = { embeds: [await this.generateEmbed(message)] };
+            msgOptions = { embeds: [await CommandUtils.generateEmbed(message, this.channel, true)] };
         } else {
             msgOptions = message;
         }
@@ -116,7 +116,7 @@ export class CommandContext<InGuild extends boolean = boolean> {
             await this.interaction.deferReply();
         } else {
             this._replyMessage = await this.message!.reply({
-                embeds: [await this.generateEmbed("Slowmander is thinking...")],
+                embeds: [await CommandUtils.generateEmbed("Slowmander is thinking...", this.channel, true)],
             });
         }
         this._deferred = true;
@@ -132,12 +132,5 @@ export class CommandContext<InGuild extends boolean = boolean> {
 
     public get replied(): boolean {
         return (this.interaction && this.interaction.replied) || this._replied;
-    }
-
-    private async generateEmbed(message: string): Promise<MessageEmbed> {
-        return new MessageEmbed()
-            .setDescription(message)
-            .setColor(await CommandUtils.getSelfColor(this.channel))
-            .setTimestamp(Date.now());
     }
 }
