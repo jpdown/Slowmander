@@ -1,120 +1,98 @@
-import { PantherBot } from "./Bot";
-import { Message, MessageEmbed, GuildMember, User, Permissions } from "discord.js";
-import { Command, PermissionLevel } from "./commands/Command";
-import { PermissionsHelper } from "./utils/PermissionsHelper";
-import { CommandUtils } from "./utils/CommandUtils";
-import { CommandGroup } from "./commands/CommandGroup";
+import { Command, PermissionLevel } from 'commands/Command';
+import { PermissionsHelper } from 'utils/PermissionsHelper';
+import { CommandUtils } from 'utils/CommandUtils';
+import { CommandGroup } from 'commands/CommandGroup';
+
+import { MessageEmbed } from 'discord.js';
+import { CommandContext } from 'CommandContext';
+import { ButtonPaginator } from 'utils/ButtonPaginator';
 
 export class HelpManager {
-    public async sendCommandHelp(command: Command, message: Message, bot: PantherBot, extraArgs?: string[]) {
-        //If we need to grab a subcommand, do so
-        if(extraArgs) {
-            command = await this.getSubCommand(command, extraArgs, message, bot);
-        }
+  public static async sendCommandHelp(command: Command, ctx: CommandContext) {
+    let helpMessage = '';
+    const prefix: string | undefined = await ctx.bot.commandManager.getPrefix(ctx.guild ? ctx.guild.id : undefined);
 
-        let helpMessage: string = "";
-        let prefix: string = await bot.commandManager.getPrefix(message.guild ? message.guild.id : undefined)
-
-        //Get perms and is DM
-        if(!await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, bot)) {
-            return;
-        }
-
-        //Build help message
-        if(command.aliases.length > 0) {
-            helpMessage += "Aliases: `" + command.aliases.join("`, `") + "`\n";
-        }
-        helpMessage += `Usage: \`${prefix}${command.fullName}`;
-        if(command.usage.length > 0) {
-            helpMessage += ` ${command.usage}`;    
-        }
-        helpMessage += "`\n\n" + command.longDesc;
-
-        if(command instanceof CommandGroup) {
-            let subCommands: Command[] = await this.getSubCommandsWithPerms(message.member ? message.member : message.author, command as CommandGroup, bot);
-
-            if(subCommands.length > 0) {
-                helpMessage += "\n\nSub Commands:\n";
-            }
-
-            for(let subCommand of subCommands) {
-                helpMessage += `• \`${subCommand.name}\` - ${subCommand.desc}\n`;
-            }
-        }
-
-        //Build embed
-        let embed: MessageEmbed = new MessageEmbed()
-            .setColor(await CommandUtils.getSelfColor(message.channel, bot))
-            .setDescription(helpMessage)
-            .setTitle(prefix + command.fullName)
-            .setTimestamp(Date.now());
-        
-        if(!(command instanceof CommandGroup)) {
-            if(command.permLevel > PermissionLevel.Everyone) {
-                embed.addField("Bot Permission", PermissionLevel[command.permLevel], true);
-            }
-
-            if(command.requiredPerm) {
-                embed.addField("Required Permission", await PermissionsHelper.getString(new Permissions(command.requiredPerm)), true);
-            }
-        }
-        
-        await message.channel.send(embed);
+    // Get perms and is DM
+    if (!await PermissionsHelper.checkPerms(command, ctx) && (ctx.guild || !command.guildOnly)) {
+      return;
     }
 
-    public async sendFullHelp(message: Message, bot: PantherBot) {
-        let commandList: Command[] = await bot.commandManager.getAllCommands();
-        let helpMessage: string = "";
-        let isDm: boolean;
-        let permLevel: PermissionLevel;
-
-        //Build string
-        for(let command of commandList) {
-            if(await PermissionsHelper.checkPermsAndDM(message.member ? message.member : message.author, command, bot)) {
-                helpMessage += `\`${command.name}\` - ${command.desc}\n`;
-            }
+    // Build help message
+    helpMessage += `Usage: \`${prefix}${command.fullName}`
+    if (command.args) {
+        for (let arg of command.args) {
+            helpMessage += arg.optional ? ` [${arg.name}]` : ` <${arg.name}>`;
         }
+    }
+    helpMessage += `\`\n\n${command.desc}`;
 
-        //Build embed
-        let embed: MessageEmbed = new MessageEmbed()
-            .setColor(await CommandUtils.getSelfColor(message.channel, bot))
-            .setTitle("Help")
-            .setDescription(helpMessage)
-            .setTimestamp(Date.now());
+    if (command instanceof CommandGroup) {
+      const subCommands: Command[] = await HelpManager.getSubCommandsWithPerms(command, ctx);
 
-        await message.channel.send(embed);
+      if (subCommands.length > 0) {
+        helpMessage += '\n\nSub Commands:\n';
+      }
+
+      subCommands.forEach((subCommand) => {
+        helpMessage += `• \`${subCommand.name}\` - ${subCommand.desc}\n`;
+      });
     }
 
-    private async getSubCommand(command: Command, extraArgs: string[], message: Message, bot: PantherBot): Promise<Command> {
-        let subCommand: Command = undefined;
+    if (command.args && command.args.length > 0) {
+        helpMessage += '\n\nArguments:\n';
 
-        for(let i: number = 0; i < extraArgs.length; i++) {
-            if(command as CommandGroup) {
-                subCommand = await (command as CommandGroup).getSubCommand(extraArgs[i]);
-            }
-
-            if(!subCommand) {
-                break;
-            }
-            
-            command = subCommand;
-        }
-
-        return(command);
+        command.args.forEach((arg) => {
+            helpMessage += `• \`${arg.name}\` - ${arg.description}\n`;
+        });
     }
 
-    private async getSubCommandsWithPerms(user: User | GuildMember, group: CommandGroup, bot: PantherBot): Promise<Command[]> {
-        let subCommands: Command[] = Array.from(group.subCommands.values());
-        let subCommandsWithPerms: Command[] = [];
+    // Build embed
+    const embed: MessageEmbed = new MessageEmbed()
+      .setColor(await CommandUtils.getSelfColor(ctx.channel))
+      .setDescription(helpMessage)
+      .setTitle(prefix + command.fullName)
+      .setTimestamp(Date.now());
 
-        for(let subCommand of subCommands) {
-            if(subCommandsWithPerms.includes(subCommand)) continue;
-
-            if(await PermissionsHelper.checkPermsAndDM(user, subCommand, bot)) {
-                subCommandsWithPerms.push(subCommand);
-            }
-        }
-
-        return(subCommandsWithPerms);
+    if (!(command instanceof CommandGroup)) {
+      if (command.permLevel > PermissionLevel.Everyone) {
+        embed.addField('Permission', PermissionLevel[command.permLevel], true);
+      }
     }
+
+    await ctx.reply({ embeds: [embed] }, true);
+  }
+
+  public static async sendFullHelp(ctx: CommandContext) {
+    const commandList: Command[] = ctx.bot.commandManager.getAllCommands();
+    let cmds = [];
+
+    // Build string
+    for (let command of commandList) {
+      if (await PermissionsHelper.checkPerms(command, ctx) && (ctx.guild || !command.guildOnly)) {
+        cmds.push(`\`${command.name}\` - ${command.desc}`);
+      }
+    }
+
+    // Build paginator
+    const paginator: ButtonPaginator = new ButtonPaginator(
+        cmds,
+        ctx,
+        5,
+        "Help"
+    );
+    await paginator.postMessage();
+  }
+
+  private static async getSubCommandsWithPerms(group: CommandGroup, ctx: CommandContext): Promise<Command[]> {
+    const subCommands: Command[] = Array.from(group.subCommands.values());
+    const subCommandsWithPerms: Command[] = [];
+
+    for (let subCommand of subCommands) {
+      if (await PermissionsHelper.checkPerms(subCommand, ctx) && (ctx.guild || !subCommand.guildOnly)) {
+        subCommandsWithPerms.push(subCommand);
+      }
+    }
+
+    return subCommandsWithPerms;
+  }
 }

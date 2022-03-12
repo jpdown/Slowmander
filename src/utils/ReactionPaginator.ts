@@ -1,24 +1,50 @@
-import { MessageReaction, Message, MessageEmbed, TextChannel, NewsChannel, DMChannel, User, CollectorFilter, ReactionCollector } from "discord.js";
+import type { Command } from "commands/Command";
+import type { Bot } from "Bot";
+
+import {
+    MessageReaction,
+    Message,
+    MessageEmbed,
+    User,
+    ReactionCollector,
+    TextBasedChannel,
+    GuildMember,
+    GuildChannel,
+} from "discord.js";
 import { CommandUtils } from "./CommandUtils";
-import { Command } from "../commands/Command";
 import { PermissionsHelper } from "./PermissionsHelper";
-import { PantherBot } from "../Bot";
 
 export class ReactionPaginator {
     public static readonly NEXT_PAGE: string = "➡️";
+
     public static readonly PREV_PAGE: string = "⬅️";
 
     private elements: string[];
+
     private numPerPage: number;
+
     private currPage: number;
+
     private title: string;
-    private message: Message;
-    private channel: TextChannel | NewsChannel | DMChannel;
-    private bot: PantherBot;
+
+    private message: Message | undefined;
+
+    private channel: TextBasedChannel;
+
+    private bot: Bot;
+
     private command: Command;
+
     private numPages: number;
 
-    constructor(elements: string[], numPerPage: number, title: string, channel: TextChannel | NewsChannel | DMChannel, bot: PantherBot, command: Command) {
+    constructor(
+        elements: string[],
+        numPerPage: number,
+        title: string,
+        channel: TextBasedChannel,
+        bot: Bot,
+        command: Command
+    ) {
         this.elements = elements;
         this.numPerPage = numPerPage;
         this.currPage = 0;
@@ -30,73 +56,93 @@ export class ReactionPaginator {
     }
 
     public async postMessage(): Promise<Message> {
-        this.message = await this.channel.send(await this.generateEmbed());
-        if(this.numPages > 1) {
+        this.message = await this.channel.send({
+            embeds: [await this.generateEmbed()],
+        });
+        if (this.numPages > 1) {
             await this.message.react(ReactionPaginator.PREV_PAGE);
             await this.message.react(ReactionPaginator.NEXT_PAGE);
-            
-            //Handle reactions
-            let reactionFilter: CollectorFilter = (reaction: MessageReaction, user: User) =>  {
-                return !user.bot && (reaction.emoji.name === ReactionPaginator.NEXT_PAGE || reaction.emoji.name === ReactionPaginator.PREV_PAGE);
-            }
-            let reactionCollector: ReactionCollector = this.message.createReactionCollector(reactionFilter, {time: 60000, dispose: true});
+
+            // Handle reactions
+            const reactionCollector: ReactionCollector = this.message.createReactionCollector({
+                filter: (reaction: MessageReaction, user: User) => !user.bot,
+                time: 60000,
+                dispose: true,
+            });
+
             reactionCollector.on("collect", this.onReaction.bind(this));
-            reactionCollector.on("end", async (collected) => {
-                await this.message.delete();
-            })
+            reactionCollector.on("end", async () => {
+                await this.message?.delete();
+            });
         }
 
         return this.message;
     }
 
     public async onReaction(reaction: MessageReaction, user: User) {
-        if(!await this.checkPerms(reaction, user)) {
+        if (!(await this.checkPerms(reaction, user))) {
             return;
         }
 
-        switch(reaction.emoji.name) {
+        switch (reaction.emoji.name) {
             case ReactionPaginator.NEXT_PAGE:
-                if(this.currPage + 1 < this.numPages) {
-                    this.currPage++;
-                    await this.message.edit(await this.generateEmbed());
+                if (this.currPage + 1 < this.numPages) {
+                    this.currPage += 1;
+                    await this.message?.edit({
+                        embeds: [await this.generateEmbed()],
+                    });
                 }
                 break;
             case ReactionPaginator.PREV_PAGE:
-                if(this.currPage > 0) {
-                    this.currPage--;
-                    await this.message.edit(await this.generateEmbed());
+                if (this.currPage > 0) {
+                    this.currPage -= 1;
+                    await this.message?.edit({
+                        embeds: [await this.generateEmbed()],
+                    });
                 }
                 break;
+            default:
+                return;
         }
 
         try {
             await reaction.users.remove(user);
-        }
-        catch(err) {
-            await reaction.message.channel.send("I do not have permissions to remove the reaction.");
+        } catch (err) {
+            await reaction.message.channel.send(
+                "I do not have permissions to remove the reaction."
+            );
         }
     }
-    
+
     private async generateEmbed(): Promise<MessageEmbed> {
-        let embed: MessageEmbed = new MessageEmbed()
-            .setColor(await CommandUtils.getSelfColor(this.channel, this.bot))
-            .setFooter(`Page ${this.currPage + 1} of ${this.numPages}`)
-            .setDescription(this.elements.slice(this.currPage * this.numPerPage, (this.currPage + 1) * this.numPerPage).join("\n"))
+        const embed: MessageEmbed = new MessageEmbed()
+            .setColor(await CommandUtils.getSelfColor(this.channel))
+            .setFooter({ text: `Page ${this.currPage + 1} of ${this.numPages}` })
+            .setDescription(
+                this.elements
+                    .slice(this.currPage * this.numPerPage, (this.currPage + 1) * this.numPerPage)
+                    .join("\n")
+            )
             .setTitle(this.title);
-        
-        return(embed)
+
+        return embed;
     }
 
+    // eslint-disable-next-line class-methods-use-this
     private async checkPerms(reaction: MessageReaction, user: User): Promise<boolean> {
-        let hasPerms: boolean;
+        let hasPerms = false;
 
-        if(reaction.message.guild) {
-            hasPerms = await PermissionsHelper.checkPermsAndDM(reaction.message.guild.member(user), this.command, this.bot);
-        }
-        else {
-            hasPerms = await PermissionsHelper.checkPermsAndDM(user, this.command, this.bot);
+        if (reaction.message.guild) {
+            const member: GuildMember | undefined = reaction.message.guild.members.cache.get(
+                user.id
+            );
+            if (member) {
+                hasPerms = await PermissionsHelper.checkPerms(this.command, member, this.bot, <GuildChannel>this.channel);
+            }
+        } else {
+            hasPerms = await PermissionsHelper.checkPerms(this.command, user, this.bot);
         }
 
-        return(hasPerms);
+        return hasPerms;
     }
 }

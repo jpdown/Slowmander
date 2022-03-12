@@ -1,145 +1,290 @@
-import { ReactionRoleObject } from "../config/ReactionRoleConfig";
-import { PantherBot } from "../Bot";
-import { MessageReaction, User, GuildMember, TextChannel, NewsChannel, Message, Collection, Snowflake, Role, Client, Guild, Permissions } from "discord.js";
-import { Logger } from "../Logger";
-import { ModErrorLog } from "../moderrorlog/ModErrorLog";
+import type { Bot } from "Bot";
+import { Logger } from "Logger";
+import { ModErrorLog } from "moderrorlog/ModErrorLog";
+import type { ReactionRole } from "database/ReactionRoles";
+
+import {
+    MessageReaction,
+    User,
+    GuildMember,
+    TextChannel,
+    NewsChannel,
+    Role,
+    Permissions,
+    PartialMessageReaction,
+    PartialUser,
+    Message,
+    ThreadChannel,
+} from "discord.js";
+import { CommandUtils } from "utils/CommandUtils";
 
 export class ReactionRoleManager {
-    private bot: PantherBot;
+    private bot: Bot;
+
     private logger: Logger;
 
-    constructor(bot: PantherBot) {
+    constructor(bot: Bot) {
         this.bot = bot;
-        this.logger = Logger.getLogger(bot, this);
+        this.logger = Logger.getLogger(this);
     }
 
-    public async onMessageReactionAdd(reaction: MessageReaction, user: User) {
+    public async onMessageReactionAdd(
+        reaction: MessageReaction | PartialMessageReaction,
+        user: User | PartialUser
+    ) {
+        let fullReaction: MessageReaction;
         try {
-            if(reaction.partial) {
-                await reaction.fetch();
+            if (reaction.partial) {
+                fullReaction = await reaction.fetch();
+            } else {
+                fullReaction = reaction;
             }
-        }
-        catch(err) {
+        } catch (err) {
             await this.logger.error("Error fetching reaction.", err);
-        }
-
-        //Ignore bots
-        if(user.bot) {
             return;
         }
 
-        //Ignore reactions from DMs
-        if(!reaction.message.guild || reaction.message.channel.type === 'dm') {
-            return;
-        }
-
-        //Try to grab reaction role
-        let reactionRole: ReactionRoleObject = await this.bot.configs.reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
-        if(reactionRole === undefined) {
-            return;
-        }
-
-        //Add role to user
-        let member: GuildMember = reaction.message.guild.member(user);
-        await this.addUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel)
-    }
-
-    public async onMessageReactionRemove(reaction: MessageReaction, user: User) {
+        let fullMessage: Message;
         try {
-            if(reaction.partial) {
-                await reaction.fetch();
+            if (fullReaction.message.partial) {
+                fullMessage = await fullReaction.message.fetch();
+            } else {
+                fullMessage = fullReaction.message;
             }
-        }
-        catch(err) {
-            await this.logger.error("Error fetching reaction.", err);
-        }
-
-        //Ignore bots
-        if(user.bot) {
+        } catch (err) {
+            await this.logger.error("Error fetching reaction message.", err);
             return;
         }
 
-        //Ignore reactions from DMs
-        if(!reaction.message.guild || reaction.message.channel.type === 'dm') {
+        let fullUser: User;
+        try {
+            if (user.partial) {
+                fullUser = await user.fetch();
+            } else {
+                fullUser = user;
+            }
+        } catch (err) {
+            await this.logger.error("Error fetching reaction user.", err);
             return;
         }
 
-        //Try to grab reaction role
-        let reactionRole: ReactionRoleObject = await this.bot.configs.reactionRoleConfig.getFromReaction(reaction.message, reaction.emoji);
-        if(reactionRole === undefined) {
+        // Ignore bots
+        if (fullUser.bot) {
             return;
         }
 
-        //Remove role from user
-        let member: GuildMember = reaction.message.guild.member(user);
-        await this.removeUser(member, reactionRole, <TextChannel | NewsChannel>reaction.message.channel)
+        // Ignore reactions from DMs
+        if (!fullMessage.guild || fullMessage.channel.type === "DM") {
+            return;
+        }
+
+        // Try to grab reaction role
+        const reactionRole = this.bot.db.reactionRoles.getReactionRole(
+            fullMessage,
+            fullReaction.emoji.id ? fullReaction.emoji.identifier : fullReaction.emoji.name!
+        );
+        if (!reactionRole) {
+            return;
+        }
+
+        // Add role to user
+        const member: GuildMember = await fullMessage.guild.members.fetch(
+            fullUser
+        );
+        await this.addUser(member, reactionRole);
     }
 
-    private async addUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel): Promise<boolean> {
-        let role: Role;
-        //Add role to user
+    public async onMessageReactionRemove(
+        reaction: MessageReaction | PartialMessageReaction,
+        user: User | PartialUser
+    ) {
+        let fullReaction: MessageReaction;
         try {
-            role = await channel.guild.roles.fetch(reactionRole.roleID);
-            if(role) {
+            if (reaction.partial) {
+                fullReaction = await reaction.fetch();
+            } else {
+                fullReaction = reaction;
+            }
+        } catch (err) {
+            await this.logger.error("Error fetching reaction.", err);
+            return;
+        }
+
+        let fullMessage: Message;
+        try {
+            if (fullReaction.message.partial) {
+                fullMessage = await fullReaction.message.fetch();
+            } else {
+                fullMessage = fullReaction.message;
+            }
+        } catch (err) {
+            await this.logger.error("Error fetching reaction message.", err);
+            return;
+        }
+
+        let fullUser: User;
+        try {
+            if (user.partial) {
+                fullUser = await user.fetch();
+            } else {
+                fullUser = user;
+            }
+        } catch (err) {
+            await this.logger.error("Error fetching reaction user.", err);
+            return;
+        }
+
+        // Ignore bots
+        if (fullUser.bot) {
+            return;
+        }
+
+        // Ignore reactions from DMs
+        if (!fullMessage.guild || fullMessage.channel.type === "DM") {
+            return;
+        }
+
+        // Try to grab reaction role
+        const reactionRole = this.bot.db.reactionRoles.getReactionRole(
+            fullMessage,
+            fullReaction.emoji.id ? fullReaction.emoji.identifier : fullReaction.emoji.name!
+        );
+        if (!reactionRole) {
+            return;
+        }
+
+        // Remove role from user
+        const member: GuildMember = await fullMessage.guild.members.fetch(
+            fullUser
+        );
+        await this.removeUser(member, reactionRole, fullMessage.channel);
+    }
+
+    private async addUser(
+        member: GuildMember,
+        reactionRole: ReactionRole
+    ): Promise<boolean> {
+        let role: Role | null = null;
+        // Add role to user
+        try {
+            role = await member.guild.roles.fetch(reactionRole.roleId);
+            if (role) {
                 await member.roles.add(role);
+            } else {
+                // Broken reaction role, remove
+                this.bot.db.reactionRoles.removeReactionRole(
+                    reactionRole.channelId,
+                    reactionRole.messageId,
+                    reactionRole.emoteId
+                );
+                // Get emote
+                const emote = await CommandUtils.makeEmoteFromId(
+                    reactionRole.emoteId
+                );
+                await ModErrorLog.log(
+                    `The role for reaction role ${emote} in channel <#${reactionRole.channelId}> has been deleted due to missing role.`,
+                    member.guild,
+                    this.bot
+                );
+                return false;
             }
-            else {
-                //Broken reaction role, remove
-                await this.bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
-                await ModErrorLog.log(`The role for reaction role ${reactionRole.name} has been deleted.`, member.guild, this.bot);
-                return(false);
-            }
-        }
-        catch(err) {
-            await this.issueAddingOrRemoving(member, reactionRole, channel, role, true, err);
-            return(false);
+        } catch (err) {
+            await this.issueAddingOrRemoving(
+                member,
+                reactionRole,
+                role,
+                true,
+                err
+            );
+            return false;
         }
 
-        return(true);
+        return true;
     }
 
-    private async removeUser(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel): Promise<boolean> {
-        let role: Role;
-        //Remove role from user
+    private async removeUser(
+        member: GuildMember,
+        reactionRole: ReactionRole,
+        channel: TextChannel | NewsChannel | ThreadChannel
+    ): Promise<boolean> {
+        let role: Role | null = null;
+        // Remove role from user
         try {
-            role = await channel.guild.roles.fetch(reactionRole.roleID);
-            if(role) {
+            role = await channel.guild.roles.fetch(reactionRole.roleId);
+            if (role) {
                 await member.roles.remove(role);
+            } else {
+                // Broken reaction role, remove
+                this.bot.db.reactionRoles.removeReactionRole(
+                    reactionRole.channelId,
+                    reactionRole.messageId,
+                    reactionRole.emoteId
+                );
+                // Get emote
+                const emote = await CommandUtils.makeEmoteFromId(
+                    reactionRole.emoteId
+                );
+                await ModErrorLog.log(
+                    `The role for reaction role ${emote} in channel <#${reactionRole.channelId}> has been deleted due to missing role.`,
+                    member.guild,
+                    this.bot
+                );
+                return false;
             }
-            else {
-                //Broken reaction role, remove
-                await this.bot.configs.reactionRoleConfig.removeReactionRole(reactionRole.guildID, reactionRole.name);
-                await ModErrorLog.log(`The role for reaction role ${reactionRole.name} has been deleted.`, member.guild, this.bot);
-                return(false);
-            }
-        }
-        catch(err) {
-            await this.issueAddingOrRemoving(member, reactionRole, channel, role, false, err);
-            return(false);
+        } catch (err) {
+            await this.issueAddingOrRemoving(
+                member,
+                reactionRole,
+                role,
+                false,
+                err
+            );
+            return false;
         }
 
-        return(true);
+        return true;
     }
 
-    private async issueAddingOrRemoving(member: GuildMember, reactionRole: ReactionRoleObject, channel: TextChannel | NewsChannel, role: Role, adding: boolean, err: any) {
+    private async issueAddingOrRemoving(
+        member: GuildMember,
+        reactionRole: ReactionRole,
+        role: Role | null,
+        adding: boolean,
+        err: any
+    ) {
         let messageToSend: string;
-        if(adding) {
-            messageToSend = `There was an error adding the role "${role.name}" to ${member.toString()}.`;
+        if (adding) {
+            messageToSend = `There was an error adding the role "${
+                role?.name
+            }" to ${member.toString()}.`;
+        } else {
+            messageToSend = `There was an error removing the role "${
+                role?.name
+            }" from ${member.toString()}.`;
         }
-        else {
-            messageToSend = `There was an error removing the role "${role.name}" from ${member.toString()}.`;
-        }
-        //If no manage roles
-        if(!channel.guild.me.hasPermission(Permissions.FLAGS.MANAGE_ROLES)) {
-            await ModErrorLog.log(messageToSend + " I do not have the Manage Roles permission.", member.guild, this.bot);
-        }
-        //If role hierarchy
-        else if(channel.guild.me.roles.highest.comparePositionTo(role) < 0) {
-            await ModErrorLog.log(messageToSend + " Incorrect hierarchy, my top role is not above.", member.guild, this.bot)
-        }
-        else {
+
+        if (!member.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
+            await ModErrorLog.log(
+                `${messageToSend} I do not have the Manage Roles permission.`,
+                member.guild,
+                this.bot
+            );
+        } else if (
+            role &&
+            member.guild.me.roles.highest.comparePositionTo(role) < 0
+        ) {
+            await ModErrorLog.log(
+                `${messageToSend} Incorrect hierarchy, my top role is not above.`,
+                member.guild,
+                this.bot
+            );
+        } else {
             await ModErrorLog.log(messageToSend, member.guild, this.bot);
-            await this.logger.error(`Unknown error occurred adding or removing reaction role ${reactionRole.name} to user ${member.user.username}#${member.user.discriminator} (${member.id}) in guild ${reactionRole.guildID}.`, err);
+            await this.logger.error(
+                // eslint-disable-next-line max-len
+                `Unknown error occurred adding or removing reaction role ${reactionRole.emoteId} in channel ${reactionRole.channelId} on message ${reactionRole.messageId} to user ${member.user.username}#${member.user.discriminator} (${member.id}) in guild ${reactionRole.guildId}.`,
+                err
+            );
         }
     }
 }

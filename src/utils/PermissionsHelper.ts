@@ -1,78 +1,135 @@
-import { PermissionLevel } from "../commands/Command";
-import { User, GuildMember, Collection, Snowflake, Role, Permissions } from "discord.js";
-import { PantherBot } from "../Bot";
-import { Command } from "../commands/Command";
+import { PermissionLevel, Command } from "commands/Command";
+import type { Bot } from "Bot";
+
+import {
+    User,
+    GuildMember,
+    Collection,
+    Snowflake,
+    Role,
+    Permissions,
+    GuildChannel,
+} from "discord.js";
+import { CommandContext } from "CommandContext";
+import { Logger } from "Logger";
 
 export class PermissionsHelper {
-    
-    public static async checkPermsAndDM(user: User | GuildMember, command: Command, bot: PantherBot): Promise<boolean> {
+    private static readonly logger: Logger = Logger.getLogger(this);
+
+    public static async checkPerms(command: Command, user: User, bot: Bot): Promise<boolean>;
+    public static async checkPerms(command: Command, member: GuildMember, bot: Bot, channel: GuildChannel): Promise<boolean>;
+    public static async checkPerms(command: Command, ctx: CommandContext): Promise<boolean>;
+    public static async checkPerms(command: Command, ctxOrMember: CommandContext | GuildMember | User, bot?: Bot, channel?: GuildChannel): Promise<boolean> {
         let permLevel: PermissionLevel;
-        let hasPerm: boolean;
-        let inDm: boolean = false;
-        if(!(user as GuildMember).guild) {
-            permLevel = await PermissionsHelper.getUserPermLevel(user as User, bot);
-            inDm = true;
+        if (ctxOrMember instanceof CommandContext) {
+            if (ctxOrMember.member) {
+                permLevel = await PermissionsHelper.getMemberPermLevel(ctxOrMember);
+            } else {
+                permLevel = await PermissionsHelper.getUserPermLevel(ctxOrMember.user, ctxOrMember.bot);
+            }
+        } else if (ctxOrMember instanceof GuildMember) {
+            if (channel && bot) {
+                permLevel = await PermissionsHelper.getMemberPermLevel(ctxOrMember, channel, bot);
+            } else {
+                this.logger.error(`Error when checking permissions: channel=${channel} bot=${bot}`);
+                permLevel = PermissionLevel.Disabled;
+            }
+        } else if (ctxOrMember instanceof User) {
+            permLevel = await PermissionsHelper.getUserPermLevel(ctxOrMember, bot!);
+        } else {
+            permLevel = PermissionLevel.Disabled;
         }
-        else {
-            permLevel = await PermissionsHelper.getMemberPermLevel(user as GuildMember, bot);
-            hasPerm = await PermissionsHelper.checkHasPerm(user as GuildMember, command);
-        }
-        
-        return((permLevel >= command.permLevel || hasPerm) && (!inDm || command.runsInDm));
+
+        return permLevel >= command.permLevel;
     }
 
-    public static async getUserPermLevel(user: User, bot: PantherBot): Promise<PermissionLevel> {
-        if(bot.owners.includes(user.id)) {
-            return(PermissionLevel.Owner);
+    public static async getUserPermLevel(user: User, bot: Bot): Promise<PermissionLevel>;
+    public static async getUserPermLevel(ctx: CommandContext): Promise<PermissionLevel>;
+    public static async getUserPermLevel(ctx: CommandContext | User, b?: Bot): Promise<PermissionLevel> {
+        let bot;
+        let user;
+        if (ctx instanceof User) {
+            bot = b;
+            user = ctx;
+        } else {
+            bot = ctx.bot;
+            user = ctx.user;
         }
-        else {
-            return(PermissionLevel.Everyone);
+        if (!bot) {
+            return PermissionLevel.Disabled;
         }
+
+        if (bot.owners.includes(user.id)) {
+            return PermissionLevel.Owner;
+        }
+
+        return PermissionLevel.Everyone;
     }
 
-    public static async getMemberPermLevel(member: GuildMember, bot: PantherBot): Promise<PermissionLevel> {
-        let roleList: Collection<Snowflake, Role> = member.roles.cache;
+    public static async getMemberPermLevel(m: GuildMember, c: GuildChannel, b: Bot): Promise<PermissionLevel>;
+    public static async getMemberPermLevel(ctx: CommandContext): Promise<PermissionLevel>;
+    public static async getMemberPermLevel(mOrCtx: CommandContext | GuildMember, c?: GuildChannel, b?: Bot): Promise<PermissionLevel> {
+        let member;
+        let channel;
+        let bot;
+        if (mOrCtx instanceof CommandContext) {
+            member = mOrCtx.member;
+            channel = mOrCtx.channel as GuildChannel;
+            bot = mOrCtx.bot;
+        } else {
+            member = mOrCtx;
+            channel = c;
+            bot = b;
+        }
+        if (!member || !channel || !bot) {
+            return PermissionLevel.Disabled;
+        }
+        const roleList: Collection<Snowflake, Role> = member.roles.cache;
+        let tempRole: string | null | undefined;
 
-        if(bot.owners.includes(member.user.id)) {
-            return(PermissionLevel.Owner);
+        if (bot.owners.includes(member.user.id)) {
+            return PermissionLevel.Owner;
         }
-        else if(roleList.has(await bot.configs.guildConfig.getAdminRole(member.guild.id))
-            || member.guild.ownerID === member.id) {
-                return(PermissionLevel.Admin)
+        // Check if member has slash commands permission in channel
+        if (!channel.permissionsFor(member).has(Permissions.FLAGS.USE_APPLICATION_COMMANDS)) {
+            return PermissionLevel.Disabled;
         }
-        else if(roleList.has(await bot.configs.guildConfig.getModRole(member.guild.id))) {
-            return(PermissionLevel.Mod)
+        // We have slash command permission, continue
+        if (
+            (tempRole = bot.db.guildConfigs.getAdminRole(member.guild.id)) &&
+            (roleList.has(tempRole) || member.guild.ownerId === member.id)
+        ) {
+            return PermissionLevel.Admin;
         }
-        else if(roleList.has(await bot.configs.guildConfig.getVipRole(member.guild.id))) {
-            return(PermissionLevel.VIP)
+        if (
+            (tempRole = bot.db.guildConfigs.getModRole(member.guild.id)) &&
+            roleList.has(tempRole)
+        ) {
+            return PermissionLevel.Mod;
         }
-        else if(member.guild.id != "326543379955580929") { //Shitty disable commands in acai's discord
-            return(PermissionLevel.Everyone);
+        if (
+            (tempRole = bot.db.guildConfigs.getVipRole(member.guild.id)) &&
+            roleList.has(tempRole)
+        ) {
+            return PermissionLevel.VIP;
         }
-        else {
-            return(PermissionLevel.Disabled);
-        }
+
+        return PermissionLevel.Everyone;
     }
 
     public static async getString(perms: Permissions): Promise<string> {
-        let permsStrings: string[] = [];
+        const permsStrings: string[] = [];
+        let permsNoAdmin: Permissions = perms;
 
-        if(perms.has(Permissions.FLAGS.ADMINISTRATOR)) {
+        if (perms.has(Permissions.FLAGS.ADMINISTRATOR)) {
             permsStrings.push("ADMINISTRATOR");
-            perms = perms.remove(Permissions.FLAGS.ADMINISTRATOR)
+            permsNoAdmin = perms.remove(Permissions.FLAGS.ADMINISTRATOR);
         }
-        for(let perm of perms.toArray()) {
+
+        permsNoAdmin.toArray().forEach((perm) => {
             permsStrings.push(perm.toString());
-        }
+        });
 
-        return(permsStrings.join(", "));
-    }
-
-    private static async checkHasPerm(member: GuildMember, command: Command) {
-        if(command.requiredPerm) {
-            return(member.permissions.any(command.requiredPerm))
-        }
-
-        return(false);
+        return permsStrings.join(", ");
     }
 }

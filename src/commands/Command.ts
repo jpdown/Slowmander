@@ -1,8 +1,21 @@
-import {PantherBot} from '../Bot';
-import {Message, TextChannel, DMChannel, NewsChannel, MessageEmbed, Guild, MessageOptions, PermissionResolvable} from 'discord.js';
-import {CommandUtils} from '../utils/CommandUtils';
-import { CommandGroup } from './CommandGroup';
-import { Logger } from '../Logger';
+import { Logger } from "Logger";
+
+import type {
+    ApplicationCommandOptionChoice,
+    Channel,
+    EmojiResolvable,
+    ExcludeEnum,
+    GuildMember,
+    Role,
+    Snowflake,
+    TextBasedChannel,
+    User,
+} from "discord.js";
+import type { ChannelTypes } from "discord.js/typings/enums";
+
+import type { CommandContext } from "CommandContext";
+import type { CommandGroup } from "commands/CommandGroup";
+import type { Bot } from "Bot";
 
 export enum PermissionLevel {
     Disabled = -1,
@@ -10,102 +23,132 @@ export enum PermissionLevel {
     VIP = 1,
     Mod = 2,
     Admin = 3,
-    Owner = 4
+    Owner = 4,
 }
 
-export abstract class Command {
-    protected _name: string;
-    protected _aliases: string[];
-    protected _permLevel: PermissionLevel;
-    protected _requiredPerm: PermissionResolvable;
-    protected _desc: string;
-    protected _longDesc: string;
-    protected _usage: string;
-    protected _runsInDm: boolean;
-    protected _group: CommandGroup;
-    protected logger: Logger;
+export class Command {
+    public readonly name: string;
 
-    constructor(name: string, permLevel: PermissionLevel, desc: string, bot: PantherBot, params?: CommandParameters) {
-        this._name = name;
+    public readonly args?: CommandArgument[];
+
+    private readonly _permLevel: PermissionLevel;
+
+    public get permLevel(): PermissionLevel {
+        return this._permLevel;
+    }
+
+    public readonly desc: string;
+
+    // The guild this command is registered for
+    public readonly guild?: Snowflake;
+
+    // If global command that can only be run in guilds
+    public readonly guildOnly?: boolean;
+
+    // If a slash command
+    public readonly slash?: boolean;
+
+    public readonly parent?: CommandGroup;
+
+    protected readonly logger: Logger;
+
+    protected readonly func: (
+        ctx: CommandContext,
+        ...args: any[]
+    ) => Promise<void>;
+
+    constructor(
+        name: string,
+        desc: string,
+        func: (ctx: CommandContext, ...args: any[]) => Promise<void>,
+        permLevel: PermissionLevel,
+        options: CommandOptions
+    ) {
+        this.name = name;
+        this.desc = desc;
+        this.func = func;
         this._permLevel = permLevel;
-        this._desc = desc;
+        this.parent = options.parent;
 
-        if(!params) params = <CommandParameters>{};
+        this.args = options.args;
+        this.guild = options.guild;
+        this.guildOnly = options.guildOnly;
+        this.slash = options.slash;
 
-        this._aliases = params.aliases ? params.aliases : [];
-        this._requiredPerm = params.requiredPerm;
-        this._longDesc = params.longDesc ? params.longDesc : "";
-        this._usage = params.usage ? params.usage : "";
-        this._runsInDm = (params.runsInDm != undefined) ? params.runsInDm : true;
-        this._group = params.group;
-
-        this.logger = Logger.getLogger(bot, this);
+        this.logger = Logger.getLogger(this);
     }
 
-    async abstract run(bot: PantherBot, message: Message, args: string[]): Promise<CommandResult>;
-
-    public get name(): string {
-        return(this._name);
-    }
-
-    public get aliases(): string[] {
-        return(this._aliases);
+    public async invoke(
+        ctx: CommandContext,
+        args: CommandParsedType[] | undefined
+    ): Promise<boolean> {
+        if (this.parent) {
+            await this.parent.invoke(ctx, args);
+        }
+        if (args) {
+            await this.func(ctx, ...args);
+        } else {
+            await this.func(ctx);
+        }
+        return false;
     }
 
     public get fullName(): string {
-        let name: string = "";
-        if(this._group) {
-            name = this._group.fullName + " ";
-        }
-        name += this._name;
-        return(name);
-    }
-
-    public get permLevel(): PermissionLevel {
-        return(this._permLevel);
-    }
-
-    public get requiredPerm(): PermissionResolvable {
-        return(this._requiredPerm);
-    }
-
-    public get desc(): string {
-        return(this._desc);
-    }
-
-    public get longDesc(): string {
-        let desc: string = this._desc;
-        if(this._longDesc !== "") {
-            desc += "\n\n" + this._longDesc;
-        }
-
-        return(desc);
-    }
-
-    public get usage(): string {
-        return(this._usage);
-    }
-
-    public get runsInDm(): boolean {
-        return(this._runsInDm);
-    }
-
-    public get group(): CommandGroup {
-        return(this.group);
+        return this.parent ? `${this.parent.name} ${this.name}` : this.name;
     }
 }
 
-export interface CommandResult {
-    sendHelp: boolean,
-    command: Command,
-    message: Message
+export type CommandOptions = {
+    parent?: CommandGroup;
+    args?: CommandArgument[];
+    guild?: Snowflake;
+    guildOnly?: boolean;
+    slash?: boolean;
+};
+
+interface BaseCommandArgument {
+    name: string;
+    type: CommandArgumentType;
+    description: string;
+    optional?: boolean;
+};
+
+interface ChoicesCommandArgument extends BaseCommandArgument {
+    type: "string" | "int" | "number";
+    choices?: ApplicationCommandOptionChoice[];
 }
 
-export interface CommandParameters {
-    aliases?: string[],
-    requiredPerm?: PermissionResolvable,
-    longDesc?: string,
-    usage?: string,
-    runsInDm?: boolean,
-    group?: CommandGroup
+interface ChannelCommandArgument extends BaseCommandArgument {
+    type: "channel";
+    channelTypes?: ExcludeEnum<typeof ChannelTypes, "UNKNOWN">[];
 }
+
+interface NumericCommandArgument extends BaseCommandArgument {
+    type: "int" | "number";
+    minValue?: number;
+    maxValue?: number;
+}
+
+interface AutocompleteCommandArgument extends BaseCommandArgument {
+    type: "string" | "int" | "number";
+    autocomplete: true;
+    choices: undefined;
+    autocompleteFunc: (channel: TextBasedChannel, user: User, guildId: string | null, bot: Bot) => Promise<string[] | number[]>;
+}
+
+export type CommandArgument = BaseCommandArgument | ChoicesCommandArgument | ChannelCommandArgument | NumericCommandArgument | AutocompleteCommandArgument;
+
+// TODO: Add mentionable, message
+export type CommandArgs = {
+    string: string,
+    int: number,
+    number: number,
+    bool: boolean,
+    user: User,
+    member: GuildMember,
+    channel: Channel,
+    role: Role,
+    emoji: EmojiResolvable
+}
+export type CommandArgumentType = keyof CommandArgs;
+export type CommandParsedType = CommandArgs[keyof CommandArgs] | undefined;

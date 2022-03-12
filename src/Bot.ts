@@ -1,126 +1,169 @@
-import {Client, Snowflake} from 'discord.js';
-import {Credentials} from './config/Credentials';
-import { CommandManager } from './CommandManager';
-import { ReactionRoleManager } from './reactionroles/ReactionRoleManager';
-import { HelpManager } from './HelpManager';
-import { Logger, LogLevel } from './Logger';
-import { EventLogger } from './eventlogs/EventLogger';
-import { DatabaseManager } from './config/DatabaseManager';
-import { ConfigManager } from './config/ConfigManager';
-import { VerificationManager } from './verification/VerificationManager';
-import { HondeBannerManager } from './hondebanner/HondeBannerManager';
-import { TwitchAPIManager } from './twitch/TwitchAPIManager';
-import { TwitchClipModManager } from './twitch/TwitchClipModManager';
+import { Credentials } from "config/Credentials";
+import { CommandManager } from "CommandManager";
+import { ReactionRoleManager } from "reactionroles/ReactionRoleManager";
+import { Logger, LogLevel } from "Logger";
+import { EventLogger } from "eventlogs/EventLogger";
+import { DatabaseManager } from "database/DatabaseManager";
+import { VerificationManager } from "verification/VerificationManager";
+import { Client, Snowflake } from "discord.js";
+import { Config } from "config/Config";
+import { CommandUtils } from "utils/CommandUtils";
+import { TwitchAPIManager } from "./twitch/TwitchAPIManager";
+import { TwitchClipModManager } from "./twitch/TwitchClipModManager";
 
-export class PantherBot {
-    private _client: Client;
-    private _credentials: Credentials;
-    private _configManager: ConfigManager;
-    private _databaseManager: DatabaseManager;
-    private _commandManager: CommandManager;
-    private _reactionRoleManager: ReactionRoleManager;
-    private _helpManager: HelpManager;
-    private _verificationManager: VerificationManager;
-    private _hondeBannerManager: HondeBannerManager;
-    private _twitchApiManager: TwitchAPIManager;
-    private _twitchClipModManager: TwitchClipModManager;
-    private logger: Logger;
-    private _eventLogger: EventLogger;
+export class Bot {
+    private readonly credentials: Credentials;
+
+    private readonly verificationManager: VerificationManager;
+
+    private readonly twitchClipModManager: TwitchClipModManager;
+
+    private readonly logger: Logger;
+
+    private readonly eventLogger: EventLogger;
+
+    private readonly reactionRoleManager: ReactionRoleManager;
+
+    public readonly client: Client<true>;
+
+    public readonly config: Config;
+
+    public readonly db: DatabaseManager;
+
+    public readonly commandManager: CommandManager;
+
+    public readonly twitch: TwitchAPIManager;
+
+    public dev: boolean = false;
 
     constructor() {
-        this._client = new Client({partials: ['MESSAGE', 'REACTION']});
-        this.logger = Logger.getLogger(this,this);
-        this._credentials = new Credentials(this);
-        this._databaseManager = new DatabaseManager(this, this._credentials.rethinkCreds);
-        this._commandManager = new CommandManager(this);
-        this._helpManager = new HelpManager;
-        this._eventLogger = new EventLogger(this);
-        this._verificationManager = new VerificationManager(this);
-        this._hondeBannerManager = new HondeBannerManager(this);
-        this._twitchApiManager = new TwitchAPIManager(this, this._credentials.twitchId, this._credentials.twitchSecret);
-        this._twitchClipModManager = new TwitchClipModManager(this);
-        
-        this._client.on('message', this._commandManager.parseCommand.bind(this._commandManager));
-        this._client.on('ready', async () => {
-            await this.logger.info(`Welcome to PantherBot-Discord-JS! Logged in as ${this._client.user.tag} in ${this._client.guilds.cache.size} guild(s).`);
-        })
+        this.client = new Client({
+            intents: [
+                "GUILDS",
+                "GUILD_MEMBERS",
+                "GUILD_BANS",
+                "GUILD_EMOJIS_AND_STICKERS",
+                "GUILD_MESSAGES",
+                "GUILD_MESSAGE_REACTIONS",
+                "DIRECT_MESSAGES",
+                "DIRECT_MESSAGE_REACTIONS",
+            ],
+            partials: ["MESSAGE", "REACTION", "CHANNEL"],
+        });
+        Logger.bot = this;
+        this.logger = Logger.getLogger(this);
+        this.credentials = new Credentials(this);
+        this.config = new Config(this);
+        this.db = new DatabaseManager(this);
+        this.commandManager = new CommandManager(this);
+        this.eventLogger = new EventLogger(this);
+        this.verificationManager = new VerificationManager(this);
+        this.twitch = new TwitchAPIManager(
+            this,
+            this.credentials.twitchId,
+            this.credentials.twitchSecret
+        );
+        this.twitchClipModManager = new TwitchClipModManager(this);
+        this.reactionRoleManager = new ReactionRoleManager(this);
+        CommandUtils.bot = this;
+
+        this.client.on("ready", async () => {
+            await this.logger.info(
+                `Welcome to Slowmander! Logged in as ${this.client.user.tag} in ${this.client.guilds.cache.size} guild(s).`
+            );
+            await this.commandManager.deploySlashCommands();
+            await this.commandManager.deploySlashPermissions(undefined);
+
+            this.dev = this.credentials.devIds.filter(id => {return this.client.user.id === id;}).length > 0;
+            if (this.dev) {
+                this.logger.info("Running in IDE, debug features enabled")
+            }
+        });
     }
-    
+
     public run() {
-        let token: string = this._credentials.token;
-        if(token === "") {
-            this.logger.logSync(LogLevel.ERROR, "No token provided, please put a valid token in the config file.");
+        const { token } = this.credentials;
+        if (token === "") {
+            this.logger.logSync(
+                LogLevel.ERROR,
+                "No token provided, please put a valid token in the config file."
+            );
             process.exit();
         }
-        
-        //Connect to db
-        this._databaseManager.connect().then(() => {
-            this._configManager = new ConfigManager(this);
-            this._reactionRoleManager = new ReactionRoleManager(this);
-            this._client.on('messageReactionAdd', this._reactionRoleManager.onMessageReactionAdd.bind(this._reactionRoleManager));
-            this._client.on('messageReactionRemove', this._reactionRoleManager.onMessageReactionRemove.bind(this._reactionRoleManager));
-            this._client.on("guildMemberAdd", this._verificationManager.onGuildMemberAdd.bind(this._verificationManager));
-            this._client.on("messageReactionAdd", this._verificationManager.onMessageReactionAdd.bind(this._verificationManager));
-            this._client.on("guildMemberAdd", this._hondeBannerManager.onGuildMemberAdd.bind(this._hondeBannerManager));
-            this._client.on("message", this._hondeBannerManager.onMessage.bind(this._hondeBannerManager));
-            this._client.on("message", this._twitchClipModManager.onMessage.bind(this._twitchClipModManager));
-            this._client.on("messageUpdate", this._twitchClipModManager.onMessageUpdate.bind(this._twitchClipModManager));
-        }).catch((err) => {
-            this.logger.logSync(LogLevel.ERROR, "Error with db", err);
-        })
 
-        this._client.login(token);
+        this.client.login(token).then(() => {
+            this.client.on(
+                "guildCreate",
+                this.commandManager.deploySlashPermissions.bind(this.commandManager)
+            );
+            this.client.on(
+                "messageCreate",
+                this.commandManager.parseCommand.bind(this.commandManager)
+            );
+            this.client.on(
+                "interactionCreate",
+                this.commandManager.handleSlash.bind(this.commandManager)
+            );
+            this.client.on(
+                "interactionCreate",
+                this.commandManager.handleAutocomplete.bind(this.commandManager)
+            );
+            this.client.on(
+                "messageReactionAdd",
+                this.reactionRoleManager.onMessageReactionAdd.bind(
+                    this.reactionRoleManager
+                )
+            );
+            this.client.on(
+                "messageReactionRemove",
+                this.reactionRoleManager.onMessageReactionRemove.bind(
+                    this.reactionRoleManager
+                )
+            );
+            this.client.on(
+                "guildMemberAdd",
+                this.verificationManager.onGuildMemberAdd.bind(
+                    this.verificationManager
+                )
+            );
+            this.client.on(
+                "messageReactionAdd",
+                this.verificationManager.onMessageReactionAdd.bind(
+                    this.verificationManager
+                )
+            );
+            this.client.on(
+                "messageCreate",
+                this.twitchClipModManager.onMessage.bind(
+                    this.twitchClipModManager
+                )
+            );
+            this.client.on(
+                "messageUpdate",
+                this.twitchClipModManager.onMessageUpdate.bind(
+                    this.twitchClipModManager
+                )
+            );
+        });
     }
 
     public async addOwner(ownerId: Snowflake) {
-        return(await this._credentials.addOwner(ownerId));
+        return this.credentials.addOwner(ownerId);
     }
 
     public async removeOwner(ownerId: Snowflake) {
-        return(await this._credentials.removeOwner(ownerId));
+        return this.credentials.removeOwner(ownerId);
     }
 
     public get owners(): Snowflake[] {
-        return(this._credentials.owners);
+        return this.credentials.owners;
     }
 
     public get catApiToken(): string {
-        return(this._credentials.catApiToken)
-    }
-
-    public get configs(): ConfigManager {
-        return(this._configManager);
-    }
-
-    public get databaseManager(): DatabaseManager {
-        return(this._databaseManager);
-    }
-
-    public get commandManager(): CommandManager {
-        return(this._commandManager);
-    }
-
-    public get reactionRoleManager(): ReactionRoleManager {
-        return(this._reactionRoleManager);
-    }
-
-    public get helpManager(): HelpManager {
-        return(this._helpManager);
-    }
-
-    public get twitchApiManager(): TwitchAPIManager {
-        return this._twitchApiManager;
-    }
-
-    public get client(): Client {
-        return(this._client);
-    }
-
-    public get eventLogger(): EventLogger {
-        return(this._eventLogger);
+        return this.credentials.catApiToken;
     }
 }
 
-let bot = new PantherBot;
+const bot = new Bot();
 
 bot.run();

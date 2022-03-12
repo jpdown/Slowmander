@@ -1,19 +1,23 @@
-import { PantherBot } from "../Bot";
+import type { Bot } from "Bot";
+import { Logger } from "Logger";
 
-import { ApiClient, HelixClip, HelixUser } from "twitch";
-import { ClientCredentialsAuthProvider } from "twitch-auth";
-import { Logger } from "../Logger";
+import { ApiClient, HelixClip, HelixUser } from "@twurple/api";
+import { ClientCredentialsAuthProvider } from "@twurple/auth";
 
 export class TwitchAPIManager {
-    private bot: PantherBot;
+    private bot: Bot;
+
     private logger: Logger;
-    private client: ApiClient;
+
+    private client: ApiClient | undefined;
+
     private clientId: string;
+
     private clientSecret: string;
 
-    constructor(bot: PantherBot, clientId: string, clientSecret: string) {
+    constructor(bot: Bot, clientId: string, clientSecret: string) {
         this.bot = bot;
-        this.logger = Logger.getLogger(bot, this);
+        this.logger = Logger.getLogger(this);
         this.client = undefined;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
@@ -26,48 +30,51 @@ export class TwitchAPIManager {
 
         if (this.client === undefined) {
             // Give up, we don't have auth
-            await this.logger.warning("No Twitch auth, failing.")
+            await this.logger.warning("No Twitch auth, failing.");
             return null;
         }
 
         // Get user
-        let twitchUser: HelixUser = await this.client.helix.users.getUserByName(username);
+        const twitchUser: HelixUser | null =
+            await this.client.users.getUserByName(username);
 
         if (twitchUser === null) {
             return null;
         }
-        else { 
-            return twitchUser.id;
-        }
+
+        return twitchUser.id;
     }
 
-    public async getUserIds(users: string[]): Promise<HelixUser[]> {
+    public async getUserIds(users: string[]): Promise<HelixUser[] | null> {
         if (this.client === undefined) {
             await this.getClient();
         }
 
         if (this.client === undefined) {
             // Give up, we don't have auth
-            await this.logger.warning("No Twitch auth, failing.")
+            await this.logger.warning("No Twitch auth, failing.");
             return null;
         }
 
-        let twitchUsers: HelixUser[] = await this.client.helix.users.getUsersByNames(users);
+        const twitchUsers: HelixUser[] =
+            await this.client.users.getUsersByNames(users);
         return twitchUsers;
     }
 
-    public async getUsersByIds(userIds: string[]): Promise<HelixUser[]> {
+    public async getUsersByIds(userIds: string[]): Promise<HelixUser[] | null> {
         if (this.client === undefined) {
             await this.getClient();
         }
 
         if (this.client === undefined) {
             // Give up, we don't have auth
-            await this.logger.warning("No Twitch auth, failing.")
+            await this.logger.warning("No Twitch auth, failing.");
             return null;
         }
 
-        let twitchUsers: HelixUser[] = await this.client.helix.users.getUsersByIds(userIds);
+        const twitchUsers: HelixUser[] = await this.client.users.getUsersByIds(
+            userIds
+        );
         return twitchUsers;
     }
 
@@ -78,19 +85,19 @@ export class TwitchAPIManager {
 
         if (this.client === undefined) {
             // Give up, we don't have auth
-            await this.logger.warning("No Twitch auth, failing.")
+            await this.logger.warning("No Twitch auth, failing.");
             return null;
         }
 
         // Get clip
-        let twitchClip: HelixClip = await this.client.helix.clips.getClipById(clipId);
+        const twitchClip: HelixClip | null =
+            await this.client.clips.getClipById(clipId);
 
         if (twitchClip === null) {
             return null;
         }
-        else {
-            return twitchClip.broadcasterId;
-        }
+
+        return twitchClip.broadcasterId;
     }
 
     public async getApiStatus(): Promise<boolean> {
@@ -100,11 +107,18 @@ export class TwitchAPIManager {
     }
 
     private async getClient(): Promise<void> {
-        if (this.client !== undefined || this.clientId === "" || this.clientSecret === "") {
+        if (
+            this.client !== undefined ||
+            this.clientId === "" ||
+            this.clientSecret === ""
+        ) {
             return;
         }
 
-        let auth = new ClientCredentialsAuthProvider(this.clientId, this.clientSecret);
+        const auth = new ClientCredentialsAuthProvider(
+            this.clientId,
+            this.clientSecret
+        );
         this.client = new ApiClient({ authProvider: auth });
     }
 }
