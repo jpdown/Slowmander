@@ -1,4 +1,5 @@
 import { Bot } from "Bot";
+import { GuildConfigs } from "database/GuildConfigs";
 import { Message, User } from "discord.js";
 import { Logger } from "Logger";
 
@@ -19,6 +20,10 @@ export class SpamChecker {
         let user = message.author;
 
         if (user.bot) return;
+
+        if (!message.guildId) return; // don't run in DMs
+
+        if (!this.bot.db.guildConfigs.getSpamBan(message.guildId)) return;
 
         if (this.linkRegex.test(message.content)) {
             let lastMessage: Message | undefined = this.lastMessage.get(user);

@@ -173,4 +173,20 @@ export class DatabaseManager {
             this.logger.error("Error creating schema version 1.", err);
         }
     }
+
+    private createSchemaVer2() {
+        try {
+            this.db.prepare("BEGIN;").run();
+
+            this.db.prepare('ALTER TABLE GuildConfigs ADD COLUMN "spamBan" BOOLEAN NOT NULL CHECK (spamBan IN (0, 1));').run();
+
+            this.db.pragma("user_version = 2;");
+
+            this.db.prepare("COMMIT;").run();
+            this.logger.info("Database schema version 2 created.");
+        } catch (err) {
+            this.db.prepare("ROLLBACK;").run();
+            this.logger.error("Error creating schema version 2.", err);
+        }
+    }
 }
