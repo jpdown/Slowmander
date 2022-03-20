@@ -24,7 +24,11 @@ export class SpamChecker {
             let lastMessage: Message | undefined = this.lastMessage.get(user);
             let count = this.usersMap.get(user) ?? 0;
             if (lastMessage && count > 0) {
-                if (this.linkRegex.test(message.content) && this.linkRegex.test(lastMessage.content)) {
+                if (
+                    this.linkRegex.test(message.content) &&
+                    this.linkRegex.test(lastMessage.content) &&
+                    lastMessage.createdAt.getSeconds() - message.createdAt.getSeconds() <= 3
+                ) {
                     count++;
                 } else {
                     this.usersMap.delete(user);
