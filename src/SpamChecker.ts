@@ -2,12 +2,13 @@ import { Bot } from "Bot";
 import { GuildConfigs } from "database/GuildConfigs";
 import { Message, User } from "discord.js";
 import { Logger } from "Logger";
+import { ModErrorLog } from "moderrorlog/ModErrorLog";
 
 export class SpamChecker {
     private bot: Bot;
     private logger: Logger;
     private linkRegex =
-        /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
+        /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/i;
     private usersMap = new Map<User, number>();
     private lastMessage = new Map<User, Message>();
 
@@ -46,7 +47,12 @@ export class SpamChecker {
             this.usersMap.set(user, count);
 
             if (count == 3) {
-                await message.guild!.members.ban(user);
+                try {
+                    await message.guild!.members.ban(user);
+                } catch (err) {
+                    this.logger.warning(`Couldn't ban spammer ${user.toString()}`, err);
+                    ModErrorLog.log(`Couldn't ban spammer ${user.toString()}, likely missing permissions.`, message.guild!, this.bot)
+                }
                 this.usersMap.delete(user);
                 this.lastMessage.delete(user);
             } else {
