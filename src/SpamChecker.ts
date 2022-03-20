@@ -32,7 +32,7 @@ export class SpamChecker {
             if (lastMessage && count > 0) {
                 let newLink = this.linkRegex.exec(message.content);
                 let lastLink = this.linkRegex.exec(lastMessage.content);
-                if (newLink![0] == lastLink![0] && message.createdAt.getTime() - lastMessage.createdAt.getTime() <= this.TIMEOUT) {
+                if (newLink![0] === lastLink![0] && message.createdAt.getTime() - lastMessage.createdAt.getTime() <= this.TIMEOUT) {
                     count++;
                 } else {
                     this.usersMap.delete(user);
