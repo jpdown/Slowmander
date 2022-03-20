@@ -195,6 +195,24 @@ export class GuildConfigs {
             return false;
         }
     }
+
+    public setSpamBan(guildId: Snowflake, spamBan: boolean): boolean {
+        let rowsModified = 0;
+
+        try {
+            const info = this.db
+                .prepare(
+                    "INSERT INTO GuildConfigs(guildId,spamBan) VALUES(?, ?) " +
+                        "ON CONFLICT(guildId) DO UPDATE SET spamBan=excluded.spamBan;"
+                )
+                .run(guildId, spamBan ? 1 : 0);
+            rowsModified = info.changes;
+        } catch (err) {
+            this.logger.error("Error setting GuildConfig spamBan", err);
+        }
+
+        return rowsModified > 0;
+    }
 }
 
 type GuildConfig = {

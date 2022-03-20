@@ -12,7 +12,7 @@ import { Verification } from "./Verification";
 export class DatabaseManager {
     private readonly DB_PATH: string = "./data/slowmander.db";
 
-    private readonly DB_VERSION: number = 1;
+    private readonly DB_VERSION: number = 2;
 
     private readonly logger: Logger;
 
@@ -50,8 +50,12 @@ export class DatabaseManager {
             simple: true,
         });
 
-        if (dbVersion === 0) {
+        // TODO: this sucks
+        if (dbVersion < 1) {
             this.createSchemaVer1();
+        }
+        if (dbVersion < 2) {
+            this.createSchemaVer2();
         }
     }
 
@@ -178,7 +182,7 @@ export class DatabaseManager {
         try {
             this.db.prepare("BEGIN;").run();
 
-            this.db.prepare('ALTER TABLE GuildConfigs ADD COLUMN "spamBan" BOOLEAN NOT NULL CHECK (spamBan IN (0, 1));').run();
+            this.db.prepare('ALTER TABLE GuildConfigs ADD COLUMN "spamBan" BOOLEAN DEFAULT 0 NOT NULL;').run();
 
             this.db.pragma("user_version = 2;");
 

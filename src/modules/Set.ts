@@ -142,4 +142,22 @@ export class Set extends Module {
             }
         }
     }
+
+    @subcommand("set", "Sets whether the bot will autoban link spammers")
+    @args([
+        {
+            name: "enabled",
+            type: "bool",
+            description: "Whether to ban",
+        },
+    ])
+    @isAdmin()
+    @guildOnly()
+    public async spamban(c: CommandContext<true>, enabled: boolean) {
+        if (c.bot.db.guildConfigs.setSpamBan(c.guild.id, enabled)) {
+            await c.reply(`Spam ban for ${c.guild.name} successfully ${enabled ? 'enabled' : 'disabled'}!`);
+        } else {
+            await c.reply(`Spam ban was unable to be set for guild.`);
+        }
+    }
 }
