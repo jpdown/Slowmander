@@ -48,7 +48,7 @@ export class SpamChecker {
 
             if (count == 3) {
                 try {
-                    await message.guild!.members.ban(user);
+                    await message.guild!.members.ban(user, {days: 1, reason: "SpamChecker: Caught link spam"});
                 } catch (err) {
                     this.logger.warning(`Couldn't ban spammer ${user.toString()}`, err);
                     ModErrorLog.log(`Couldn't ban spammer ${user.toString()}, likely missing permissions.`, message.guild!, this.bot)
