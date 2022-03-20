@@ -5,6 +5,7 @@ import { Logger } from "Logger";
 import { ModErrorLog } from "moderrorlog/ModErrorLog";
 
 export class SpamChecker {
+    private readonly TIMEOUT = 3000;
     private bot: Bot;
     private logger: Logger;
     private linkRegex =
@@ -31,9 +32,8 @@ export class SpamChecker {
             let count = this.usersMap.get(user) ?? 0;
             if (lastMessage && count > 0) {
                 if (
-                    this.linkRegex.test(message.content) &&
-                    this.linkRegex.test(lastMessage.content) &&
-                    lastMessage.createdAt.getSeconds() - message.createdAt.getSeconds() <= 3
+                    lastMessage.content === message.content &&
+                    message.createdAt.getTime() - lastMessage.createdAt.getTime() <= this.TIMEOUT
                 ) {
                     count++;
                 } else {
@@ -57,9 +57,19 @@ export class SpamChecker {
                 this.lastMessage.delete(user);
             } else {
                 this.lastMessage.set(user, message);
+                setTimeout(this.removeUser.bind(this), this.TIMEOUT, user);
             }
         }
 
         return;
+    }
+
+    private async removeUser(user: User) {
+        const lastMessageTime = this.lastMessage.get(user)?.createdAt.getTime();
+        const currentTime = new Date().getTime();
+        if (lastMessageTime && currentTime - lastMessageTime > this.TIMEOUT) {
+            this.lastMessage.delete(user);
+            this.usersMap.delete(user);
+        }
     }
 }
