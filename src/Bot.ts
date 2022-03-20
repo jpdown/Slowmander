@@ -10,6 +10,7 @@ import { Config } from "config/Config";
 import { CommandUtils } from "utils/CommandUtils";
 import { TwitchAPIManager } from "./twitch/TwitchAPIManager";
 import { TwitchClipModManager } from "./twitch/TwitchClipModManager";
+import { SpamChecker } from "SpamChecker";
 
 export class Bot {
     private readonly credentials: Credentials;
@@ -21,6 +22,8 @@ export class Bot {
     private readonly logger: Logger;
 
     private readonly eventLogger: EventLogger;
+
+    private readonly spamChecker: SpamChecker;
 
     private readonly reactionRoleManager: ReactionRoleManager;
 
@@ -57,6 +60,7 @@ export class Bot {
         this.db = new DatabaseManager(this);
         this.commandManager = new CommandManager(this);
         this.eventLogger = new EventLogger(this);
+        this.spamChecker = new SpamChecker(this);
         this.verificationManager = new VerificationManager(this);
         this.twitch = new TwitchAPIManager(
             this,
@@ -136,8 +140,14 @@ export class Bot {
                 "messageCreate",
                 this.twitchClipModManager.onMessage.bind(
                     this.twitchClipModManager
-                )
+                ),
             );
+            this.client.on(
+                "messageCreate",
+                this.spamChecker.checkMessage.bind(
+                    this.spamChecker
+                )
+            )
             this.client.on(
                 "messageUpdate",
                 this.twitchClipModManager.onMessageUpdate.bind(

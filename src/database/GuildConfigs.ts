@@ -183,6 +183,36 @@ export class GuildConfigs {
 
         return rowsModified > 0;
     }
+
+    public getSpamBan(guildId: Snowflake): boolean | null | undefined {
+        try {
+            const row: GuildConfig | undefined = this.db
+                .prepare("SELECT spamBan FROM GuildConfigs WHERE guildId = ?;")
+                .get(guildId);
+            return row?.spamBan;
+        } catch (err) {
+            this.logger.error("Error getting spamBan from db", err);
+            return false;
+        }
+    }
+
+    public setSpamBan(guildId: Snowflake, spamBan: boolean): boolean {
+        let rowsModified = 0;
+
+        try {
+            const info = this.db
+                .prepare(
+                    "INSERT INTO GuildConfigs(guildId,spamBan) VALUES(?, ?) " +
+                        "ON CONFLICT(guildId) DO UPDATE SET spamBan=excluded.spamBan;"
+                )
+                .run(guildId, spamBan ? 1 : 0);
+            rowsModified = info.changes;
+        } catch (err) {
+            this.logger.error("Error setting GuildConfig spamBan", err);
+        }
+
+        return rowsModified > 0;
+    }
 }
 
 type GuildConfig = {
@@ -192,4 +222,5 @@ type GuildConfig = {
     modRole: Snowflake | null | undefined;
     adminRole: Snowflake | null | undefined;
     modChannel: Snowflake | null | undefined;
+    spamBan: boolean | null | undefined;
 };
