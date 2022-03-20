@@ -1,5 +1,4 @@
 import { Bot } from "Bot";
-import { GuildConfigs } from "database/GuildConfigs";
 import { Message, User } from "discord.js";
 import { Logger } from "Logger";
 import { ModErrorLog } from "moderrorlog/ModErrorLog";
@@ -31,10 +30,9 @@ export class SpamChecker {
             let lastMessage: Message | undefined = this.lastMessage.get(user);
             let count = this.usersMap.get(user) ?? 0;
             if (lastMessage && count > 0) {
-                if (
-                    lastMessage.content === message.content &&
-                    message.createdAt.getTime() - lastMessage.createdAt.getTime() <= this.TIMEOUT
-                ) {
+                let newLink = this.linkRegex.exec(message.content);
+                let lastLink = this.linkRegex.exec(lastMessage.content);
+                if (newLink![0] == lastLink![0] && message.createdAt.getTime() - lastMessage.createdAt.getTime() <= this.TIMEOUT) {
                     count++;
                 } else {
                     this.usersMap.delete(user);
@@ -48,7 +46,7 @@ export class SpamChecker {
 
             if (count == 3) {
                 try {
-                    await message.guild!.members.ban(user, {days: 1, reason: "SpamChecker: Caught link spam"});
+                     await message.guild!.members.ban(user, {days: 1, reason: "SpamChecker: Caught link spam"});
                 } catch (err) {
                     this.logger.warning(`Couldn't ban spammer ${user.toString()}`, err);
                     ModErrorLog.log(`Couldn't ban spammer ${user.toString()}, likely missing permissions.`, message.guild!, this.bot)
