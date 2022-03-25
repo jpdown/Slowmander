@@ -84,4 +84,21 @@ export class Fun extends Module {
         
         await c.reply({embeds: [embed]});
     }
+
+    @command("?")
+    public async why(c: CommandContext) {
+        await c.defer();
+
+        let resp = await (await fetch("https://nekos.life/api/v2/why")).json();
+        if (!resp.why) {
+            throw new Error(`Error obtaining text from nekos.life`);
+        }
+
+        let embed = new MessageEmbed()
+            .setColor(await CommandUtils.getSelfColor(c.channel))
+            .setTitle("?")
+            .setDescription(resp.why);
+
+        await c.reply({embeds: [embed]});
+    }
 }
