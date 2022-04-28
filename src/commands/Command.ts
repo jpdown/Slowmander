@@ -31,11 +31,7 @@ export class Command {
 
     public readonly args?: CommandArgument[];
 
-    private readonly _permLevel: PermissionLevel;
-
-    public get permLevel(): PermissionLevel {
-        return this._permLevel;
-    }
+    public readonly permLevel: PermissionLevel;
 
     public readonly desc: string;
 
@@ -67,7 +63,7 @@ export class Command {
         this.name = name;
         this.desc = desc;
         this.func = func;
-        this._permLevel = permLevel;
+        this.permLevel = permLevel;
         this.parent = options.parent;
 
         this.args = options.args;
