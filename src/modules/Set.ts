@@ -10,6 +10,7 @@ export class Set extends Module {
     }
 
     @group("Commands for setting options on the bot")
+    @isAdmin()
     public async set(c: CommandContext) {}
 
     @subcommand("set", "Sets the prefix for the current guild")
@@ -46,7 +47,6 @@ export class Set extends Module {
         } else {
             if (c.bot.db.guildConfigs.setVipRole(c.guild.id, role.id)) {
                 await c.reply(`VIP role for ${c.guild.name} set to ${role.name}!`);
-                await c.bot.commandManager.deploySlashPermissions(c.guild);
             } else {
                 await c.reply(`Role was unable to be set for guild.`);
             }
@@ -69,7 +69,6 @@ export class Set extends Module {
         } else {
             if (c.bot.db.guildConfigs.setModRole(c.guild.id, role.id)) {
                 await c.reply(`Mod role for ${c.guild.name} set to ${role.name}!`);
-                await c.bot.commandManager.deploySlashPermissions(c.guild);
             } else {
                 await c.reply(`Role was unable to be set for guild.`);
             }
@@ -92,7 +91,6 @@ export class Set extends Module {
         } else {
             if (c.bot.db.guildConfigs.setAdminRole(c.guild.id, role.id)) {
                 await c.reply(`Admin role for ${c.guild.name} set to ${role.name}!`);
-                await c.bot.commandManager.deploySlashPermissions(c.guild);
             } else {
                 await c.reply(`Role was unable to be set for guild.`);
             }

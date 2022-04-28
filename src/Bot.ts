@@ -76,7 +76,6 @@ export class Bot {
                 `Welcome to Slowmander! Logged in as ${this.client.user.tag} in ${this.client.guilds.cache.size} guild(s).`
             );
             await this.commandManager.deploySlashCommands();
-            await this.commandManager.deploySlashPermissions(undefined);
 
             this.dev = this.credentials.devIds.filter(id => {return this.client.user.id === id;}).length > 0;
             if (this.dev) {
@@ -96,10 +95,6 @@ export class Bot {
         }
 
         this.client.login(token).then(() => {
-            this.client.on(
-                "guildCreate",
-                this.commandManager.deploySlashPermissions.bind(this.commandManager)
-            );
             this.client.on(
                 "messageCreate",
                 this.commandManager.parseCommand.bind(this.commandManager)

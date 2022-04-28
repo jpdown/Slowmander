@@ -178,6 +178,11 @@ export class CommandManager {
             return;
         }
 
+        // If owner only command, only allow owners
+        if (cmd.permLevel === PermissionLevel.Owner && !this.bot.owners.includes(interaction.user.id)) {
+            return;
+        }
+
         // Warn if the interaction does not have a channel
         if (!interaction.channel) {
             this.logger.warning(
@@ -320,84 +325,6 @@ export class CommandManager {
             await guildObj.commands.fetch();
             await this.compareSlash(cmds, guildObj.commands);
         }
-    }
-
-    public async deploySlashPermissions(guild: Guild | undefined) {
-        let globalCmds: Map<string, [ApplicationCommand<{guild: GuildResolvable}>, Command]> = new Map();
-        let currPerms: ApplicationCommandPermissionData[];
-        let currGuildCmds: Map<string, [ApplicationCommand<{}>, Command]> = new Map();
-        let currGuildVIPRole: Snowflake | null | undefined;
-        let currGuildModRole: Snowflake | null | undefined;
-        let currGuildAdminRole: Snowflake | null | undefined;
-        let ownerPerms: ApplicationCommandPermissionData[] = [];
-        // If given a guild, make a one element array of that guild
-        let guilds = guild ? [guild] : this.bot.client.guilds.cache.values();
-
-        // Get owners
-        for (let owner of this.bot.owners) {
-            ownerPerms.push({id: owner, type: "USER", permission: true});
-        }
-
-        globalCmds = await this.getSlashWithPerms(this.bot.client.application.commands, "GLOBAL");
-        
-        // Global commands need to deploy permissions per guild
-        for (let guild of guilds) {
-            // Get roles
-            currGuildVIPRole = this.bot.db.guildConfigs.getVipRole(guild.id);
-            currGuildModRole = this.bot.db.guildConfigs.getModRole(guild.id);
-            currGuildAdminRole = this.bot.db.guildConfigs.getAdminRole(guild.id);
-
-            // Handle global commands first
-            for (let [cmdId, [slash, cmd]] of globalCmds) {
-                currPerms = await this.generateSlashPerms(cmd, currGuildVIPRole, currGuildModRole, currGuildAdminRole, ownerPerms);
-                slash.permissions.set({ guild: guild.id, permissions: currPerms });
-            }
-
-            // Get list of guild commands to set permissions
-            currGuildCmds = await this.getSlashWithPerms(guild.commands, guild.id);
-            // Deploy guild perms
-            for (let [cmdId, [slash, cmd]] of currGuildCmds) {
-                currPerms = await this.generateSlashPerms(cmd, currGuildVIPRole, currGuildModRole, currGuildAdminRole, ownerPerms);
-                slash.permissions.set({ permissions: currPerms });
-            }
-        }
-    }
-
-    private async getSlashWithPerms(manager: ApplicationCommandManager | GuildApplicationCommandManager, guildId: string): Promise<Map<string, [ApplicationCommand, Command]>> {
-        let cmds: Map<string, [ApplicationCommand, Command]> = new Map();
-        for (let cmd of manager.cache.values()) {
-            let localCmd = this.commandMap.get(guildId + "," + cmd.name);
-            if (!localCmd) {
-                this.logger.error(`Slash command exists that we don't have. ${guildId} command ${cmd.name}.`);
-                continue;
-            }
-
-            // We only need to set perms if not an everyone command
-            if (localCmd.permLevel > PermissionLevel.Everyone) {
-                cmds.set(cmd.name, [cmd, localCmd]);
-            }
-        }
-
-        return cmds;
-    }
-
-    private async generateSlashPerms(cmd: Command, vipRole: Snowflake | null | undefined, modRole: Snowflake | null | undefined, adminRole: Snowflake | null | undefined, ownerPerms: ApplicationCommandPermissionData[]): Promise<ApplicationCommandPermissionData[]> {
-        let currPerms: ApplicationCommandPermissionData[] = [];
-        // Always allow owners
-        currPerms = currPerms.concat(ownerPerms);
-
-        if (cmd.permLevel <= PermissionLevel.VIP && vipRole) {
-            currPerms.push({ id: vipRole, type: "ROLE", permission: true })
-        }
-        if (cmd.permLevel <= PermissionLevel.Mod && modRole) {
-            currPerms.push({ id: modRole, type: "ROLE", permission: true })
-        }
-        if (cmd.permLevel <= PermissionLevel.Admin && adminRole) {
-            currPerms.push({ id: adminRole, type: "ROLE", permission: true })
-        }
-
-        // Deploy
-        return currPerms;
     }
 
     private async compareSlash(gen: ApplicationCommandData[], manager: ApplicationCommandManager | GuildApplicationCommandManager) {

@@ -24,18 +24,6 @@ export class CommandGroup extends Command {
         return this.subCommands.get(arg);
     }
 
-    public override get permLevel(): PermissionLevel {
-        let lowestPerm = PermissionLevel.Owner;
-
-        this.subCommands.forEach((subCommand) => {
-            if (subCommand.permLevel < lowestPerm) {
-                lowestPerm = subCommand.permLevel;
-            }
-        });
-
-        return lowestPerm;
-    }
-
     public registerSubCommand(command: Command): void {
         this.subCommands.set(command.name, command);
     }
