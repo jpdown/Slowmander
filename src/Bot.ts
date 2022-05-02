@@ -11,6 +11,7 @@ import { CommandUtils } from "utils/CommandUtils";
 import { TwitchAPIManager } from "./twitch/TwitchAPIManager";
 import { TwitchClipModManager } from "./twitch/TwitchClipModManager";
 import { SpamChecker } from "SpamChecker";
+import { REST } from "@discordjs/rest";
 
 export class Bot {
     private readonly credentials: Credentials;
@@ -28,6 +29,8 @@ export class Bot {
     private readonly reactionRoleManager: ReactionRoleManager;
 
     public readonly client: Client<true>;
+
+    public readonly rest: REST;
 
     public readonly config: Config;
 
@@ -69,6 +72,7 @@ export class Bot {
         );
         this.twitchClipModManager = new TwitchClipModManager(this);
         this.reactionRoleManager = new ReactionRoleManager(this);
+        this.rest = new REST({version: '10'}).setToken(this.credentials.token)
         CommandUtils.bot = this;
 
         this.client.on("ready", async () => {

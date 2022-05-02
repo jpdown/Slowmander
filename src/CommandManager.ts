@@ -1,4 +1,4 @@
-import { Command, PermissionLevel } from "commands/Command";
+import { Command, CommandArgumentType, PermissionLevel } from "commands/Command";
 import * as modules from "modules";
 import type { Bot } from "Bot";
 import { CommandGroup } from "commands/CommandGroup";
@@ -23,6 +23,7 @@ import {
     ApplicationCommandNonOptionsData,
     Guild,
     Permissions,
+    ApplicationCommandOptionType,
 } from "discord.js";
 import { CommandContext } from "CommandContext";
 import type { Module } from "modules/Module";
@@ -30,6 +31,9 @@ import { ArgumentParser } from "utils/ArgumentParser";
 import { PermissionsHelper } from "utils/PermissionsHelper";
 import { CommandUtils } from "utils/CommandUtils";
 import { HelpManager } from "HelpManager";
+import { SlashCommandBuilder, SlashCommandRoleOption, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder } from "@discordjs/builders";
+import { APIApplicationCommandOptionChoice, RESTPostAPIApplicationCommandsJSONBody, Routes } from "discord-api-types/v10";
+import { REST } from "@discordjs/rest";
 
 export class CommandManager {
     // Map guild id and command name to command, just command name for global
@@ -306,48 +310,34 @@ export class CommandManager {
     }
 
     public async deploySlashCommands() {
-        let commands = this.generateSlashObjs();
-        let globalCommands: ApplicationCommandData[] | undefined;
+        let commands = this.generateSlash();
+        let globalCommands: SlashCommand[] | undefined;
         
         // Deploy global commands
         globalCommands = commands.get("GLOBAL");
         if (globalCommands) {
             // Fetch all commands so we can compare
-            await this.bot.client.application.commands.fetch();
-            await this.compareSlash(globalCommands, this.bot.client.application.commands);
+            await this.compareSlash(globalCommands, 'GLOBAL');
         }
         commands.delete("GLOBAL");
 
         // Deploy guild commands
         for (let [guild, cmds] of commands) {
-            let guildObj = await this.bot.client.guilds.fetch(guild);
             // Fetch all commands so we can compare
-            await guildObj.commands.fetch();
-            await this.compareSlash(cmds, guildObj.commands);
+            await this.compareSlash(cmds, guild);
         }
     }
 
-    private async compareSlash(gen: ApplicationCommandData[], manager: ApplicationCommandManager | GuildApplicationCommandManager) {
-        let existingCmd: ApplicationCommand | undefined;
-        let compared: Snowflake[] = [];
-        for (let cmd of gen) {
-            // This is gross but idk if it's any better than the alternative of making a new map
-            existingCmd = manager.cache.find((appCmd) => appCmd.name === cmd.name);
-            if (!existingCmd?.equals(cmd)) {
-                if (existingCmd) {
-                    await existingCmd.edit(cmd);
-                }
-                else {
-                    existingCmd = await manager.create(cmd);
-                }
-            }
-            compared.push(existingCmd.id);
-        };
-
-        // Remove all commands that no longer exist
-        let toRemove = manager.cache.filter((cmd) => !compared.includes(cmd.id));
-        for (let [id, cmd] of toRemove) {
-            await manager.delete(cmd);
+    private async compareSlash(gen: SlashCommand[], guildId: Snowflake) {
+        // TODO: actually compare cmds
+        const clientId = this.bot.client.application.id;
+        if (guildId === 'GLOBAL') {
+            await this.bot.rest.put(Routes.applicationCommands(clientId), { body: gen });
+            this.logger.info('deployed global')
+            console.log(gen)
+        } else {
+            await this.bot.rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: gen });
+            this.logger.info(`deployed ${guildId}`, gen)
         }
     }
 
@@ -372,131 +362,191 @@ export class CommandManager {
         });
     }
 
-    private generateSlashObjs(): Map<Snowflake, ApplicationCommandData[]> {
-        let commands = new Map<Snowflake, ApplicationCommandData[]>();
+    private generateSlash(): Map<Snowflake, SlashCommand[]> {
+        let commands = new Map<Snowflake, SlashCommand[]>();
 
         let currGuild: Snowflake;
-        let currSlash: ApplicationCommandData;
+        let currSlash: SlashCommandBuilder;
+        let currJSON: SlashCommand;
 
-        // Convert every command to slash command JSON
         this.commandMap.forEach((v, k) => {
-            // Ignore non slash commands and subcommands
             if (!v.slash || v.parent) return;
 
-            // TODO: Support USER and MESSAGE commands
-            currSlash = {
-                name: v.name,
-                description: v.desc ?? "",
-                type: "CHAT_INPUT",
-            };
-
-            if (v.permLevel > PermissionLevel.Everyone) {
-                currSlash.defaultPermission = false;
-            }
-
+            currSlash = new SlashCommandBuilder()
+                .setName(v.name)
+                .setDescription(v.desc)
+            
             currGuild = k.split(",")[0];
-
             if (!commands.has(currGuild)) {
                 commands.set(currGuild, []);
             }
 
             if (v.args) {
-                currSlash.options = this.getSlashArgs(v);
+                this.buildCmdArgs(currSlash, v);
             } else if (v instanceof CommandGroup) {
-                currSlash.options = this.getSlashSubs(v);
+                this.setSlashSubs(currSlash, v);
             }
 
-            commands.get(currGuild)?.push(currSlash);
+            currJSON = currSlash.toJSON();
+            if (v.guildOnly) {
+                console.log('setting dm permission')
+                currJSON['dm_permission'] = false;
+            }
+            // TODO: Required perms
+            commands.get(currGuild)?.push(currJSON);
         });
 
         return commands;
     }
 
-    private getSlashSubs(
-        group: CommandGroup
-    ): (ApplicationCommandSubCommandData | ApplicationCommandSubGroupData)[] {
-        const subs: (ApplicationCommandSubCommandData | ApplicationCommandSubGroupData)[] = [];
-        let currSub: ApplicationCommandSubCommandData | ApplicationCommandSubGroupData;
-
+    private setSlashSubs(slash: SlashCommandBuilder, group: CommandGroup) {
         group.subCommands.forEach((sub) => {
             if (sub instanceof CommandGroup) {
-                currSub = {
-                    type: "SUB_COMMAND_GROUP",
-                    name: sub.name,
-                    description: sub.desc,
-                };
-                // We can do this because subgroups cannot contain subgroups
-                currSub.options = this.getSlashSubs(sub) as ApplicationCommandSubCommandData[];
+                slash.addSubcommandGroup(this.buildSubGroup(sub));
             } else {
-                currSub = {
-                    type: "SUB_COMMAND",
-                    name: sub.name,
-                    description: sub.desc,
-                };
-                currSub.options = this.getSlashArgs(sub);
+                slash.addSubcommand((option) => {
+                    option.setName(sub.name)
+                        .setDescription(sub.desc);
+                    this.buildCmdArgs(option, sub);
+                    return option;
+                })
             }
-            subs.push(currSub);
-        });
-
-        return subs;
+        })
     }
 
-    // prettier-ignore
-    private getSlashArgs(cmd: Command): | Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] | undefined {
-        let args: Exclude<ApplicationCommandOptionData, ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>[] = [];
+    private buildSubGroup(group: CommandGroup): SlashCommandSubcommandGroupBuilder {
+        const subGroup = new SlashCommandSubcommandGroupBuilder()
+            .setName(group.name)
+            .setDescription(group.desc);
+
+        group.subCommands.forEach((sub) => {
+            subGroup.addSubcommand(this.buildSubCommand(sub));
+        })
+
+        return subGroup;
+    }
+
+    private buildSubCommand(cmd: Command): SlashCommandSubcommandBuilder {
+        const subCmd = new SlashCommandSubcommandBuilder()
+            .setName(cmd.name)
+            .setDescription(cmd.desc)
+        this.buildCmdArgs(subCmd, cmd);
+
+        return subCmd;
+    }
+
+    private buildCmdArgs(slash: SlashCommandBuilder | SlashCommandSubcommandBuilder, cmd: Command) {
+        let type: Exclude<
+            ApplicationCommandOptionType,
+            "SUB_COMMAND" | "SUB_COMMAND_GROUP"
+        >;
         cmd.args?.forEach((arg) => {
-            // Will change type later
-            let type = CommandUtils.getSlashArgType(arg.type);
-            let currArg: Exclude<ApplicationCommandOptionData, | ApplicationCommandSubGroupData | ApplicationCommandSubCommandData>;
-            if ("autocomplete" in arg) {
-                currArg = {
-                    name: arg.name,
-                    description: arg.description ?? "",
-                    type: type as "STRING" | "NUMBER" | "INTEGER", // TODO: Better way to check this?
-                    required: !arg.optional,
-                    autocomplete: true
-                };
-            }
-            else if ("choices" in arg) {
-                currArg = {
-                    name: arg.name,
-                    description: arg.description ?? "",
-                    type: type as "STRING" | "NUMBER" | "INTEGER", // TODO: Better way to check this?
-                    required: !arg.optional,
-                    choices: arg.choices
-                };
-            }
-            else if ("channelTypes" in arg) {
-                currArg = {
-                    name: arg.name,
-                    description: arg.description ?? "",
-                    type: type as "CHANNEL", // TODO: Better way to check this?
-                    required: !arg.optional,
-                    channelTypes: arg.channelTypes
-                };
-            }
-            else if ("maxValue" in arg || "minValue" in arg) {
-                currArg = {
-                    name: arg.name,
-                    description: arg.description ?? "",
-                    type: type as "NUMBER" | "INTEGER", // TODO: Better way to check this?
-                    required: !arg.optional,
-                    maxValue: arg.maxValue,
-                    minValue: arg.minValue
-                };
-            }
-            else {
-                currArg = {
-                    name: arg.name,
-                    description: arg.description ?? "",
-                    type: type,
-                    required: !arg.optional,
-                } as ApplicationCommandNonOptionsData; // TODO: Better way to do this?
-            }
+            type = CommandUtils.getSlashArgType(arg.type);
+            switch(type) {
+                case 'STRING':
+                    slash.addStringOption((option) => {
+                        option.setName(arg.name)
+                            .setDescription(arg.description)
+                            .setRequired(!arg.optional)
+                        
+                        if ("autocomplete" in arg) {
+                            option.setAutocomplete(true);
+                        } else if ("choices" in arg) {
+                            option.addChoices(...arg.choices as APIApplicationCommandOptionChoice<string>[])
+                        }
 
-            args.push(currArg);
-        });
+                        return option;
+                    })
+                    break;
+                case 'INTEGER':
+                    slash.addIntegerOption((option) => {
+                        option.setName(arg.name)
+                            .setDescription(arg.description)
+                            .setRequired(!arg.optional)
+                        
+                        if ("autocomplete" in arg) {
+                            option.setAutocomplete(true);
+                        } else if ("choices" in arg) {
+                            option.addChoices(...arg.choices as APIApplicationCommandOptionChoice<number>[])
+                        } 
+                        if ("maxValue" in arg) {
+                            option.setMaxValue(arg.maxValue!);
+                        }
+                        if ("minValue" in arg) {
+                            option.setMinValue(arg.minValue!);
+                        }
 
-        return args.length > 0 ? args : undefined;
+                        return option;
+                    })
+                    break;
+                case 'NUMBER':
+                    slash.addNumberOption((option) => {
+                        option.setName(arg.name)
+                            .setDescription(arg.description)
+                            .setRequired(!arg.optional)
+                        
+                        if ("autocomplete" in arg) {
+                            option.setAutocomplete(true);
+                        } else if ("choices" in arg) {
+                            option.addChoices(...arg.choices as APIApplicationCommandOptionChoice<number>[])
+                        } 
+                        if ("maxValue" in arg) {
+                            option.setMaxValue(arg.maxValue!);
+                        }
+                        if ("minValue" in arg) {
+                            option.setMinValue(arg.minValue!);
+                        }
+
+                        return option;
+                    })
+                    break;
+                case 'BOOLEAN':
+                    slash.addBooleanOption((option) =>
+                        option.setName(arg.name)
+                            .setDescription(arg.description)
+                            .setRequired(!arg.optional)
+                    )
+                    break;
+                case 'USER':
+                    slash.addUserOption((option) => 
+                        option.setName(arg.name)
+                            .setDescription(arg.description)
+                            .setRequired(!arg.optional)
+                    )
+                    break;
+                case 'CHANNEL':
+                    slash.addChannelOption((option) => {
+                        option.setName(arg.name)
+                            .setDescription(arg.description)
+                            .setRequired(!arg.optional)
+                        
+                        if ("channelTypes" in arg) {
+                            option.addChannelTypes(arg.channelTypes!);
+                        }
+
+                        return option;
+                    })
+                    break;
+                case 'ROLE':
+                    slash.addRoleOption((option) => 
+                        option.setName(arg.name)
+                            .setDescription(arg.description)
+                            .setRequired(!arg.optional)
+                    )
+                    break;
+                case 'MENTIONABLE':
+                    slash.addMentionableOption((option) => 
+                        option.setName(arg.name)
+                            .setDescription(arg.description)
+                            .setRequired(!arg.optional)
+                    )
+                    break;
+                default:
+                    const exhaustiveCheck: never = type;
+                    throw new Error('Unhandled arg type: ' + exhaustiveCheck);
+            }
+        })
     }
 }
+
+type SlashCommand = RESTPostAPIApplicationCommandsJSONBody & { dm_permission?: Boolean };

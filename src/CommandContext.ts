@@ -11,7 +11,7 @@ import {
     User,
 } from "discord.js";
 import { Message } from "discord.js";
-import type { APIMessage } from "discord-api-types/v9";
+import type { APIMessage } from "discord-api-types/v10";
 import type { Command, CommandParsedType } from "commands/Command";
 import { CommandUtils } from "utils/CommandUtils";
 
@@ -75,7 +75,7 @@ export class CommandContext<InGuild extends boolean = boolean> {
         ephemeral = false
     ): Promise<Message | APIMessage | undefined> {
         let msgOptions: MessageOptions | InteractionReplyOptions;
-        let msg: Message | APIMessage | undefined = undefined;
+        let msg: Message | undefined = undefined;
 
         if (typeof message === "string") {
             msgOptions = { embeds: [await CommandUtils.generateEmbed(message, this.channel, true)] };
@@ -89,9 +89,15 @@ export class CommandContext<InGuild extends boolean = boolean> {
             intOptions.fetchReply = true;
             if (!this.interaction.replied && !this.interaction.deferred) {
                 await this.interaction.reply(intOptions);
-                msg = await this.interaction.fetchReply();
+                let tempMsg = await this.interaction.fetchReply();
+                if (tempMsg instanceof Message) {
+                    msg = tempMsg;
+                }
             } else {
-                msg = await this.interaction.followUp(intOptions);
+                let tempMsg = await this.interaction.followUp(intOptions);
+                if (tempMsg instanceof Message) {
+                    msg = tempMsg;
+                }
             }
         } else {
             if (!this._replyMessage) {

@@ -1,5 +1,5 @@
 import { CommandArgument, PermissionLevel } from "commands/Command";
-import type { Snowflake } from "discord-api-types";
+import type { Snowflake } from "discord-api-types/v10";
 
 export function command(desc: string, name?: string) {
     return (target: Object, propertyKey: string) => {

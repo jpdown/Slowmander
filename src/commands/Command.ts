@@ -16,6 +16,7 @@ import type { ChannelTypes } from "discord.js/typings/enums";
 import type { CommandContext } from "CommandContext";
 import type { CommandGroup } from "commands/CommandGroup";
 import type { Bot } from "Bot";
+import { APIApplicationCommandOptionChoice, ChannelType } from "discord-api-types/v10";
 
 export enum PermissionLevel {
     Disabled = -1,
@@ -111,12 +112,14 @@ interface BaseCommandArgument {
 
 interface ChoicesCommandArgument extends BaseCommandArgument {
     type: "string" | "int" | "number";
-    choices?: ApplicationCommandOptionChoice[];
+    choices?: APIApplicationCommandOptionChoice[];
 }
 
 interface ChannelCommandArgument extends BaseCommandArgument {
     type: "channel";
-    channelTypes?: ExcludeEnum<typeof ChannelTypes, "UNKNOWN">[];
+    channelTypes?: Exclude<ChannelType,
+        ChannelType.DM | ChannelType.GroupDM | ChannelType.GuildForum | ChannelType.GuildDirectory
+    >;
 }
 
 interface NumericCommandArgument extends BaseCommandArgument {

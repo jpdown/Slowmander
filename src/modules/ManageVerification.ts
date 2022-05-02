@@ -16,7 +16,7 @@ import {
     ReactionEmoji,
     Role
 } from "discord.js";
-import {APIMessage} from "discord-api-types";
+import {APIMessage} from "discord-api-types/v10";
 
 export class ManageVerification extends Module {
     constructor(b: Bot) {
