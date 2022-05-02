@@ -1,6 +1,6 @@
 import {Module} from "./Module";
 import {Bot} from "../Bot";
-import {args, group, guildOnly, isMod, subcommand} from "./ModuleDecorators";
+import {args, group, guildOnly, isMod, permissions, subcommand} from "./ModuleDecorators";
 import {CommandContext} from "../CommandContext";
 import {CommandUtils} from "../utils/CommandUtils";
 import {
@@ -24,12 +24,11 @@ export class ManageVerification extends Module {
     }
 
     @group("Moderator commands for editing server verification")
-    @isMod()
+    @permissions(['MANAGE_ROLES'])
     @guildOnly()
     public async verification() {}
 
     @subcommand("verification", "Enable server verification")
-    @isMod()
     @guildOnly()
     public async enable(ctx: CommandContext) {
         let bot = ctx.bot;
@@ -49,7 +48,6 @@ export class ManageVerification extends Module {
     }
 
     @subcommand("verification", "Enable server verification")
-    @isMod()
     @guildOnly()
     public async disable(ctx: CommandContext) {
         let bot = ctx.bot;
@@ -69,7 +67,6 @@ export class ManageVerification extends Module {
     }
 
     @subcommand("verification", "Enable server verification")
-    @isMod()
     @guildOnly()
     public async enableremove(ctx: CommandContext) {
         let bot = ctx.bot;
@@ -93,7 +90,6 @@ export class ManageVerification extends Module {
     }
 
     @subcommand("verification", "Enable server verification")
-    @isMod()
     @guildOnly()
     public async disableremove(ctx: CommandContext) {
         let bot = ctx.bot;
@@ -117,7 +113,6 @@ export class ManageVerification extends Module {
     }
 
     @subcommand("verification", "Enable server verification")
-    @isMod()
     @args([
         {
             name: "channel",
@@ -190,7 +185,6 @@ export class ManageVerification extends Module {
     }
 
     @subcommand("verification", "Enable server verification")
-    @isMod()
     @guildOnly()
     public async status(ctx: CommandContext) {
         let bot = ctx.bot;

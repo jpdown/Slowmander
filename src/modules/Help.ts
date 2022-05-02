@@ -1,7 +1,7 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
 import { GuildChannel, TextBasedChannel, User } from "discord.js";
-import { PermissionsHelper } from "utils/PermissionsHelper";
+// import { PermissionsHelper } from "utils/PermissionsHelper";
 import { Module } from "./Module";
 import { args, command } from "./ModuleDecorators";
 import { HelpManager } from "HelpManager";
@@ -59,16 +59,16 @@ export class Help extends Module {
         }
         if (!member) {
             for (let cmd of commands) {
-                if (await PermissionsHelper.checkPerms(cmd, user, bot) && !cmd.guildOnly) { 
-                    ret.push(cmd.name);
-                }
+                // if (await PermissionsHelper.checkPerms(cmd, user, bot) && !cmd.guildOnly) { 
+                //     ret.push(cmd.name);
+                // }
             }
         }
         else {
             for (let cmd of commands) {
-                if (await PermissionsHelper.checkPerms(cmd, member, bot, channel as GuildChannel)) { 
-                    ret.push(cmd.name);
-                }
+                // if (await PermissionsHelper.checkPerms(cmd, member, bot, channel as GuildChannel)) { 
+                //     ret.push(cmd.name);
+                // }
             }
         }
         return ret;

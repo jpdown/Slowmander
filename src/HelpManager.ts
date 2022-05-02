@@ -1,5 +1,5 @@
-import { Command, PermissionLevel } from 'commands/Command';
-import { PermissionsHelper } from 'utils/PermissionsHelper';
+import { Command } from 'commands/Command';
+// import { PermissionsHelper } from 'utils/PermissionsHelper';
 import { CommandUtils } from 'utils/CommandUtils';
 import { CommandGroup } from 'commands/CommandGroup';
 
@@ -13,9 +13,9 @@ export class HelpManager {
     const prefix: string | undefined = await ctx.bot.commandManager.getPrefix(ctx.guild ? ctx.guild.id : undefined);
 
     // Get perms and is DM
-    if (!await PermissionsHelper.checkPerms(command, ctx) && (ctx.guild || !command.guildOnly)) {
-      return;
-    }
+    // if (!await PermissionsHelper.checkPerms(command, ctx) && (ctx.guild || !command.guildOnly)) {
+    //   return;
+    // }
 
     // Build help message
     helpMessage += `Usage: \`${prefix}${command.fullName}`
@@ -54,9 +54,9 @@ export class HelpManager {
       .setTimestamp(Date.now());
 
     if (!(command instanceof CommandGroup)) {
-      if (command.permLevel > PermissionLevel.Everyone) {
-        embed.addField('Permission', PermissionLevel[command.permLevel], true);
-      }
+      // if (command.permLevel > PermissionLevel.Everyone) {
+      //   embed.addField('Permission', PermissionLevel[command.permLevel], true);
+      // }
     }
 
     await ctx.reply({ embeds: [embed] }, true);
@@ -64,13 +64,13 @@ export class HelpManager {
 
   public static async sendFullHelp(ctx: CommandContext) {
     const commandList: Command[] = ctx.bot.commandManager.getAllCommands();
-    let cmds = [];
+    let cmds: string[] = [];
 
     // Build string
     for (let command of commandList) {
-      if (await PermissionsHelper.checkPerms(command, ctx) && (ctx.guild || !command.guildOnly)) {
-        cmds.push(`\`${command.name}\` - ${command.desc}`);
-      }
+      // if (await PermissionsHelper.checkPerms(command, ctx) && (ctx.guild || !command.guildOnly)) {
+      //   cmds.push(`\`${command.name}\` - ${command.desc}`);
+      // }
     }
 
     // Build paginator
@@ -88,9 +88,9 @@ export class HelpManager {
     const subCommandsWithPerms: Command[] = [];
 
     for (let subCommand of subCommands) {
-      if (await PermissionsHelper.checkPerms(subCommand, ctx) && (ctx.guild || !subCommand.guildOnly)) {
-        subCommandsWithPerms.push(subCommand);
-      }
+      // if (await PermissionsHelper.checkPerms(subCommand, ctx) && (ctx.guild || !subCommand.guildOnly)) {
+      //   subCommandsWithPerms.push(subCommand);
+      // }
     }
 
     return subCommandsWithPerms;

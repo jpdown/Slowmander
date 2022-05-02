@@ -1,9 +1,9 @@
 import { Bot } from "Bot";
 import { CommandContext } from "CommandContext";
-import { Channel, GuildChannel, MessageEmbed } from "discord.js";
+import { Channel, GuildChannel, MessageEmbed, Permissions } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, group, guildOnly, isAdmin, subcommand } from "./ModuleDecorators";
+import { args, group, guildOnly, isAdmin, permissions, subcommand } from "./ModuleDecorators";
 
 //TODO
 export class ClipModSettings extends Module {
@@ -13,7 +13,7 @@ export class ClipModSettings extends Module {
 
     @group("Manages Twitch Clip moderation")
     @guildOnly()
-    @isAdmin()
+    @permissions(["MANAGE_MESSAGES"])
     public async clipmod(ctx: CommandContext<true>) {}
 
     @subcommand("clipmod", "Enables Twitch clip moderation settings for a channel")
@@ -24,7 +24,6 @@ export class ClipModSettings extends Module {
             description: "The channel"
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async enable(ctx: CommandContext<true>, channel: Channel) {
         let bot = ctx.bot;
@@ -62,7 +61,6 @@ export class ClipModSettings extends Module {
             description: "The channel"
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async disable(ctx: CommandContext<true>, channel: Channel) {
         let bot = ctx.bot;
@@ -95,7 +93,6 @@ export class ClipModSettings extends Module {
             description: "The channel"
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async enableapprovedchannels(ctx: CommandContext<true>, channel: Channel) {
         let bot = ctx.bot;
@@ -130,7 +127,6 @@ export class ClipModSettings extends Module {
             description: "The channel"
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async disableapprovedchannels(ctx: CommandContext<true>, channel: Channel) {
         let bot = ctx.bot;
@@ -170,7 +166,6 @@ export class ClipModSettings extends Module {
             description: "The Twitch channel"
         }
     ])
-    @isAdmin()
     @guildOnly()
     public async addchannel(ctx: CommandContext<true>, channel: Channel, twitchChan: string) {
         let bot = ctx.bot;
@@ -219,7 +214,6 @@ export class ClipModSettings extends Module {
             description: "The Twitch channel"
         }
     ])
-    @isAdmin()
     @guildOnly()
     public async deletechannel(ctx: CommandContext<true>, channel: Channel, twitchChan: string) {
         let bot = ctx.bot;
@@ -263,7 +257,6 @@ export class ClipModSettings extends Module {
             description: "The channel"
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async info(ctx: CommandContext<true>, channel: Channel) {
         let bot = ctx.bot;

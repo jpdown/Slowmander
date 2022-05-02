@@ -3,7 +3,7 @@ import { CommandContext } from "CommandContext";
 import { EmojiResolvable, GuildChannelResolvable, Message, MessageReaction, Role, TextBasedChannel } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, group, guildOnly, isMod, subcommand } from "./ModuleDecorators";
+import { args, group, guildOnly, isMod, permissions, subcommand } from "./ModuleDecorators";
 import { Permissions } from "discord.js";
 import { ButtonPaginator } from "utils/ButtonPaginator";
 
@@ -13,13 +13,12 @@ export class ReactionRole extends Module {
     }
 
     @group("Reaction role management commands")
-    @isMod()
+    @permissions(['MANAGE_ROLES'])
     @guildOnly()
     public async reactionrole(ctx: CommandContext) {}
 
     //TODO refactor all of this copy and pasta
     @subcommand("reactionrole", "Adds a reaction role.")
-    @isMod()
     @guildOnly()
     @args([
         {
@@ -92,7 +91,6 @@ export class ReactionRole extends Module {
     }
 
     @subcommand("reactionrole", "Removes a reaction role")
-    @isMod()
     @guildOnly()
     @args([
         {
@@ -142,7 +140,6 @@ export class ReactionRole extends Module {
     }
 
     @subcommand("reactionrole", "Lists current reaction roles")
-    @isMod()
     @guildOnly()
     public async list(ctx: CommandContext<true>) {
         // Get reactionroles

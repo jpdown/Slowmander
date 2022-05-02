@@ -2,7 +2,7 @@ import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
 import type { GuildChannel, Role } from "discord.js";
 import { Module } from "./Module";
-import { args, group, guildOnly, isAdmin, subcommand } from "./ModuleDecorators";
+import { args, group, guildOnly, isAdmin, permissions, subcommand } from "./ModuleDecorators";
 
 export class Set extends Module {
     public constructor(bot: Bot) {
@@ -10,7 +10,7 @@ export class Set extends Module {
     }
 
     @group("Commands for setting options on the bot")
-    @isAdmin()
+    @permissions(['MANAGE_GUILD'])
     @guildOnly()
     public async set(c: CommandContext) {}
 
@@ -22,7 +22,6 @@ export class Set extends Module {
             description: "the new prefix",
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async prefix(c: CommandContext<true>, prefix: string) {
         if (c.bot.db.guildConfigs.setPrefix(c.guild.id, prefix)) {
@@ -40,7 +39,6 @@ export class Set extends Module {
             description: "the vip role",
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async viprole(c: CommandContext<true>, role: Role) {
         if (!role) {
@@ -62,7 +60,6 @@ export class Set extends Module {
             description: "the mod role",
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async modrole(c: CommandContext<true>, role: Role) {
         if (!role) {
@@ -84,7 +81,6 @@ export class Set extends Module {
             description: "the admin role",
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async adminrole(c: CommandContext<true>, role: Role) {
         if (!role) {
@@ -106,7 +102,6 @@ export class Set extends Module {
             description: "the log channel",
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async eventlog(c: CommandContext<true>, channel: GuildChannel) {
         if (!channel) {
@@ -128,7 +123,6 @@ export class Set extends Module {
             description: "the mod channel",
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async modchannel(c: CommandContext<true>, channel: GuildChannel) {
         if (!channel) {
@@ -150,7 +144,6 @@ export class Set extends Module {
             description: "Whether to ban",
         },
     ])
-    @isAdmin()
     @guildOnly()
     public async spamban(c: CommandContext<true>, enabled: boolean) {
         if (c.bot.db.guildConfigs.setSpamBan(c.guild.id, enabled)) {

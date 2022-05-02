@@ -6,6 +6,7 @@ import type {
     EmojiResolvable,
     ExcludeEnum,
     GuildMember,
+    Permissions,
     Role,
     Snowflake,
     TextBasedChannel,
@@ -18,21 +19,14 @@ import type { CommandGroup } from "commands/CommandGroup";
 import type { Bot } from "Bot";
 import { APIApplicationCommandOptionChoice, ChannelType } from "discord-api-types/v10";
 
-export enum PermissionLevel {
-    Disabled = -1,
-    Everyone = 0,
-    VIP = 1,
-    Mod = 2,
-    Admin = 3,
-    Owner = 4,
-}
-
 export class Command {
     public readonly name: string;
 
     public readonly args?: CommandArgument[];
 
-    public readonly permLevel: PermissionLevel;
+    public readonly permissions?: Permissions;
+
+    public readonly ownerOnly?: boolean;
 
     public readonly desc: string;
 
@@ -58,19 +52,20 @@ export class Command {
         name: string,
         desc: string,
         func: (ctx: CommandContext, ...args: any[]) => Promise<void>,
-        permLevel: PermissionLevel,
+        perms: Permissions | undefined,
         options: CommandOptions
     ) {
         this.name = name;
         this.desc = desc;
         this.func = func;
-        this.permLevel = permLevel;
+        this.permissions = perms;
         this.parent = options.parent;
 
         this.args = options.args;
         this.guild = options.guild;
         this.guildOnly = options.guildOnly;
         this.slash = options.slash;
+        this.ownerOnly = options.ownerOnly;
 
         this.logger = Logger.getLogger(this);
     }
@@ -101,6 +96,7 @@ export type CommandOptions = {
     guild?: Snowflake;
     guildOnly?: boolean;
     slash?: boolean;
+    ownerOnly?: boolean;
 };
 
 interface BaseCommandArgument {

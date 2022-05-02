@@ -1,10 +1,10 @@
 import {
     Command,
     CommandOptions,
-    PermissionLevel,
 } from "commands/Command";
 
 import type { CommandContext } from "CommandContext";
+import { Permissions } from "discord.js";
 
 export class CommandGroup extends Command {
     public readonly subCommands: Map<string, Command>;
@@ -13,10 +13,10 @@ export class CommandGroup extends Command {
         name: string,
         desc: string,
         func: (ctx: CommandContext) => Promise<void>,
-        permLevel: PermissionLevel,
+        perms: Permissions | undefined,
         options: CommandOptions
     ) {
-        super(name, desc, func, permLevel, options);
+        super(name, desc, func, perms, options);
         this.subCommands = new Map<string, Command>();
     }
 

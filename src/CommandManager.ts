@@ -1,4 +1,4 @@
-import { Command, CommandArgumentType, PermissionLevel } from "commands/Command";
+import { Command, CommandArgumentType } from "commands/Command";
 import * as modules from "modules";
 import type { Bot } from "Bot";
 import { CommandGroup } from "commands/CommandGroup";
@@ -24,11 +24,13 @@ import {
     Guild,
     Permissions,
     ApplicationCommandOptionType,
+    BitField,
+    PermissionString,
 } from "discord.js";
 import { CommandContext } from "CommandContext";
 import type { Module } from "modules/Module";
 import { ArgumentParser } from "utils/ArgumentParser";
-import { PermissionsHelper } from "utils/PermissionsHelper";
+// import { PermissionsHelper } from "utils/PermissionsHelper";
 import { CommandUtils } from "utils/CommandUtils";
 import { HelpManager } from "HelpManager";
 import { SlashCommandBuilder, SlashCommandRoleOption, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder } from "@discordjs/builders";
@@ -128,9 +130,9 @@ export class CommandManager {
             );
             
         // Check perms
-        if (!(await PermissionsHelper.checkPerms(commandToRun, ctx))) {
-            return;
-        }
+        // if (!(await PermissionsHelper.checkPerms(commandToRun, ctx))) {
+        //     return;
+        // }
         
         if (!args) {
             await HelpManager.sendCommandHelp(commandToRun, ctx);
@@ -183,9 +185,9 @@ export class CommandManager {
         }
 
         // If owner only command, only allow owners
-        if (cmd.permLevel === PermissionLevel.Owner && !this.bot.owners.includes(interaction.user.id)) {
-            return;
-        }
+        // if (cmd.permLevel === PermissionLevel.Owner && !this.bot.owners.includes(interaction.user.id)) {
+        //     return;
+        // }
 
         // Warn if the interaction does not have a channel
         if (!interaction.channel) {
@@ -388,6 +390,10 @@ export class CommandManager {
             if (v.guildOnly) {
                 currJSON['dm_permission'] = false;
             }
+
+            if (v.permissions) {
+                currJSON['default_member_permissions'] = v.permissions.bitfield.toString();
+            }
             // TODO: Required perms
             commands.get(currGuild)?.push(currJSON);
         });
@@ -545,4 +551,4 @@ export class CommandManager {
     }
 }
 
-type SlashCommand = RESTPostAPIApplicationCommandsJSONBody & { dm_permission?: Boolean };
+type SlashCommand = RESTPostAPIApplicationCommandsJSONBody & { dm_permission?: Boolean, default_member_permissions?: string };

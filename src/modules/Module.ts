@@ -1,6 +1,7 @@
 import type { Bot } from "Bot";
-import { Command, CommandOptions, PermissionLevel } from "commands/Command";
+import { Command, CommandOptions } from "commands/Command";
 import { CommandGroup } from "commands/CommandGroup";
+import { Permissions, PermissionString } from "discord.js";
 import { Logger } from "Logger";
 
 import "reflect-metadata";
@@ -91,24 +92,21 @@ export abstract class Module {
                     );
                     commandOptions.slash =
                         Reflect.getMetadata("command:slash", this, key) ?? true;
+                    
+                    commandOptions.ownerOnly = Reflect.getMetadata("command:ownerOnly", this, key);
 
                     let addedCommand: Command;
-                    let permLevel: PermissionLevel =
-                        Reflect.getMetadata("command:permLevel", this, key) ??
-                        PermissionLevel.Everyone;
-                    if (
-                        commandOptions.parent &&
-                        permLevel !== commandOptions.parent.permLevel
-                    ) {
-                        // If permLevel is less than parent, just copy parent
-                        if (permLevel < commandOptions.parent.permLevel) {
-                            permLevel = commandOptions.parent.permLevel;
-                        }
-                        // If trying to specify more restrictive, error
-                        else {
-                            throw new Error(
-                                "Command children cannot have stricter permLevel than their parent."
-                            );
+                    let perms: PermissionString[] = Reflect.getMetadata("command:permissions", this, key);
+                    if (commandOptions.parent && perms) {
+                        throw new Error(
+                            "Command children cannot have permissions."
+                        );
+                    }
+                    let permissions;
+                    if (perms) {
+                        permissions = new Permissions();
+                        for (let perm of perms) {
+                            permissions.add(perm);
                         }
                     }
 
@@ -118,7 +116,7 @@ export abstract class Module {
                             commandName,
                             commandDesc,
                             Reflect.get(this, key).bind(this),
-                            permLevel,
+                            permissions,
                             commandOptions
                         );
                     } else if (commandType === "group") {
@@ -139,7 +137,7 @@ export abstract class Module {
                             commandName,
                             commandDesc,
                             Reflect.get(this, key).bind(this),
-                            permLevel,
+                            permissions,
                             commandOptions
                         );
                     } else {

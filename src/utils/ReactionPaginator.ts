@@ -12,7 +12,7 @@ import {
     GuildChannel,
 } from "discord.js";
 import { CommandUtils } from "./CommandUtils";
-import { PermissionsHelper } from "./PermissionsHelper";
+// import { PermissionsHelper } from "./PermissionsHelper";
 
 export class ReactionPaginator {
     public static readonly NEXT_PAGE: string = "➡️";
@@ -136,11 +136,11 @@ export class ReactionPaginator {
             const member: GuildMember | undefined = reaction.message.guild.members.cache.get(
                 user.id
             );
-            if (member) {
-                hasPerms = await PermissionsHelper.checkPerms(this.command, member, this.bot, <GuildChannel>this.channel);
-            }
+            // if (member) {
+            //     hasPerms = await PermissionsHelper.checkPerms(this.command, member, this.bot, <GuildChannel>this.channel);
+            // }
         } else {
-            hasPerms = await PermissionsHelper.checkPerms(this.command, user, this.bot);
+            // hasPerms = await PermissionsHelper.checkPerms(this.command, user, this.bot);
         }
 
         return hasPerms;

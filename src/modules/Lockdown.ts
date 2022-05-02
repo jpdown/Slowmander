@@ -17,7 +17,7 @@ import {
 import { ButtonPaginator } from "utils/ButtonPaginator";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, group, guildOnly, isMod, subcommand } from "./ModuleDecorators";
+import { args, command, group, guildOnly, isMod, permissions, subcommand } from "./ModuleDecorators";
 
 // TODO refactor, this was copy pasted :)
 export class Lockdown extends Module {
@@ -30,7 +30,7 @@ export class Lockdown extends Module {
     }
 
     @command("Locks a server down.")
-    @isMod()
+    @permissions(['MANAGE_CHANNELS'])
     @guildOnly()
     @args([
         {
@@ -52,7 +52,7 @@ export class Lockdown extends Module {
     }
 
     @command("Unlocks a server.")
-    @isMod()
+    @permissions(['MANAGE_CHANNELS'])
     @guildOnly()
     @args([
         {
@@ -74,12 +74,11 @@ export class Lockdown extends Module {
     }
 
     @group("Lockdown preset management.")
-    @isMod()
+    @permissions(['MANAGE_CHANNELS'])
     @guildOnly()
     public async managelockdown(c: CommandContext) {}
 
     @subcommand("managelockdown", "Lists lockdown presets.")
-    @isMod()
     @guildOnly()
     public async list(c: CommandContext) {
         const lockdownPresets = c.bot.db.lockdownPresets.getPresetList(c.guild!.id);
@@ -101,7 +100,6 @@ export class Lockdown extends Module {
     }
 
     @subcommand("managelockdown", "Gets information for a lockdown preset.")
-    @isMod()
     @guildOnly()
     @args([
         {
@@ -157,7 +155,6 @@ export class Lockdown extends Module {
     }
 
     @subcommand("managelockdown", "Sets a lockdown preset.")
-    @isMod()
     @guildOnly()
     @args([
         { name: "preset", type: "string", description: "The name of the preset." },
@@ -211,7 +208,6 @@ export class Lockdown extends Module {
     }
 
     @subcommand("managelockdown", "Removes a lockdown preset.")
-    @isMod()
     @guildOnly()
     @args([{
         name: "preset",

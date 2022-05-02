@@ -3,7 +3,7 @@ import type { CommandContext } from "CommandContext";
 import type { ActivityOptions, User, WebhookClient } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, group, guild, isOwner, subcommand } from "./ModuleDecorators";
+import { args, command, group, guild, isOwner, permissions, subcommand } from "./ModuleDecorators";
 
 export class Owner extends Module {
     public constructor(bot: Bot) {
@@ -11,6 +11,7 @@ export class Owner extends Module {
     }
 
     @group("Various owner only commands")
+    @permissions(['ADMINISTRATOR'])
     @isOwner()
     public async owner(c: CommandContext) {}
 

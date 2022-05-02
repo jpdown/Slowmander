@@ -3,7 +3,7 @@ import type { CommandContext } from "CommandContext";
 import type { TextBasedChannel } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, guild, isOwner } from "./ModuleDecorators";
+import { args, command, guild, isOwner, permissions } from "./ModuleDecorators";
 
 export class Say extends Module {
     public constructor(b: Bot) {
@@ -11,6 +11,7 @@ export class Say extends Module {
     }
 
     @command("Send a message as the bot.")
+    @permissions(['ADMINISTRATOR'])
     @isOwner()
     @args([
         {

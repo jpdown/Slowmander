@@ -1,5 +1,6 @@
-import { CommandArgument, PermissionLevel } from "commands/Command";
+import { CommandArgument } from "commands/Command";
 import type { Snowflake } from "discord-api-types/v10";
+import { Permissions, PermissionString } from "discord.js";
 
 export function command(desc: string, name?: string) {
     return (target: Object, propertyKey: string) => {
@@ -102,43 +103,24 @@ export function guildOnly() {
 export function isOwner() {
     return (target: Object, propertyKey: string) => {
         Reflect.defineMetadata(
-            "command:permLevel",
-            PermissionLevel.Owner,
+            "command:ownerOnly",
+            true,
             target,
             propertyKey
         );
     };
 }
 
-export function isAdmin() {
+export function permissions(perms: PermissionString[]) {
     return (target: Object, propertyKey: string) => {
         Reflect.defineMetadata(
-            "command:permLevel",
-            PermissionLevel.Admin,
+            "command:permissions",
+            perms,
             target,
-            propertyKey
+            propertyKey,
         );
     };
 }
 
-export function isMod() {
-    return (target: Object, propertyKey: string) => {
-        Reflect.defineMetadata(
-            "command:permLevel",
-            PermissionLevel.Mod,
-            target,
-            propertyKey
-        );
-    };
-}
-
-export function isVIP() {
-    return (target: Object, propertyKey: string) => {
-        Reflect.defineMetadata(
-            "command:permLevel",
-            PermissionLevel.VIP,
-            target,
-            propertyKey
-        );
-    };
-}
+export function isMod() { return (target: Object, propertyKey: string) => {console.log('yep')} }
+export function isAdmin() { return (target: Object, propertyKey: string) => {console.log('yep')} }

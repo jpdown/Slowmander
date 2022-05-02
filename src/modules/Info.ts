@@ -1,12 +1,11 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
 import type { Client, Collection, GuildMember, Role, Snowflake, User } from "discord.js";
-import { PermissionLevel } from "commands/Command";
 import { MessageEmbed } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command, guild, guildOnly, isMod } from "./ModuleDecorators";
-import { PermissionsHelper } from "utils/PermissionsHelper";
+import { args, command, guild, guildOnly, isMod, permissions } from "./ModuleDecorators";
+// import { PermissionsHelper } from "utils/PermissionsHelper";
 import { ButtonPaginator } from "utils/ButtonPaginator";
 import { memoryUsage, uptime as process_uptime } from "process";
 import { loadavg } from "os";
@@ -64,15 +63,15 @@ export class Info extends Module {
             });
             embed.addField(`Roles (${rolesList.size})`, rolesStr.slice(0, -2), false);
         }
-        const permLevel: PermissionLevel = await PermissionsHelper.getMemberPermLevel(c);
-        if (permLevel > PermissionLevel.Everyone) {
-            embed.addField("Bot Permission", PermissionLevel[permLevel], false);
-        }
+        // const permLevel: PermissionLevel = await PermissionsHelper.getMemberPermLevel(c);
+        // if (permLevel > PermissionLevel.Everyone) {
+        //     embed.addField("Bot Permission", PermissionLevel[permLevel], false);
+        // }
         await c.reply({ embeds: [embed] });
     }
 
     @command(`Get roles in a discord`)
-    @isMod()
+    @permissions(['MANAGE_ROLES'])
     @guildOnly()
     public async roles(c: CommandContext<true>) {
         const rolesList: Collection<Snowflake, Role> = await c.guild!.roles.fetch();
@@ -86,7 +85,7 @@ export class Info extends Module {
 
     @command(`Get roles in a discord`)
     @args([{ name: `role`, type: `role`, description: `The role to check` }])
-    @isMod()
+    @permissions(['MANAGE_ROLES'])
     @guildOnly()
     public async members(c: CommandContext<true>, r: Role) {
         if (!r) {
