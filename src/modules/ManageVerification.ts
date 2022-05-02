@@ -1,6 +1,6 @@
 import {Module} from "./Module";
 import {Bot} from "../Bot";
-import {args, group, isMod, subcommand} from "./ModuleDecorators";
+import {args, group, guildOnly, isMod, subcommand} from "./ModuleDecorators";
 import {CommandContext} from "../CommandContext";
 import {CommandUtils} from "../utils/CommandUtils";
 import {
@@ -25,10 +25,12 @@ export class ManageVerification extends Module {
 
     @group("Moderator commands for editing server verification")
     @isMod()
+    @guildOnly()
     public async verification() {}
 
     @subcommand("verification", "Enable server verification")
     @isMod()
+    @guildOnly()
     public async enable(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
@@ -48,6 +50,7 @@ export class ManageVerification extends Module {
 
     @subcommand("verification", "Enable server verification")
     @isMod()
+    @guildOnly()
     public async disable(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
@@ -67,6 +70,7 @@ export class ManageVerification extends Module {
 
     @subcommand("verification", "Enable server verification")
     @isMod()
+    @guildOnly()
     public async enableremove(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
@@ -90,6 +94,7 @@ export class ManageVerification extends Module {
 
     @subcommand("verification", "Enable server verification")
     @isMod()
+    @guildOnly()
     public async disableremove(ctx: CommandContext) {
         let bot = ctx.bot;
         // Check if we have a valid config before enabling
@@ -130,6 +135,7 @@ export class ManageVerification extends Module {
             type: "emoji"
         }
     ])
+    @guildOnly()
     public async set(ctx: CommandContext, c: Channel, r: Role, e: EmojiResolvable) {
         let bot = ctx.bot;
 
@@ -185,6 +191,7 @@ export class ManageVerification extends Module {
 
     @subcommand("verification", "Enable server verification")
     @isMod()
+    @guildOnly()
     public async status(ctx: CommandContext) {
         let bot = ctx.bot;
         const verificationConfig = bot.db.verification.getConfig(ctx.guild!.id);

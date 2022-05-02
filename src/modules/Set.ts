@@ -11,6 +11,7 @@ export class Set extends Module {
 
     @group("Commands for setting options on the bot")
     @isAdmin()
+    @guildOnly()
     public async set(c: CommandContext) {}
 
     @subcommand("set", "Sets the prefix for the current guild")

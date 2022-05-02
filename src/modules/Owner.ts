@@ -265,7 +265,7 @@ export class Owner extends Module {
         process.exit();
     }
 
-    @command("Checks discord.js version")
+    @subcommand("owner", "Checks discord.js version")
     @isOwner()
     public async djsv(c: CommandContext) {
         await c.reply(`Discord.js version: ${require("discord.js").version}`);

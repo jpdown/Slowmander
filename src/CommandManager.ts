@@ -333,11 +333,8 @@ export class CommandManager {
         const clientId = this.bot.client.application.id;
         if (guildId === 'GLOBAL') {
             await this.bot.rest.put(Routes.applicationCommands(clientId), { body: gen });
-            this.logger.info('deployed global')
-            console.log(gen)
         } else {
             await this.bot.rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: gen });
-            this.logger.info(`deployed ${guildId}`, gen)
         }
     }
 
@@ -389,7 +386,6 @@ export class CommandManager {
 
             currJSON = currSlash.toJSON();
             if (v.guildOnly) {
-                console.log('setting dm permission')
                 currJSON['dm_permission'] = false;
             }
             // TODO: Required perms
