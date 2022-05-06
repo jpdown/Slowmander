@@ -1,6 +1,6 @@
 import type { Bot } from "Bot";
 import type { CommandContext } from "CommandContext";
-import type { Client, Collection, GuildMember, Role, Snowflake, User } from "discord.js";
+import type { Client, Collection, GuildChannel, GuildMember, Role, Snowflake, User } from "discord.js";
 import { PermissionLevel } from "commands/Command";
 import { MessageEmbed } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
@@ -64,7 +64,7 @@ export class Info extends Module {
             });
             embed.addField(`Roles (${rolesList.size})`, rolesStr.slice(0, -2), false);
         }
-        const permLevel: PermissionLevel = await PermissionsHelper.getMemberPermLevel(c);
+        const permLevel: PermissionLevel = await PermissionsHelper.getMemberPermLevel(member, c.channel as GuildChannel, c.bot);
         if (permLevel > PermissionLevel.Everyone) {
             embed.addField("Bot Permission", PermissionLevel[permLevel], false);
         }
