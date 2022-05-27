@@ -4,14 +4,17 @@ import { LogLevel, Logger } from "Logger";
 import { existsSync, readFileSync, mkdirSync, writeFileSync } from "fs";
 
 export class Credentials {
-    readonly CREDENTIALS_PATH: string = "./data/credentials.json";
+    readonly CREDENTIALS_FILE: string = "credentials.json";
+
+    private CREDENTIALS_PATH: string;
 
     private credentialsObject: CredentialsObject;
 
     private logger: Logger;
 
-    constructor(bot: Bot) {
+    constructor(bot: Bot, dataPath: string) {
         this.logger = Logger.getLogger(this);
+        this.CREDENTIALS_PATH = dataPath + "/" + this.CREDENTIALS_FILE;
         this.credentialsObject = this.loadConfig();
     }
 

@@ -5,14 +5,17 @@ import { existsSync, readFileSync, mkdirSync, writeFileSync } from "fs";
 import { WebhookClient } from "discord.js";
 
 export class Config {
-    private readonly CONFIG_PATH: string = "./data/config.json";
+    private readonly CONFIG_FILE: string = "config.json";
+
+    private CONFIG_PATH: string;
 
     private configObject: ConfigObject;
 
     private logger: Logger;
 
-    constructor(bot: Bot) {
+    constructor(bot: Bot, dataPath: string) {
         this.logger = Logger.getLogger(this);
+        this.CONFIG_PATH = dataPath + "/" + this.CONFIG_FILE;
         this.configObject = this.loadConfig();
     }
 
