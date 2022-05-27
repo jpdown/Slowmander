@@ -11,7 +11,7 @@ docker run -d \
     --name=slowmander \
     --restart=unless-stopped \
     -v /path/to/data:/data \
-    ghcr.io/jpdown/slowmander:latest
+    ghcr.io/jpdown/slowmander:main
 ```
 
 Using `docker-compose`:
@@ -19,7 +19,7 @@ Using `docker-compose`:
 version: "3"
 services:
   slowmander:
-    image: ghcr.io/jpdown/slowmander:latest
+    image: ghcr.io/jpdown/slowmander:main
     restart: unless-stopped
     volumes:
       - "/path/to/data:/data"
