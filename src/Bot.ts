@@ -56,7 +56,6 @@ export class Bot {
             partials: ["MESSAGE", "REACTION", "CHANNEL"],
         });
         this.dataPath = process.env.SLOWMANDER_DATA_PATH || "./data";
-        console.log(this.dataPath);
         Logger.bot = this;
         this.logger = Logger.getLogger(this);
         this.credentials = new Credentials(this);

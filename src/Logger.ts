@@ -17,7 +17,7 @@ export class Logger {
 
     private static readonly DISCORD_LOG_LEVEL = LogLevel.WARNING;
 
-    private static readonly LOG_PATH = "./logs/slowmander.log";
+    private static readonly LOG_FILE = "slowmander.log";
 
     public static bot: Bot;
 
@@ -79,11 +79,11 @@ export class Logger {
     }
 
     private static logToFile(message: string) {
-        if (!existsSync("logs")) mkdirSync("logs");
-        if (!existsSync(Logger.LOG_PATH)) {
-            writeFileSync(Logger.LOG_PATH, `${message}\n`);
+        let path = Logger.bot.dataPath + "/" + Logger.LOG_FILE;
+        if (!existsSync(path)) {
+            writeFileSync(path, `${message}\n`);
         } else {
-            appendFileSync(Logger.LOG_PATH, `${message}\n`);
+            appendFileSync(path, `${message}\n`);
         }
     }
 
