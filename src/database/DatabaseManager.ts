@@ -32,9 +32,9 @@ export class DatabaseManager {
 
     public readonly verification: Verification;
 
-    constructor(bot: Bot, dataPath: string) {
+    constructor(bot: Bot) {
         this.logger = Logger.getLogger(this);
-        this.DB_PATH = dataPath + "/" + this.DB_FILE;
+        this.DB_PATH = bot.dataPath + "/" + this.DB_FILE;
         this.db = new BS3(this.DB_PATH);
 
         this.db.pragma("foreign_keys = ON");

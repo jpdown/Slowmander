@@ -9,13 +9,16 @@ export class Config {
 
     private CONFIG_PATH: string;
 
+    private readonly bot: Bot;
+
     private configObject: ConfigObject;
 
     private logger: Logger;
 
-    constructor(bot: Bot, dataPath: string) {
+    constructor(bot: Bot) {
+        this.bot = bot;
         this.logger = Logger.getLogger(this);
-        this.CONFIG_PATH = dataPath + "/" + this.CONFIG_FILE;
+        this.CONFIG_PATH = bot.dataPath + "/" + this.CONFIG_FILE;
         this.configObject = this.loadConfig();
     }
 
@@ -47,7 +50,7 @@ export class Config {
     }
 
     public saveConfig(config?: ConfigObject): boolean {
-        if (!existsSync("data")) mkdirSync("data");
+        if (!existsSync(this.bot.dataPath)) mkdirSync(this.bot.dataPath);
         try {
             let jsonData: string;
             if (config) {

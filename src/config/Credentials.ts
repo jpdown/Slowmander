@@ -4,6 +4,8 @@ import { LogLevel, Logger } from "Logger";
 import { existsSync, readFileSync, mkdirSync, writeFileSync } from "fs";
 
 export class Credentials {
+    private readonly bot: Bot;
+
     readonly CREDENTIALS_FILE: string = "credentials.json";
 
     private CREDENTIALS_PATH: string;
@@ -12,9 +14,10 @@ export class Credentials {
 
     private logger: Logger;
 
-    constructor(bot: Bot, dataPath: string) {
+    constructor(bot: Bot) {
+        this.bot = bot;
         this.logger = Logger.getLogger(this);
-        this.CREDENTIALS_PATH = dataPath + "/" + this.CREDENTIALS_FILE;
+        this.CREDENTIALS_PATH = bot.dataPath + "/" + this.CREDENTIALS_FILE;
         this.credentialsObject = this.loadConfig();
     }
 
@@ -49,7 +52,7 @@ export class Credentials {
     }
 
     public saveConfig(creds?: CredentialsObject) {
-        if (!existsSync("data")) mkdirSync("data");
+        if (!existsSync(this.bot.dataPath)) mkdirSync(this.bot.dataPath);
         try {
             let jsonData: string;
             if (creds) {
