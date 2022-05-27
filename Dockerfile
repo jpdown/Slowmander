@@ -17,7 +17,10 @@ RUN npm ci --only=production
 FROM node:16-alpine
 ENV NODE_ENV=production
 ENV NODE_PATH=/app/dist
+ENV SLOWMANDER_DATA_PATH=/data
+VOLUME [ "/data" ]
 WORKDIR /app
-COPY --from=builder /app/dist ./dist
-COPY --from=node_modules /app/node_modules ./node_modules
+USER node
+COPY --from=builder --chown=node:node /app/dist ./dist
+COPY --from=node_modules --chown=node:node /app/node_modules ./node_modules
 CMD [ "node", "dist/Bot.js" ]

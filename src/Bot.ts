@@ -37,6 +37,8 @@ export class Bot {
 
     public readonly twitch: TwitchAPIManager;
 
+    private readonly dataPath: string;
+
     public dev: boolean = false;
 
     constructor() {
@@ -53,11 +55,13 @@ export class Bot {
             ],
             partials: ["MESSAGE", "REACTION", "CHANNEL"],
         });
+        this.dataPath = process.env.SLOWMANDER_DATA_PATH || "./data";
+        console.log(this.dataPath);
         Logger.bot = this;
         this.logger = Logger.getLogger(this);
-        this.credentials = new Credentials(this);
-        this.config = new Config(this);
-        this.db = new DatabaseManager(this);
+        this.credentials = new Credentials(this, this.dataPath);
+        this.config = new Config(this, this.dataPath);
+        this.db = new DatabaseManager(this, this.dataPath);
         this.commandManager = new CommandManager(this);
         this.eventLogger = new EventLogger(this);
         this.spamChecker = new SpamChecker(this);

@@ -10,7 +10,9 @@ import { TwitchClipModeration } from "./TwitchClipModeration";
 import { Verification } from "./Verification";
 
 export class DatabaseManager {
-    private readonly DB_PATH: string = "./data/slowmander.db";
+    private readonly DB_FILE: string = "slowmander.db";
+
+    private DB_PATH: string;
 
     private readonly DB_VERSION: number = 2;
 
@@ -30,8 +32,9 @@ export class DatabaseManager {
 
     public readonly verification: Verification;
 
-    constructor(bot: Bot) {
+    constructor(bot: Bot, dataPath: string) {
         this.logger = Logger.getLogger(this);
+        this.DB_PATH = dataPath + "/" + this.DB_FILE;
         this.db = new BS3(this.DB_PATH);
 
         this.db.pragma("foreign_keys = ON");
