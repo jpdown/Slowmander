@@ -3,20 +3,21 @@
 FROM node:16-alpine as builder
 WORKDIR /app
 COPY "package*.json" ./
-RUN apk update
-RUN apk add python3 g++ make
-RUN npm install
+RUN apk update && apk add python3 g++ make
+RUN npm ci
 COPY . .
 RUN npm run build
+
+FROM node:16-alpine as node_modules
+WORKDIR /app
+COPY package*.json ./
+RUN apk update && apk add python3 g++ make
+RUN npm ci --only=production
 
 FROM node:16-alpine
 ENV NODE_ENV=production
 ENV NODE_PATH=/app/dist
 WORKDIR /app
-COPY package*.json ./
-RUN apk update
-RUN apk add python3 g++ make
-RUN npm install --production
-RUN apk del python3 g++ make
 COPY --from=builder /app/dist ./dist
+COPY --from=node_modules /app/node_modules ./node_modules
 CMD [ "node", "dist/Bot.js" ]
