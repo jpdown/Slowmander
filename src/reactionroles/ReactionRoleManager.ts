@@ -15,6 +15,7 @@ import {
     PartialUser,
     Message,
     ThreadChannel,
+    VoiceChannel,
 } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 
@@ -205,7 +206,7 @@ export class ReactionRoleManager {
     private async removeUser(
         member: GuildMember,
         reactionRole: ReactionRole,
-        channel: TextChannel | NewsChannel | ThreadChannel
+        channel: TextChannel | NewsChannel | ThreadChannel | VoiceChannel
     ): Promise<boolean> {
         let role: Role | null = null;
         // Remove role from user

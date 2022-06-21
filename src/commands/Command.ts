@@ -1,7 +1,7 @@
 import { Logger } from "Logger";
 
 import type {
-    ApplicationCommandOptionChoice,
+    ApplicationCommandOptionChoiceData,
     Channel,
     EmojiResolvable,
     ExcludeEnum,
@@ -111,7 +111,7 @@ interface BaseCommandArgument {
 
 interface ChoicesCommandArgument extends BaseCommandArgument {
     type: "string" | "int" | "number";
-    choices?: ApplicationCommandOptionChoice[];
+    choices?: ApplicationCommandOptionChoiceData[];
 }
 
 interface ChannelCommandArgument extends BaseCommandArgument {
