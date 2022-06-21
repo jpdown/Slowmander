@@ -5,8 +5,8 @@ import {
     Guild,
     GuildMember,
     InteractionReplyOptions,
-    MessageEmbed,
     MessageOptions,
+    MessagePayload,
     TextBasedChannel,
     User,
 } from "discord.js";
@@ -94,14 +94,18 @@ export class CommandContext<InGuild extends boolean = boolean> {
                 msg = await this.interaction.followUp(intOptions);
             }
         } else {
+            let payload: MessagePayload;
             if (!this._replyMessage) {
-                this._replyMessage = await this.message!.reply(msgOptions);
+                payload = new MessagePayload(this.message!, msgOptions as MessageOptions);
+                this._replyMessage = await this.message!.reply(payload);
                 msg = this._replyMessage;
             } else if (this._deferred) {
-                msg = await this._replyMessage.edit(msgOptions);
+                payload = new MessagePayload(this._replyMessage, msgOptions as MessageOptions);
+                msg = await this._replyMessage.edit(payload);
             } else {
                 // Reply to the first sent reply
-                msg = await this._replyMessage.reply(msgOptions);
+                payload = new MessagePayload(this._replyMessage, msgOptions as MessageOptions);
+                msg = await this._replyMessage.reply(payload);
             }
         }
 
@@ -123,10 +127,20 @@ export class CommandContext<InGuild extends boolean = boolean> {
     }
 
     public async edit(message: string | MessageOptions | InteractionReplyOptions) {
+        let options: MessageOptions;
+        let payload: MessagePayload;
+
         if (this.interaction && this.interaction.replied) {
             await this.interaction.editReply(message);
         } else if (this._replyMessage) {
-            await this._replyMessage.edit(message);
+            if (typeof message === 'string') {
+                options = { embeds: [await CommandUtils.generateEmbed(message, this.channel, true)]}
+            }
+            else {
+                options = message as MessageOptions;
+            }
+            payload = new MessagePayload(this._replyMessage, options);
+            await this._replyMessage.edit(payload);
         }
     }
 
