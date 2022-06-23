@@ -268,7 +268,7 @@ export class CommandManager {
             filtered = (arr as string[]).filter((choice) => choice.startsWith(focused.value as string));
         }
         else {
-            filtered = (arr as number[]).filter((choice) => choice.toString().startsWith((focused.value as number).toString()))
+            filtered = (arr as number[]).filter((choice) => choice.toString().startsWith(focused.value.toString()))
         }
         filtered = filtered.slice(0, 25); // Discord has limit of 25 choices
 
