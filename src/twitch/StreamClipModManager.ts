@@ -11,13 +11,14 @@ import {
 } from "discord.js";
 import type { TwitchClipModConfig } from "database/TwitchClipModeration";
 
-export class TwitchClipModManager {
+export class StreamClipModManager {
     private bot: Bot;
 
     private logger: Logger;
 
-    private clipRegex =
+    private twitchRegex =
         /(?:https:\/\/clips\.twitch\.tv\/|https:\/\/www.twitch.tv\/\S+\/clip\/)([^?\s]+)/gi;
+    private youtubeRegex = /(?:https:\/\/(?:www.)youtube.com\/clip\/)([^?\s]+)/i;
 
     constructor(bot: Bot) {
         this.bot = bot;
@@ -102,62 +103,60 @@ export class TwitchClipModManager {
         message: Message,
         config: TwitchClipModConfig
     ): Promise<void> {
-        let clipMatch: RegExpExecArray | null;
-        let approvedChannels: string[] | null = null;
-        let keepMessage: boolean = false;
+        let twitchClipIds = await this.getTwitchRegexMatches(message.content);
+        let youtubeMatches = await this.checkYoutubeRegex(message.content);
+        let twitchMatches: boolean = twitchClipIds.length > 0;
 
-        // Get approved channel list
-        if (config.approvedOnly) {
-            approvedChannels = this.bot.db.twitchClipMod.getApprovedChannels(
-                message.channel as Channel
-            );
+        if (await this.bot.twitch.getApiStatus()) {
+            if (config.approvedOnly) {
+                twitchMatches = twitchMatches && await this.checkTwitchApprovedChannels(twitchClipIds, message.channel as Channel);
+            } else {
+                twitchMatches = twitchMatches && await this.checkTwitchValidClip(twitchClipIds, message.channel as Channel);
+            }
+        } else {
+            twitchMatches = twitchClipIds.length > 0;
         }
 
-        // Multiple clips may be in the message, loop until none left or message marked for deletion
-        const broadcasters: Promise<string | null>[] = [];
-        if (await this.bot.twitch.getApiStatus()) {
-            while (
-                (clipMatch = this.clipRegex.exec(message.content)) !== null
-            ) {
-                broadcasters.push(
-                    this.bot.twitch.getClipBroadcasterId(clipMatch[1])
-                );
-            }
+        if (!twitchMatches && !youtubeMatches) {
+            await this.deleteMessage(message); 
+        }
+    }
 
-            const broadcasterIds: (string | null)[] = await Promise.all(
-                broadcasters
-            );
-    
-            if (broadcasterIds.length > 0) {
-                keepMessage = broadcasterIds.every((clipBroadcaster) => {
-                    if (clipBroadcaster === null) {
-                        // Invalid clip
-                        return false;
-                    }
-                    if (
-                        config.approvedOnly &&
-                        approvedChannels &&
-                        !approvedChannels.includes(clipBroadcaster)
-                    ) {
-                        // Not an approved channel
-                        return false;
-                    }
-                    return true;
-                });
-            } else {
-                keepMessage = false;
-            }
-        } else if (this.clipRegex.test(message.content)) {
-            // If message passes test, keep
-            keepMessage = true;
+    private async getTwitchRegexMatches(message: string) : Promise<string[]> {
+        let clipMatch: RegExpExecArray | null;
+        let matches: string[] = [];
+
+        while ((clipMatch = this.twitchRegex.exec(message)) !== null) {
+            matches.push(clipMatch[1]);
         }
 
         // Reset lastIndex for the next test
-        this.clipRegex.lastIndex = 0;
+        this.twitchRegex.lastIndex = 0;
 
-        if (!keepMessage) {
-            await this.deleteMessage(message);
-        }
+        return matches;
+    }
+
+    private async checkTwitchApprovedChannels(clips: string[], channel: Channel): Promise<boolean> {
+        let approvedChannels: string[] | null = null;
+        const broadcasters: Promise<string | null>[] = [];
+
+        approvedChannels = this.bot.db.twitchClipMod.getApprovedChannels(channel);
+        clips.forEach((clip) => broadcasters.push(this.bot.twitch.getClipBroadcasterId(clip)));
+        const broadcasterIds: (string | null)[] = await Promise.all(broadcasters);
+
+        return broadcasterIds.every((clipBroadcaster) => clipBroadcaster !== null && approvedChannels?.includes(clipBroadcaster));
+    }
+
+    private async checkTwitchValidClip(clips: string[], channel: Channel): Promise<boolean> {
+        const broadcasters: Promise<string | null>[] = [];
+        clips.forEach((clip) => broadcasters.push(this.bot.twitch.getClipBroadcasterId(clip)));
+        const broadcasterIds: (string | null)[] = await Promise.all(broadcasters);
+
+        return broadcasterIds.every((clipBroadcaster) => clipBroadcaster !== null);
+    }
+
+    private async checkYoutubeRegex(message: string): Promise<boolean> {
+        return this.youtubeRegex.test(message);
     }
 
     private async deleteMessage(message: Message) {

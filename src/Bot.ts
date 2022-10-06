@@ -9,7 +9,7 @@ import { Client, Snowflake } from "discord.js";
 import { Config } from "config/Config";
 import { CommandUtils } from "utils/CommandUtils";
 import { TwitchAPIManager } from "./twitch/TwitchAPIManager";
-import { TwitchClipModManager } from "./twitch/TwitchClipModManager";
+import { StreamClipModManager } from "./twitch/StreamClipModManager";
 import { SpamChecker } from "SpamChecker";
 
 export class Bot {
@@ -17,7 +17,7 @@ export class Bot {
 
     private readonly verificationManager: VerificationManager;
 
-    private readonly twitchClipModManager: TwitchClipModManager;
+    private readonly streamClipModManager: StreamClipModManager;
 
     private readonly logger: Logger;
 
@@ -70,7 +70,7 @@ export class Bot {
             this.credentials.twitchId,
             this.credentials.twitchSecret
         );
-        this.twitchClipModManager = new TwitchClipModManager(this);
+        this.streamClipModManager = new StreamClipModManager(this);
         this.reactionRoleManager = new ReactionRoleManager(this);
         CommandUtils.bot = this;
 
@@ -136,8 +136,8 @@ export class Bot {
             );
             this.client.on(
                 "messageCreate",
-                this.twitchClipModManager.onMessage.bind(
-                    this.twitchClipModManager
+                this.streamClipModManager.onMessage.bind(
+                    this.streamClipModManager
                 ),
             );
             this.client.on(
@@ -148,8 +148,8 @@ export class Bot {
             )
             this.client.on(
                 "messageUpdate",
-                this.twitchClipModManager.onMessageUpdate.bind(
-                    this.twitchClipModManager
+                this.streamClipModManager.onMessageUpdate.bind(
+                    this.streamClipModManager
                 )
             );
         });
