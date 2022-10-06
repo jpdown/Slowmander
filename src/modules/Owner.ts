@@ -257,6 +257,16 @@ export class Owner extends Module {
         await c.reply(`[Invite Link](${invite})`);
     }
 
+    @subcommand("owner", "Lists the guilds that the bot is in")
+    @isOwner()
+    public async guilds(ctx: CommandContext, prefix: string) {
+
+        let guilds = "";
+        guilds = ctx.client.guilds.cache.reduce((accumulator, guild) => accumulator + guild.name + "\n", guilds);
+
+        await ctx.reply(guilds)
+    }
+
     @command("shuts the bot down", "shutdown")
     @isOwner()
     public async shutdown(c: CommandContext) {
