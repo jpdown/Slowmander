@@ -259,8 +259,7 @@ export class Owner extends Module {
 
     @subcommand("owner", "Lists the guilds that the bot is in")
     @isOwner()
-    public async guilds(ctx: CommandContext, prefix: string) {
-
+    public async guilds(ctx: CommandContext) {
         let guilds = "";
         guilds = ctx.client.guilds.cache.reduce((accumulator, guild) => accumulator + guild.name + "\n", guilds);
 
