@@ -17,8 +17,8 @@ export class StreamClipModManager {
     private logger: Logger;
 
     private twitchRegex =
-        /(?:https:\/\/clips\.twitch\.tv\/|https:\/\/www.twitch.tv\/\S+\/clip\/)([^?\s]+)/gi;
-    private youtubeRegex = /(?:https:\/\/(?:www.)?youtube.com\/clip\/)([^?\s]+)/i;
+        /(?:https:\/\/clips\.twitch\.tv\/|https:\/\/www\.twitch\.tv\/\S+\/clip\/)([^?\s]+)/gi;
+    private youtubeRegex = /(?:https:\/\/(?:www\.)?youtube\.com\/clip\/)([^?\s]+)/i;
 
     constructor(bot: Bot) {
         this.bot = bot;
