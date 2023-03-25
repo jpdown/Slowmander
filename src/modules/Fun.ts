@@ -3,7 +3,7 @@ import type { CommandContext } from "CommandContext";
 import { MessageEmbed } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { command } from "./ModuleDecorators";
+import { args, command } from "./ModuleDecorators";
 import fetch from 'node-fetch';
 
 export class Fun extends Module {
@@ -100,5 +100,15 @@ export class Fun extends Module {
             .setDescription(resp.why);
 
         await c.reply({embeds: [embed]});
+    }
+
+    @command("Roll them dice. Includes 0 as a possible value.")
+    @args([{ name: "max", type: "int", description: "The max number to roll, inclusive. Defaults to 6.", optional: true }])
+    public async roll(c: CommandContext, max?: number) {
+        // We'll be flooring, so add 1 to keep inclusive
+        let new_max = max ? max + 1 : 7;
+        let rng = Math.floor(Math.random() * new_max);
+        
+        await c.reply(`🎲 ${rng}`)
     }
 }
