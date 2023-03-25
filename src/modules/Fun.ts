@@ -85,6 +85,25 @@ export class Fun extends Module {
         await c.reply({embeds: [embed]});
     }
 
+    @command("Get a random cat boy")
+    public async catboy(c: CommandContext) {
+        await c.defer();
+
+        // Get from nekos.life
+        let resp = await (await fetch("https://api.catboys.com/img")).json();
+        if (!resp.url) {
+            throw new Error(`Error obtaining image from nekos.life`);
+        }
+
+        let embed = new MessageEmbed()
+            .setColor(await CommandUtils.getSelfColor(c.channel))
+            .setTitle("Awoo!")
+            .setURL(resp.url)
+            .setImage(resp.url);
+        
+        await c.reply({embeds: [embed]});
+    }
+
     @command("?")
     public async why(c: CommandContext) {
         await c.defer();
