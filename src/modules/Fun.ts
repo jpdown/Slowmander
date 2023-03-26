@@ -3,7 +3,7 @@ import type { CommandContext } from "CommandContext";
 import { MessageEmbed } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { Module } from "./Module";
-import { args, command } from "./ModuleDecorators";
+import { args, command, noSlash } from "./ModuleDecorators";
 import fetch from 'node-fetch';
 
 export class Fun extends Module {
@@ -112,16 +112,21 @@ export class Fun extends Module {
     ])
     public async owo(c: CommandContext, msg: string) {
         await c.defer();
-
         let resp = await (await fetch(`https://nekos.life/api/v2/owoify?text=${msg}`)).json();
         if (!resp.owo) {
             throw new Error(`Error obtaining text from nekos.life`);
         }
 
+        let s = "" 
+        if (!c.interaction) {
+            s += c.user.username + "#" + c.user.discriminator + ": \n" + resp.owo
+        }
+        s += resp.owo
+
         let embed = new MessageEmbed()
             .setColor(await CommandUtils.getSelfColor(c.channel))
             .setTitle("uwu")
-            .setDescription(resp.owo);
+            .setDescription(s);
 
         await c.reply({embeds: [embed]});
     }
