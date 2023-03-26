@@ -105,7 +105,7 @@ export class Fun extends Module {
     @command("owo")
     @args([
         {
-            name: "name",
+            name: "input",
             type: "string",
             description: "the text to owoify",
         },
@@ -113,15 +113,15 @@ export class Fun extends Module {
     public async owo(c: CommandContext, msg: string) {
         await c.defer();
 
-        let resp = await (await fetch(`https://nekos.life/api/v2/owo?text=${msg}`)).json();
-        if (!resp.why) {
+        let resp = await (await fetch(`https://nekos.life/api/v2/owoify?text=${msg}`)).json();
+        if (!resp.owo) {
             throw new Error(`Error obtaining text from nekos.life`);
         }
 
         let embed = new MessageEmbed()
             .setColor(await CommandUtils.getSelfColor(c.channel))
-            .setTitle("?")
-            .setDescription(resp.why);
+            .setTitle("uwu")
+            .setDescription(resp.owo);
 
         await c.reply({embeds: [embed]});
     }
