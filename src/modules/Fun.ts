@@ -148,7 +148,7 @@ export class Fun extends Module {
 
         let s = "" 
         if (!c.interaction) {
-            s += c.user.username + "#" + c.user.discriminator + ": \n" + resp.owo
+            s += c.user.username + "#" + c.user.discriminator + ": \n"
         }
         s += resp.owo
 
