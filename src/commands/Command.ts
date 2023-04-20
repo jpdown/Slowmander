@@ -35,6 +35,7 @@ export class Command {
 
     public readonly desc: string;
 
+
     // The guild this command is registered for
     public readonly guild?: Snowflake;
 
@@ -43,6 +44,7 @@ export class Command {
 
     // If a slash command
     public readonly slash?: boolean;
+    public slashId?: Snowflake;
 
     public readonly parent?: CommandGroup;
 

@@ -23,6 +23,7 @@ import {
     ApplicationCommandNonOptionsData,
     Guild,
     Permissions,
+    ApplicationCommandPermissions,
 } from "discord.js";
 import { CommandContext } from "CommandContext";
 import type { Module } from "modules/Module";
@@ -123,11 +124,39 @@ export class CommandManager {
             args
             );
             
+        // Check slash cmd perms
+        if (commandToRun.slashId && message.guildId) {
+            let permsMgr = ctx.client.application.commands.permissions;
+            let perms: ApplicationCommandPermissions[] = [];
+
+            try {
+                perms = await permsMgr.fetch({ command: commandToRun.slashId, guild: message.guildId })
+            } catch (err) {
+                // Probably just no overrides, squash
+            }
+
+            // For every perm, if it's a matching false perm then we return
+            for (let perm of perms) {
+                switch (perm.type) {
+                    case "ROLE":
+                        if (!perm.permission && ctx.member!.roles.cache.has(perm.id)) {
+                            return;
+                        }
+                        break;
+                    case "USER":
+                        if (!perm.permission && ctx.user.id == perm.id) {
+                            return;
+                        }
+                        break;
+                }
+            }
+        }
+
         // Check perms
         if (!(await PermissionsHelper.checkPerms(commandToRun, ctx))) {
             return;
         }
-        
+
         if (!args) {
             await HelpManager.sendCommandHelp(commandToRun, ctx);
             return;
@@ -342,6 +371,8 @@ export class CommandManager {
                 }
             }
             compared.push(existingCmd.id);
+            // Keep track of slash ids per command
+            this.getCommand(existingCmd.guildId ?? undefined, existingCmd.name)!.slashId = existingCmd.id
         };
 
         // Remove all commands that no longer exist
