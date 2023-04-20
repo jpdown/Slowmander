@@ -24,7 +24,7 @@ export class Verification {
         try {
             const row: VerificationConfig | undefined = this.db
                 .prepare("SELECT * FROM VerificationConfigs WHERE guildId = ?;")
-                .get(guildId);
+                .get(guildId) as VerificationConfig | undefined;
             return row;
         } catch (err) {
             this.logger.error("Error getting VerificationConfig from db", err);

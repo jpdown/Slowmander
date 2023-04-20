@@ -27,7 +27,7 @@ export class ReactionRoles {
                 .prepare(
                     "SELECT * FROM ReactionRoles WHERE channelId = ? AND messageId = ? AND emoteId = ?;"
                 )
-                .get(message.channel.id, message.id, emoteId);
+                .get(message.channel.id, message.id, emoteId) as ReactionRole | undefined;
             return row;
         } catch (err) {
             this.logger.error("Error getting ReactionRoles from db", err);
@@ -44,7 +44,7 @@ export class ReactionRoles {
                 .prepare(
                     "SELECT * FROM ReactionRoles WHERE channelId = ? AND messageId = ?;"
                 )
-                .all(message.channel.id, message.id);
+                .all(message.channel.id, message.id) as ReactionRole[];
             return rows;
         } catch (err) {
             this.logger.error("Error getting ReactionRoles from db", err);
@@ -59,7 +59,7 @@ export class ReactionRoles {
         try {
             const rows: ReactionRole[] = this.db
                 .prepare("SELECT * FROM ReactionRoles WHERE guildId = ?;")
-                .all(guild.id);
+                .all(guild.id) as ReactionRole[];
             return rows;
         } catch (err) {
             this.logger.error("Error getting ReactionRoles from db", err);

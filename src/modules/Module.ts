@@ -1,4 +1,5 @@
 import type { Bot } from "Bot";
+import { CommandContext } from "CommandContext";
 import { Command, CommandOptions, PermissionLevel } from "commands/Command";
 import { CommandGroup } from "commands/CommandGroup";
 import { Logger } from "Logger";
@@ -117,7 +118,7 @@ export abstract class Module {
                         addedCommand = new Command(
                             commandName,
                             commandDesc,
-                            Reflect.get(this, key).bind(this),
+                            (Reflect.get(this, key) as (ctx: CommandContext, ...args: any[]) => Promise<void>).bind(this),
                             permLevel,
                             commandOptions
                         );
@@ -138,7 +139,7 @@ export abstract class Module {
                         addedCommand = new CommandGroup(
                             commandName,
                             commandDesc,
-                            Reflect.get(this, key).bind(this),
+                            (Reflect.get(this, key) as (ctx: CommandContext, ...args: any[]) => Promise<void>).bind(this),
                             permLevel,
                             commandOptions
                         );
