@@ -25,7 +25,7 @@ export class LockdownPresets {
                     "SELECT preset FROM LockdownPresets WHERE guildId = ?;"
                 )
                 .pluck()
-                .all(guildId);
+                .all(guildId) as string[];
             return rows;
         } catch (err) {
             this.logger.error("Error getting LockdownPresets from db", err);
@@ -45,7 +45,7 @@ export class LockdownPresets {
                 .prepare(
                     "SELECT * FROM LockdownPresets WHERE guildId = ? AND preset = ?;"
                 )
-                .get(guildId, preset);
+                .get(guildId, preset) as LockdownPreset;
             return row;
         } catch (err) {
             this.logger.error("Error getting LockdownPreset from db", err);
@@ -66,7 +66,7 @@ export class LockdownPresets {
                     "SELECT channelId FROM LockdownChannels WHERE guildId = ? AND preset = ?;"
                 )
                 .pluck()
-                .all(guildId, preset);
+                .all(guildId, preset) as string[];
             return rows;
         } catch (err) {
             this.logger.error("Error getting LockdownChannels from db", err);
@@ -87,7 +87,7 @@ export class LockdownPresets {
                     "SELECT roleId FROM LockdownRoles WHERE guildId = ? AND preset = ?;"
                 )
                 .pluck()
-                .all(guildId, preset);
+                .all(guildId, preset) as string[];
             return rows;
         } catch (err) {
             this.logger.error("Error getting LockdownRoles from db", err);

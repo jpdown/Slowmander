@@ -26,7 +26,7 @@ export class TwitchClipModeration {
                 .prepare(
                     "SELECT * FROM TwitchClipModConfigs WHERE channelId = ?;"
                 )
-                .get(channel.id);
+                .get(channel.id) as TwitchClipModConfig | undefined;
             return row;
         } catch (err) {
             this.logger.error(
@@ -47,7 +47,7 @@ export class TwitchClipModeration {
                     "SELECT twitchChannel FROM TwitchClipApprovedChannels WHERE channelId = ?;"
                 )
                 .pluck()
-                .all(channel.id);
+                .all(channel.id) as string[];
             return rows;
         } catch (err) {
             this.logger.error(

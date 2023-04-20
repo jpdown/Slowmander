@@ -22,7 +22,7 @@ export class GuildConfigs {
         try {
             const row: GuildConfig | undefined = this.db
                 .prepare("SELECT prefix FROM GuildConfigs WHERE guildId = ?;")
-                .get(guildId);
+                .get(guildId) as GuildConfig | undefined;
             return row?.prefix;
         } catch (err) {
             this.logger.error("Error getting GuildConfig from db", err);
@@ -55,7 +55,7 @@ export class GuildConfigs {
         try {
             const row: GuildConfig | undefined = this.db
                 .prepare("SELECT vipRole FROM GuildConfigs WHERE guildId = ?;")
-                .get(guildId);
+                .get(guildId) as GuildConfig | undefined;
             return row?.vipRole;
         } catch (err) {
             this.logger.error("Error getting GuildConfig from db", err);
@@ -88,7 +88,7 @@ export class GuildConfigs {
         try {
             const row: GuildConfig | undefined = this.db
                 .prepare("SELECT modRole FROM GuildConfigs WHERE guildId = ?;")
-                .get(guildId);
+                .get(guildId) as GuildConfig | undefined;
             return row?.modRole;
         } catch (err) {
             this.logger.error("Error getting GuildConfig from db", err);
@@ -123,7 +123,7 @@ export class GuildConfigs {
                 .prepare(
                     "SELECT adminRole FROM GuildConfigs WHERE guildId = ?;"
                 )
-                .get(guildId);
+                .get(guildId) as GuildConfig | undefined;
             return row?.adminRole;
         } catch (err) {
             this.logger.error("Error getting GuildConfig from db", err);
@@ -158,7 +158,7 @@ export class GuildConfigs {
                 .prepare(
                     "SELECT modChannel FROM GuildConfigs WHERE guildId = ?;"
                 )
-                .get(guildId);
+                .get(guildId) as GuildConfig | undefined;
             return row?.modChannel;
         } catch (err) {
             this.logger.error("Error getting GuildConfig from db", err);
@@ -188,7 +188,7 @@ export class GuildConfigs {
         try {
             const row: GuildConfig | undefined = this.db
                 .prepare("SELECT spamBan FROM GuildConfigs WHERE guildId = ?;")
-                .get(guildId);
+                .get(guildId) as GuildConfig | undefined;
             return row?.spamBan;
         } catch (err) {
             this.logger.error("Error getting spamBan from db", err);

@@ -23,7 +23,7 @@ export class EventLogs {
             const channel: Snowflake | undefined = this.db
                 .prepare("SELECT channelId FROM EventLogs WHERE guildId = ?;")
                 .pluck()
-                .get(guildId);
+                .get(guildId) as Snowflake | undefined;
             return channel;
         } catch (err) {
             this.logger.error("Error getting EventLogs from db", err);

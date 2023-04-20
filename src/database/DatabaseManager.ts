@@ -51,7 +51,7 @@ export class DatabaseManager {
     private checkSchema() {
         const dbVersion: number = this.db.pragma("user_version;", {
             simple: true,
-        });
+        }) as number;
 
         // TODO: this sucks
         if (dbVersion < 1) {
