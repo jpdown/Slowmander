@@ -24,6 +24,8 @@ import {
     Guild,
     Permissions,
     ApplicationCommandPermissions,
+    Collection,
+    Client,
 } from "discord.js";
 import { CommandContext } from "CommandContext";
 import type { Module } from "modules/Module";
@@ -126,29 +128,8 @@ export class CommandManager {
             
         // Check slash cmd perms
         if (commandToRun.slashId && message.guildId) {
-            let permsMgr = ctx.client.application.commands.permissions;
-            let perms: ApplicationCommandPermissions[] = [];
-
-            try {
-                perms = await permsMgr.fetch({ command: commandToRun.slashId, guild: message.guildId })
-            } catch (err) {
-                // Probably just no overrides, squash
-            }
-
-            // For every perm, if it's a matching false perm then we return
-            for (let perm of perms) {
-                switch (perm.type) {
-                    case "ROLE":
-                        if (!perm.permission && ctx.member!.roles.cache.has(perm.id)) {
-                            return;
-                        }
-                        break;
-                    case "USER":
-                        if (!perm.permission && ctx.user.id == perm.id) {
-                            return;
-                        }
-                        break;
-                }
+            if (!await this.checkSlashPerms(this.bot.client, message.guild!, message.member!, commandToRun)) {
+                return;
             }
         }
 
@@ -332,6 +313,94 @@ export class CommandManager {
         }
 
         return this.bot.config.prefix;
+    }
+
+    public async checkSlashPerms(client: Client<true>, guild: Guild, member: GuildMember, cmd: Command): Promise<boolean> {
+        let permsMgr = client.application.commands.permissions;
+        let perms: Collection<string, ApplicationCommandPermissions[]> = new Collection
+        let cmds: Collection<String, ApplicationCommand> = new Collection
+
+        // If user is admin, always return true
+        if (member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            return true;
+        }
+
+        try {
+            perms = await permsMgr.fetch({ guild: guild })
+            cmds = await client.application.commands.fetch()
+        } catch (err) {
+            // Probably just no overrides, allow the command
+            return true;
+        }
+
+        // For every perm, if it's a matching false perm then we return
+        let guildRoleLevel = undefined;
+        let guildUserLevel = undefined;
+        let roleLevel = undefined;
+        let userLevel = undefined;
+        let permCheck = true;
+        let highestRole = undefined;
+
+        for (let command of perms) {
+            // If key is our command, or if the key is not a command, meaning it is the global override, we will check
+            if (command[0] == cmd.slashId || !cmds.has(command[0])) {
+                for (let perm of command[1]) {
+                    permCheck = true;
+                    switch (perm.type) {
+                        case "ROLE":
+                            if (member.roles.cache.has(perm.id)) {
+                                permCheck = perm.permission;
+                            } else {
+                                continue;
+                            }
+                            break;
+                        case "USER":
+                            if (member.id == perm.id) {
+                                permCheck = perm.permission;
+                            } else {
+                                continue;
+                            }
+                            break;
+                    }
+
+                    // Set the correct flag based on if this is cmd or guild level
+                    if (!cmds.has(command[0])) {
+                        if (perm.type == "ROLE") {
+                            guildRoleLevel = permCheck;
+                        } else {
+                            guildUserLevel = permCheck;
+                        }
+                    } else if (perm.type == 'ROLE') {
+                        // If this role is higher than the last denied role, use it instead
+                        if (!highestRole || guild.roles.comparePositions(perm.id, highestRole) > 0) {
+                            highestRole = perm.id;
+                            roleLevel = permCheck;
+                        }
+                    } else if (perm.type == 'USER') {
+                        userLevel = perm.permission;
+                    }
+                }
+            }
+        }
+
+        // Priority is userLevel > roleLevel > guildUserLevel > guildRoleLevel
+        if (userLevel !== undefined) {
+            return userLevel;
+        }
+
+        if (roleLevel !== undefined) {
+            return roleLevel;
+        }
+
+        if (guildUserLevel !== undefined) {
+            return guildUserLevel;
+        }
+
+        if (guildRoleLevel !== undefined) {
+            return guildRoleLevel;
+        }
+
+        return true;
     }
 
     public async deploySlashCommands() {
