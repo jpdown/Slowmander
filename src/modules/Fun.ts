@@ -91,7 +91,7 @@ export class Fun extends Module {
 
         // Get from hatsune-miku.online
         let resp = await (await fetch("https://hatsune-miku.online/api/v2/image/random")).json();
-        if (!resp.url) {
+        if (!resp.webPLink) {
             throw new Error(`Error obtaining image from hatsune-miku.online`);
         }
 
