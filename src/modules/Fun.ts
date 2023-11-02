@@ -85,6 +85,31 @@ export class Fun extends Module {
         await c.reply({embeds: [embed]});
     }
 
+    @command("Get a random Miku")
+    public async miku(c: CommandContext) {
+        await c.defer();
+
+        // Get from hatsune-miku.online
+        let resp = await (await fetch("https://hatsune-miku.online/api/v2/image/random")).json();
+        if (!resp.url) {
+            throw new Error(`Error obtaining image from hatsune-miku.online`);
+        }
+
+        let embed = new MessageEmbed()
+            .setColor(await CommandUtils.getSelfColor(c.channel))
+            .setTitle(resp.title ?? "Miku :D")
+            .setURL(resp.sourceLink)
+            .setImage(resp.webPLink)
+            .setAuthor({ name: resp.artist, url: resp.sourceLink })
+            .setFooter("Source: " + resp.sourceLink);
+
+        if (resp.description !== "None") {
+            embed.setDescription(resp.description);
+        }
+        
+        await c.reply({embeds: [embed]});
+    }
+
     @command("?")
     public async why(c: CommandContext) {
         await c.defer();
