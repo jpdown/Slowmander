@@ -11,7 +11,12 @@ export class Starboard extends Module {
         super(bot);
     }
 
-    @command("Starboard config")
+    @group("Starboard related commands")
+    @isMod()
+    @guildOnly()
+    public async starboard(c: CommandContext) {}
+
+    @subcommand("starboard", "Starboard config")
     @isMod()
     @guildOnly()
     @args([
@@ -36,7 +41,7 @@ export class Starboard extends Module {
             description: "Whether starboard is enabled for this server",
         }
     ])
-    public async starboard(c: CommandContext, emote: EmojiResolvable, channel: Channel, number: number, enabled: boolean) {
+    public async config(c: CommandContext, emote: EmojiResolvable, channel: Channel, number: number, enabled: boolean) {
         // Verify that the channel is in this guild
         if (channel.isText() || !(channel instanceof GuildChannel)) {
             await c.reply("You must provide a text channel.", true);
@@ -59,7 +64,7 @@ export class Starboard extends Module {
         await c.reply("Config updated.", true);
     }
 
-    @subcommand("status", "Returns the configuration")
+    @subcommand("starboard", "Returns the configuration")
     @isMod()
     @guildOnly()
     public async status(c: CommandContext<true>) {
