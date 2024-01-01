@@ -8,6 +8,7 @@ import { LockdownPresets } from "./LockdownPresets";
 import { ReactionRoles } from "./ReactionRoles";
 import { TwitchClipModeration } from "./TwitchClipModeration";
 import { Verification } from "./Verification";
+import { StarboardConfigs } from "./StarboardConfigs";
 
 export class DatabaseManager {
     private readonly DB_FILE: string = "slowmander.db";
@@ -32,6 +33,8 @@ export class DatabaseManager {
 
     public readonly verification: Verification;
 
+    public readonly starboard: StarboardConfigs;
+
     constructor(bot: Bot) {
         this.logger = Logger.getLogger(this);
         this.DB_PATH = bot.dataPath + "/" + this.DB_FILE;
@@ -46,6 +49,7 @@ export class DatabaseManager {
         this.reactionRoles = new ReactionRoles(bot, this.db);
         this.twitchClipMod = new TwitchClipModeration(bot, this.db);
         this.verification = new Verification(bot, this.db);
+        this.starboard = new StarboardConfigs(bot, this.db);
     }
 
     private checkSchema() {

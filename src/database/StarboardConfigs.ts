@@ -70,7 +70,7 @@ export class StarboardConfigs {
 
 export type StarboardConfig = {
     channelId: Snowflake;
-    emoteId: EmojiResolvable;
+    emoteId: string;
     enabled: boolean;
     numReacts: number;
 };
