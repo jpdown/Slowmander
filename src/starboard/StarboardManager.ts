@@ -16,8 +16,10 @@ import {
     Message,
     ThreadChannel,
     VoiceChannel,
+    MessageEmbed,
 } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
+import { StarboardConfig } from "database/StarboardConfigs";
 
 export class StarboardManager {
     private bot: Bot;
@@ -63,7 +65,37 @@ export class StarboardManager {
         }
 
         // Load config from db
+        const config = this.bot.db.starboard.getConfig(fullMessage.guildId!)
+
+        if (!config) {
+            return;
+        }
+
+        const emote = fullReaction.emoji.id ? fullReaction.emoji.identifier : fullReaction.emoji.name!;
 
         // If correct emote, is enabled, and == correct number of reactions, post
+        if (config.enabled && config.emoteId == emote && fullReaction.count == config.numReacts) {
+            await this.post(fullMessage, config);
+        }
+    }
+
+    private async post(message: Message, config: StarboardConfig) {
+        let author = message.member!;
+
+        let embed = new MessageEmbed()
+            .setColor(author.displayColor)
+            .setAuthor({name: author.displayName, iconURL: author.displayAvatarURL() })
+            .setDescription(message.content)
+            .setTimestamp(message.createdTimestamp);
+
+        let channel = await this.bot.client.channels.fetch(config.channelId);
+        
+        if (!channel || !channel.isText()) {
+            return;
+        }
+        
+        Array.from(message.attachments.values())
+
+        channel.send({embeds: [embed], attachments: Array.from(message.attachments.values())})
     }
 }
