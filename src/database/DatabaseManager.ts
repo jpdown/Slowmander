@@ -215,7 +215,7 @@ export class DatabaseManager {
                         '"enabled" BOOLEAN NOT NULL DEFAULT 0 CHECK (enabled in (0, 1)),' +
                         '"channelId" TEXT NOT NULL,' +
                         '"emoteId" TEXT NOT NULL,' +
-                        '"numReacts" INT NOT NULL,' +
+                        '"numReacts" INT NOT NULL' +
                         ");"
                 )
                 .run();
