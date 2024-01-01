@@ -11,6 +11,7 @@ import { CommandUtils } from "utils/CommandUtils";
 import { TwitchAPIManager } from "./twitch/TwitchAPIManager";
 import { StreamClipModManager } from "./twitch/StreamClipModManager";
 import { SpamChecker } from "SpamChecker";
+import { StarboardManager } from "starboard/StarboardManager";
 
 export class Bot {
     private readonly credentials: Credentials;
@@ -26,6 +27,8 @@ export class Bot {
     private readonly spamChecker: SpamChecker;
 
     private readonly reactionRoleManager: ReactionRoleManager;
+
+    private readonly starboardManager: StarboardManager;
 
     public readonly client: Client<true>;
 
@@ -72,6 +75,7 @@ export class Bot {
         );
         this.streamClipModManager = new StreamClipModManager(this);
         this.reactionRoleManager = new ReactionRoleManager(this);
+        this.starboardManager = new StarboardManager(this);
         CommandUtils.bot = this;
 
         this.client.on("ready", async () => {
@@ -150,6 +154,12 @@ export class Bot {
                 "messageUpdate",
                 this.streamClipModManager.onMessageUpdate.bind(
                     this.streamClipModManager
+                )
+            );
+            this.client.on(
+                "messageReactionAdd",
+                this.starboardManager.onMessageReactionAdd.bind(
+                    this.starboardManager
                 )
             );
         });

@@ -81,12 +81,24 @@ export class StarboardManager {
 
     private async post(message: Message, config: StarboardConfig) {
         let author = message.member!;
+        
+        let embeds: MessageEmbed[] = [];
 
-        let embed = new MessageEmbed()
-            .setColor(author.displayColor)
-            .setAuthor({name: author.displayName, iconURL: author.displayAvatarURL() })
+        embeds.push(new MessageEmbed()
+            .setColor(author.displayColor ? author.displayColor : 0xFFFFFF)
+            .setAuthor({name: author.displayName, iconURL: author.displayAvatarURL(), url: message.url })
             .setDescription(message.content)
-            .setTimestamp(message.createdTimestamp);
+            .setURL(message.url)
+            .setTimestamp(message.createdTimestamp));
+        
+        for (let file of message.attachments.values()) {
+            if (file.contentType?.startsWith("image")) {
+                embeds.push(new MessageEmbed()
+                    .setURL(message.url)
+                    .setImage(file.url)
+                );
+            }
+        }
 
         let channel = await this.bot.client.channels.fetch(config.channelId);
         
@@ -94,8 +106,6 @@ export class StarboardManager {
             return;
         }
         
-        Array.from(message.attachments.values())
-
-        channel.send({embeds: [embed], attachments: Array.from(message.attachments.values())})
+        await channel.send({embeds})
     }
 }
