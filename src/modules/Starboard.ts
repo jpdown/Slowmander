@@ -43,13 +43,8 @@ export class Starboard extends Module {
     ])
     public async config(c: CommandContext, emote: EmojiResolvable, channel: Channel, number: number, enabled: boolean) {
         // Verify that the channel is in this guild
-        if (channel.isText() || !(channel instanceof GuildChannel)) {
-            await c.reply("You must provide a text channel.", true);
-            return;
-        }
-
-        if (channel.guildId != c.guild!.id) {
-            await c.reply("You must provide a channel in this guild.", true);
+        if (!channel.isText() || !(channel instanceof GuildChannel) || channel.guildId != c.guild!.id) {
+            await c.reply("You must provide a text channel in this guild.", true);
             return;
         }
 
