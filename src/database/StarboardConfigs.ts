@@ -48,9 +48,9 @@ export class StarboardConfigs {
                 .prepare(
                     "INSERT INTO StarboardConfigs(guildId, enabled, channelId, emoteId, numReacts) " +
                         "VALUES(?, ?, ?, ?, ?) " +
-                        "ON CONFLICT(guildId, enabled, channelId, emoteId, numReacts) " +
-                        "DO UPDATE SET guildId=excluded.guildId enabled=excluded.enabled " +
-                        "channelId=excluded.channelId emoteId=excluded.emoteId numReacts=excluded.numReacts;"
+                        "ON CONFLICT(guildId) " +
+                        "DO UPDATE SET guildId=excluded.guildId, enabled=excluded.enabled, " +
+                        "channelId=excluded.channelId, emoteId=excluded.emoteId, numReacts=excluded.numReacts;"
                 )
                 .run(
                     guildId,
