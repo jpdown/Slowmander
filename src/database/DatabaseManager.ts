@@ -60,6 +60,9 @@ export class DatabaseManager {
         if (dbVersion < 2) {
             this.createSchemaVer2();
         }
+        if (dbVersion < 3) {
+            this.createSchemaVer3();
+        }
     }
 
     private createSchemaVer1() {
@@ -194,6 +197,32 @@ export class DatabaseManager {
         } catch (err) {
             this.db.prepare("ROLLBACK;").run();
             this.logger.error("Error creating schema version 2.", err);
+        }
+    }
+
+    private createSchemaVer3() {
+        try {
+            this.db.prepare("BEGIN;").run();
+
+            this.db
+                .prepare(
+                    "CREATE TABLE StarboardConfigs(" +
+                        '"guildId" TEXT NOT NULL PRIMARY KEY,' +
+                        '"enabled" BOOLEAN NOT NULL DEFAULT 0 CHECK (enabled in (0, 1)),' +
+                        '"channelId" TEXT NOT NULL,' +
+                        '"emoteId" TEXT NOT NULL,' +
+                        '"numReacts" INT NOT NULL,' +
+                        ");"
+                )
+                .run();
+
+            this.db.pragma("user_version = 3;");
+
+            this.db.prepare("COMMIT;").run();
+            this.logger.info("Database schema version 3 created.");
+        } catch (err) {
+            this.db.prepare("ROLLBACK;").run();
+            this.logger.error("Error creating schema version 3.", err);
         }
     }
 }
