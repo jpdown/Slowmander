@@ -37,7 +37,7 @@ export class StarboardConfigs {
     public setConfig(
         guildId: Snowflake,
         channelId: Snowflake,
-        emoteId: EmojiResolvable,
+        emoteId: string,
         numReacts: number,
         enabled: boolean,
     ): boolean {
@@ -54,7 +54,7 @@ export class StarboardConfigs {
                 )
                 .run(
                     guildId,
-                    enabled,
+                    enabled ? 1 : 0,
                     channelId,
                     emoteId,
                     numReacts,
@@ -69,7 +69,7 @@ export class StarboardConfigs {
 }
 
 export type StarboardConfig = {
-    channelId: Snowflake;
+    channelId: string;
     emoteId: string;
     enabled: boolean;
     numReacts: number;
