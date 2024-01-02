@@ -42,8 +42,12 @@ export class ReactionRole extends Module {
         await c.defer();
         let bot = c.bot;
 
-        const msg = await ReactionRole.parseMessage(link, c);
+        const msg = await CommandUtils.parseMessageLink(link);
         if (!msg) {
+            return;
+        }
+
+        if (!msg.guild || msg.guild.id !== c.guild.id) {
             return;
         }
 
@@ -117,10 +121,15 @@ export class ReactionRole extends Module {
         role: Role,
         emote: EmojiResolvable
     ) {
-        const reactionMessage = await ReactionRole.parseMessage(link, ctx);
+        const reactionMessage = await CommandUtils.parseMessageLink(link);
         if (!reactionMessage) {
             return;
         }
+
+        if (!reactionMessage.guild || reactionMessage.guild.id !== ctx.guild.id) {
+            return;
+        }
+
         const emoteId = typeof emote === "string" ? emote : emote.identifier;
         const config = ctx.bot.db.reactionRoles.getReactionRole(reactionMessage, emoteId);
 
@@ -240,42 +249,6 @@ export class ReactionRole extends Module {
         return reaction;
     }
 
-    private static async parseMessage(
-        link: string,
-        ctx: CommandContext
-    ): Promise<Message | undefined> {
-        let reactionMessage: Message;
-
-        // Parse message link
-        const splitLink = link.split("/");
-        if (splitLink.length < 7) {
-            return undefined;
-        }
-
-        const linkGuildId: string = splitLink[4];
-        const linkChannelId: string = splitLink[5];
-        const linkMessageId: string = splitLink[6];
-
-        if (linkGuildId !== ctx.guild!.id) {
-            return undefined;
-        }
-
-        const channel = await CommandUtils.parseTextChannel(linkChannelId);
-        if (!channel) {
-            return undefined;
-        }
-        if (channel.type === "DM") {
-            return undefined;
-        }
-
-        try {
-            reactionMessage = await channel.messages.fetch(linkMessageId);
-        } catch (err) {
-            return undefined;
-        }
-
-        return reactionMessage;
-    }
 
     private static async checkPerms(role: Role, reactionMessage: Message): Promise<boolean> {
         if (

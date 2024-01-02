@@ -92,4 +92,33 @@ export class Starboard extends Module {
 
         await c.reply({ embeds: [embed] }, true);
     }
+
+    @subcommand("starboard", "Manually pin a link")
+    @isMod()
+    @guildOnly()
+    @args([
+        {name: "message", type: "string", description: "The message link to pin"}
+    ])
+    public async pin(c: CommandContext, msg: string) {
+        const message = await CommandUtils.parseMessageLink(msg);
+
+        if (!message) {
+            await c.reply("You must supply a valid message link", true);
+            return;
+        }
+
+        if (!message.guild || message.guild.id !== c.guild!.id) {
+            await c.reply("You must supply a message from this guild", true);
+            return;
+        }
+
+        const config = c.bot.db.starboard.getConfig(c.guild!.id);
+
+        if (!config) {
+            await c.reply("Error getting starboard config", true);
+            return;
+        }
+
+        c.bot.starboardManager.post(message, config);
+    }
 }

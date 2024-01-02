@@ -17,6 +17,7 @@ import {
     ThreadChannel,
     VoiceChannel,
     MessageEmbed,
+    MessageAttachment,
 } from "discord.js";
 import { CommandUtils } from "utils/CommandUtils";
 import { StarboardConfig } from "database/StarboardConfigs";
@@ -79,10 +80,11 @@ export class StarboardManager {
         }
     }
 
-    private async post(message: Message, config: StarboardConfig) {
+    public async post(message: Message, config: StarboardConfig) {
         let author = message.member!;
         
         let embeds: MessageEmbed[] = [];
+        let files: string[] = [];
 
         embeds.push(new MessageEmbed()
             .setColor(author.displayColor ? author.displayColor : 0xFFFFFF)
@@ -98,6 +100,9 @@ export class StarboardManager {
                     .setImage(file.url)
                 );
             }
+            else {
+                files.push(file.url);
+            }
         }
 
         let channel = await this.bot.client.channels.fetch(config.channelId);
@@ -106,6 +111,6 @@ export class StarboardManager {
             return;
         }
         
-        await channel.send({embeds})
+        await channel.send({embeds, files})
     }
 }
