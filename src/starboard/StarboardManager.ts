@@ -81,14 +81,23 @@ export class StarboardManager {
     }
 
     public async post(message: Message, config: StarboardConfig) {
-        let author = message.member!;
+        let author: GuildMember | undefined;
+        try {
+            author = await message.guild?.members.fetch(message.author);
+        } catch (e) {
+            await this.logger.error("Error fetching member for starboard", e);
+        }
         
         let embeds: MessageEmbed[] = [];
         let files: string[] = [];
 
         embeds.push(new MessageEmbed()
-            .setColor(author.displayColor ? author.displayColor : 0xFFFFFF)
-            .setAuthor({name: author.displayName, iconURL: author.displayAvatarURL(), url: message.url })
+            .setColor(author?.displayColor ? author?.displayColor : 0xFFFFFF)
+            .setAuthor({
+                name: author?.displayName ?? message.author.username, 
+                iconURL: author?.displayAvatarURL() ?? message.author.displayAvatarURL(), 
+                url: message.url 
+            })
             .setDescription(message.content)
             .setURL(message.url)
             .setTimestamp(message.createdTimestamp));
