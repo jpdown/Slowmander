@@ -27,7 +27,15 @@ const EMBEDDABLE_IMAGE_EXTENSIONS = [
     ".jpg",
     ".jpeg",
     ".webp",
+    ".gif",
 ]
+
+const MAX_SIZES_PER_TIER_MiB = {
+    "NONE": 25,
+    "TIER_1": 25,
+    "TIER_2": 50,
+    "TIER_3": 100,
+}
 
 export class StarboardManager {
     private bot: Bot;
@@ -97,6 +105,10 @@ export class StarboardManager {
         
         let embeds: MessageEmbed[] = [];
         let files: string[] = [];
+        let content = "";
+        let total_size = 0;
+        const tier = message.guild?.premiumTier ?? "NONE";
+        const max_size = MAX_SIZES_PER_TIER_MiB[tier] * 1024 * 1024;
 
         embeds.push(new MessageEmbed()
             .setColor(author?.displayColor ? author?.displayColor : 0xFFFFFF)
@@ -118,6 +130,9 @@ export class StarboardManager {
                     .setImage(file.url)
                 );
             }
+            else if (total_size + file.size > max_size) {
+                content += file.url + "\n";
+            }
             else {
                 files.push(file.url);
             }
@@ -129,6 +144,6 @@ export class StarboardManager {
             return false;
         }
         
-        return await channel.send({embeds, files})
+        return await channel.send({embeds, content: content ? content : undefined, files})
     }
 }
