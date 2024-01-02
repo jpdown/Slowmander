@@ -28,7 +28,7 @@ export class Bot {
 
     private readonly reactionRoleManager: ReactionRoleManager;
 
-    private readonly starboardManager: StarboardManager;
+    public readonly starboardManager: StarboardManager;
 
     public readonly client: Client<true>;
 

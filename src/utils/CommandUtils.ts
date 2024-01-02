@@ -510,4 +510,32 @@ export class CommandUtils {
         }
         return embed;
     }
+
+    public static async parseMessageLink(
+        link: string,
+    ): Promise<Message | undefined> {
+        let message: Message;
+
+        // Parse message link
+        const splitLink = link.split("/");
+        if (splitLink.length < 7) {
+            return undefined;
+        }
+
+        const linkChannelId: string = splitLink[5];
+        const linkMessageId: string = splitLink[6];
+
+        const channel = await CommandUtils.parseTextChannel(linkChannelId);
+        if (!channel) {
+            return undefined;
+        }
+
+        try {
+            message = await channel.messages.fetch(linkMessageId);
+        } catch (err) {
+            return undefined;
+        }
+
+        return message;
+    }
 }
