@@ -119,6 +119,8 @@ export class Starboard extends Module {
             return;
         }
 
-        c.bot.starboardManager.post(message, config);
+        const success = await c.bot.starboardManager.post(message, config);
+        const response = success ? "Pinned successfully" : "Error pinning";
+        await c.reply(response, true);
     }
 }

@@ -108,9 +108,9 @@ export class StarboardManager {
         let channel = await this.bot.client.channels.fetch(config.channelId);
         
         if (!channel || !channel.isText()) {
-            return;
+            return false;
         }
         
-        await channel.send({embeds, files})
+        return await channel.send({embeds, files})
     }
 }
