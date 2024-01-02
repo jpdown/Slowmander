@@ -22,6 +22,13 @@ import {
 import { CommandUtils } from "utils/CommandUtils";
 import { StarboardConfig } from "database/StarboardConfigs";
 
+const EMBEDDABLE_IMAGE_EXTENSIONS = [
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".webp",
+]
+
 export class StarboardManager {
     private bot: Bot;
 
@@ -103,7 +110,9 @@ export class StarboardManager {
             .setTimestamp(message.createdTimestamp));
         
         for (let file of message.attachments.values()) {
-            if (file.contentType?.startsWith("image")) {
+            if (file.contentType?.startsWith("image") ||
+                EMBEDDABLE_IMAGE_EXTENSIONS.find((ext) => file.url.includes(ext))) 
+            {
                 embeds.push(new MessageEmbed()
                     .setURL(message.url)
                     .setImage(file.url)
